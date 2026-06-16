@@ -1,0 +1,20 @@
+import { NextResponse } from 'next/server';
+import db from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+
+export async function PATCH(req, { params }) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: 'غير مسجّل الدخول' }, { status: 401 });
+
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(params.id);
+  if (!task) return NextResponse.json({ error: 'غير موجود' }, { status: 404 });
+
+  if (user.role !== 'supervisor' && task.assignee_id !== user.id) {
+    return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
+  }
+
+  const body = await req.json().catch(() => ({}));
+  const done = !!body.done;
+  db.prepare('UPDATE tasks SET done = ? WHERE id = ?').run(done ? 1 : 0, params.id);
+  return NextResponse.json({ ok: true, done });
+}
