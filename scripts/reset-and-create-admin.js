@@ -77,7 +77,10 @@ const ACTIVE_NIGHT_NUMBER = 3;
 const insertNight = db.prepare('INSERT INTO nights (id, number, hijri, greg, date, active) VALUES (?, ?, ?, ?, ?, ?)');
 for (let n = 1; n <= 10; n++) {
   const hijri = n === 10 ? 'ليلة عاشوراء ١٤٤٨ هـ' : `ليلة ${toAr(n)} محرم ١٤٤٨ هـ`;
-  insertNight.run('night-' + n, n, hijri, 'الموافق ١٨ يونيو ٢٠٢٦', '2026-06-18', n === ACTIVE_NIGHT_NUMBER ? 1 : 0);
+  const day = 15 + n;
+  const greg = `الموافق ${toAr(day)} يونيو ٢٠٢٦`;
+  const date = `2026-06-${String(day).padStart(2, '0')}`;
+  insertNight.run('night-' + n, n, hijri, greg, date, n === ACTIVE_NIGHT_NUMBER ? 1 : 0);
 }
 
 // create the one real supervisor account

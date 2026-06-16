@@ -95,7 +95,10 @@ const toAr = (v) => String(v).replace(/[0-9]/g, (d) => arDigits[d]);
 const insertNight = db.prepare('INSERT INTO nights (id, number, hijri, greg, date) VALUES (?, ?, ?, ?, ?)');
 for (let n = 1; n <= 10; n++) {
   const hijri = n === 10 ? 'ليلة عاشوراء ١٤٤٨ هـ' : `ليلة ${toAr(n)} محرم ١٤٤٨ هـ`;
-  insertNight.run('night-' + n, n, hijri, 'الموافق ١٨ يونيو ٢٠٢٦', '2026-06-18');
+  const day = 15 + n;
+  const greg = `الموافق ${toAr(day)} يونيو ٢٠٢٦`;
+  const date = `2026-06-${String(day).padStart(2, '0')}`;
+  insertNight.run('night-' + n, n, hijri, greg, date);
 }
 
 const ACTIVE_NIGHT_ID = 'night-3';
