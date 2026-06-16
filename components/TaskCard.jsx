@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { CheckMark, Icon } from './Shared';
 import { avBg, toAr } from '@/lib/palette';
 
-export default function TaskCard({ task, committee, assignee, onToggle, onComment, showAssignee }) {
+export default function TaskCard({ task, committee, assignee, currentUser, onToggle, onComment, onRemoveComment, onRemoveTask, showAssignee }) {
   const [open, setOpen] = useState(false);
   const [txt, setTxt] = useState('');
   const [busy, setBusy] = useState(false);
@@ -56,25 +56,53 @@ export default function TaskCard({ task, committee, assignee, onToggle, onCommen
           <button className={'cmt-btn' + (comments.length ? ' has' : '')} onClick={() => setOpen((o) => !o)}>
             <Icon.chat /> {comments.length ? <span className="ar-num">{toAr(comments.length)}</span> : 'تعليق'}
           </button>
+          {onRemoveTask ? (
+            <button
+              className="icon-btn"
+              title="حذف المهمة"
+              onClick={() => {
+                if (window.confirm('حذف مهمة «' + task.title + '»؟')) onRemoveTask(task.id);
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
+              </svg>
+            </button>
+          ) : null}
         </div>
       </div>
       {open ? (
         <div className="cmts">
           {comments.length ? (
-            comments.map((c) => (
-              <div className="cmt" key={c.id}>
-                <div className="avatar av" style={{ background: avBg(c.author_id) }}>
-                  {c.author[0]}
-                </div>
-                <div className="cmt-bubble">
-                  <div className="top">
-                    <span className="au">{c.author}</span>
-                    <span className="tm ar-num">{c.time}</span>
+            comments.map((c) => {
+              const canDelete = onRemoveComment && currentUser && (currentUser.role === 'supervisor' || currentUser.id === c.author_id);
+              return (
+                <div className="cmt" key={c.id}>
+                  <div className="avatar av" style={{ background: avBg(c.author_id) }}>
+                    {c.author[0]}
                   </div>
-                  <div className="tx">{c.text}</div>
+                  <div className="cmt-bubble">
+                    <div className="top">
+                      <span className="au">{c.author}</span>
+                      <span className="tm ar-num">{c.time}</span>
+                      {canDelete ? (
+                        <button
+                          className="x"
+                          style={{ marginInlineStart: 'auto', fontSize: 15, color: 'var(--muted)' }}
+                          title="حذف التعليق"
+                          onClick={() => {
+                            if (window.confirm('حذف هذا التعليق؟')) onRemoveComment(task.id, c.id);
+                          }}
+                        >
+                          ×
+                        </button>
+                      ) : null}
+                    </div>
+                    <div className="tx">{c.text}</div>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="cmt-empty">لا توجد تعليقات بعد — أضيفي ملاحظة أو استفساراً</div>
           )}

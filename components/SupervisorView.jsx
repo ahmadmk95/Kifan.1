@@ -15,6 +15,7 @@ export default function SupervisorView({ user }) {
   const [taskModal, setTaskModal] = useState(false);
   const [commModal, setCommModal] = useState(false);
   const [night, setNight] = useState(null);
+  const [nights, setNights] = useState([]);
   const [committees, setCommittees] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -23,8 +24,9 @@ export default function SupervisorView({ user }) {
   const [loading, setLoading] = useState(true);
 
   const loadAll = useCallback(async () => {
-    const { night: n } = await api.activeNight();
+    const [{ night: n }, { nights: allNights }] = await Promise.all([api.activeNight(), api.nights()]);
     setNight(n);
+    setNights(allNights);
     const [{ committees: c }, { tasks: t }, { requests: r }, ov, { comments: cm }] = await Promise.all([
       api.committees(),
       api.allTasks(n.id),
@@ -43,6 +45,24 @@ export default function SupervisorView({ user }) {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  const selectNight = async (n) => {
+    if (night && n.id === night.id) return;
+    await api.setActiveNight(n.id);
+    await loadAll();
+  };
+
+  const removeTask = async (id) => {
+    await api.removeTask(id);
+    await refreshTasksAndOverview();
+  };
+
+  const removeComment = async (taskId, commentId) => {
+    await api.removeComment(taskId, commentId);
+    setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, comments: (t.comments || []).filter((c) => c.id !== commentId) } : t)));
+    const { comments: cm } = await api.comments(night.id);
+    setComments(cm);
+  };
 
   const refreshTasksAndOverview = async () => {
     if (!night) return;
@@ -117,7 +137,7 @@ export default function SupervisorView({ user }) {
 
   return (
     <div className="main">
-      <DateRow night={night} />
+      <DateRow night={night} nights={nights} onSelect={selectNight} />
       <div className="greet">
         <h2>لوحة المتابعة — {user.name.split(' ')[0]}</h2>
         <p>
@@ -216,8 +236,11 @@ export default function SupervisorView({ user }) {
                   task={t}
                   committee={g.committee}
                   assignee={servants.find((s) => s.id === t.assignee_id) || { name: '' }}
+                  currentUser={user}
                   onToggle={toggle}
                   onComment={comment}
+                  onRemoveComment={removeComment}
+                  onRemoveTask={removeTask}
                   showAssignee
                 />
               ))}

@@ -2,10 +2,7 @@
 
 import { toAr } from '@/lib/palette';
 
-const NIGHTS = Array.from({ length: 10 }, (_, i) => ({ n: i + 1 }));
-const ACTIVE_NIGHT = 3;
-
-export default function DateRow({ night }) {
+export default function DateRow({ night, nights, onSelect }) {
   return (
     <div className="daterow">
       <div className="date-card">
@@ -13,13 +10,21 @@ export default function DateRow({ night }) {
         <div className="gr ar-num">{night ? night.greg : 'الموافق ١٨ يونيو ٢٠٢٦'}</div>
       </div>
       <div className="nights">
-        {NIGHTS.map((n) => {
-          const cls = n.n === ACTIVE_NIGHT ? 'active' : n.n < ACTIVE_NIGHT ? 'done' : '';
+        {(nights || []).map((n) => {
+          const isActive = night && n.id === night.id;
+          const cls = isActive ? 'active' : n.number < (night ? night.number : 0) ? 'done' : '';
+          const clickable = !!onSelect;
           return (
-            <div key={n.n} className={'night ' + cls}>
-              <span className="nn ar-num">{n.n === 10 ? '★' : toAr(n.n)}</span>
-              {n.n === 10 ? 'عاشوراء' : 'محرم'}
-            </div>
+            <button
+              key={n.id}
+              type="button"
+              className={'night ' + cls}
+              onClick={clickable ? () => onSelect(n) : undefined}
+              style={clickable ? { cursor: 'pointer' } : undefined}
+            >
+              <span className="nn ar-num">{n.number === 10 ? '★' : toAr(n.number)}</span>
+              {n.number === 10 ? 'عاشوراء' : 'محرم'}
+            </button>
           );
         })}
       </div>

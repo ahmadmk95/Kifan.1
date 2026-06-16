@@ -9,13 +9,15 @@ import { api } from '@/lib/api';
 
 export default function MemberView({ user }) {
   const [night, setNight] = useState(null);
+  const [nights, setNights] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [committees, setCommittees] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const { night: n } = await api.activeNight();
+    const [{ night: n }, { nights: allNights }] = await Promise.all([api.activeNight(), api.nights()]);
     setNight(n);
+    setNights(allNights);
     const [{ tasks: t }, { committees: c }] = await Promise.all([api.myTasks(n.id), api.committees()]);
     setTasks(t);
     setCommittees(c);
@@ -40,6 +42,11 @@ export default function MemberView({ user }) {
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, comments: [...(t.comments || []), c] } : t)));
   };
 
+  const removeComment = async (taskId, commentId) => {
+    await api.removeComment(taskId, commentId);
+    setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, comments: (t.comments || []).filter((c) => c.id !== commentId) } : t)));
+  };
+
   if (loading) return <div className="main"></div>;
 
   const done = tasks.filter((t) => t.done).length;
@@ -50,7 +57,7 @@ export default function MemberView({ user }) {
 
   return (
     <div className="main">
-      <DateRow night={night} />
+      <DateRow night={night} nights={nights} />
       <div className="greet">
         <h2>السلام عليكِ، {user.name.split(' ')[0]} 🤍</h2>
         <p>{user.title} — وفّقكِ الله في خدمة عزاء الحسين عليه السلام</p>
@@ -83,7 +90,15 @@ export default function MemberView({ user }) {
           <div key={g.committee.id}>
             <CommHead committee={g.committee} items={g.items} />
             {g.items.map((t) => (
-              <TaskCard key={t.id} task={t} committee={commById(t.committee_id)} onToggle={toggle} onComment={comment} />
+              <TaskCard
+                key={t.id}
+                task={t}
+                committee={commById(t.committee_id)}
+                currentUser={user}
+                onToggle={toggle}
+                onComment={comment}
+                onRemoveComment={removeComment}
+              />
             ))}
           </div>
         ))
