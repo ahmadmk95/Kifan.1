@@ -141,8 +141,9 @@ export default function SupervisorView({ user }) {
   const activate = async (userId, committeeId) => {
     await api.activateRequest(userId, committeeId);
     setRequests((rs) => rs.filter((r) => r.id !== userId));
-    const ov = await api.overview(night.id);
+    const [ov, { users: u }] = await Promise.all([api.overview(night.id), api.users()]);
     setOverview(ov);
+    setAllUsers(u);
   };
 
   const reject = async (userId) => {
@@ -209,7 +210,7 @@ export default function SupervisorView({ user }) {
   }, []);
 
   useEffect(() => {
-    if (tab === 'users' && isAdmin) loadUsers();
+    if ((tab === 'users' || tab === 'committees') && isAdmin) loadUsers();
   }, [tab, isAdmin, loadUsers]);
 
   const submitNewUser = async () => {
