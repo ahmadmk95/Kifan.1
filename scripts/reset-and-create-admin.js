@@ -69,14 +69,15 @@ try {
 // full wipe of all data
 db.exec('DELETE FROM comments; DELETE FROM tasks; DELETE FROM nights; DELETE FROM users; DELETE FROM committees;');
 
-// recreate the 10 Muharram nights, night 1 active by default
+// recreate the 10 Muharram nights, night 3 active by default (matches scripts/seed.js convention)
 const arDigits = { 0: '٠', 1: '١', 2: '٢', 3: '٣', 4: '٤', 5: '٥', 6: '٦', 7: '٧', 8: '٨', 9: '٩' };
 const toAr = (v) => String(v).replace(/[0-9]/g, (d) => arDigits[d]);
 
+const ACTIVE_NIGHT_NUMBER = 3;
 const insertNight = db.prepare('INSERT INTO nights (id, number, hijri, greg, date, active) VALUES (?, ?, ?, ?, ?, ?)');
 for (let n = 1; n <= 10; n++) {
   const hijri = n === 10 ? 'ليلة عاشوراء ١٤٤٨ هـ' : `ليلة ${toAr(n)} محرم ١٤٤٨ هـ`;
-  insertNight.run('night-' + n, n, hijri, 'الموافق ١٨ يونيو ٢٠٢٦', '2026-06-18', n === 1 ? 1 : 0);
+  insertNight.run('night-' + n, n, hijri, 'الموافق ١٨ يونيو ٢٠٢٦', '2026-06-18', n === ACTIVE_NIGHT_NUMBER ? 1 : 0);
 }
 
 // create the one real supervisor account
@@ -88,4 +89,4 @@ db.prepare(
 
 console.log('Reset complete. All demo data wiped.');
 console.log('Created supervisor account: BTAlameer (password set as provided)');
-console.log('Committees and tasks are empty — create them from the supervisor dashboard.');
+console.log('Committees and tasks are empty - create them from the supervisor dashboard.');
