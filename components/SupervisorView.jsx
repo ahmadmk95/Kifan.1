@@ -70,8 +70,22 @@ export default function SupervisorView({ user }) {
 
   const selectNight = async (n) => {
     if (night && n.id === night.id) return;
-    await api.setActiveNight(n.id);
-    await loadAll();
+    if (isAdmin) {
+      await api.setActiveNight(n.id);
+      await loadAll();
+      return;
+    }
+    setNight(n);
+    const [{ committees: c }, { tasks: t }, ov, { comments: cm }] = await Promise.all([
+      api.committees(),
+      api.allTasks(n.id),
+      api.overview(n.id),
+      api.comments(n.id),
+    ]);
+    setCommittees(c);
+    setTasks(t);
+    setOverview(ov);
+    setComments(cm);
   };
 
   const removeTask = async (id) => {
