@@ -44,20 +44,23 @@ export default function SupervisorView({ user }) {
     const [{ night: n }, { nights: allNights }] = await Promise.all([api.activeNight(), api.nights()]);
     setNight(n);
     setNights(allNights);
-    const [{ committees: c }, { tasks: t }, { requests: r }, ov, { comments: cm }] = await Promise.all([
+    const [{ committees: c }, { tasks: t }, ov, { comments: cm }] = await Promise.all([
       api.committees(),
       api.allTasks(n.id),
-      api.requests(),
       api.overview(n.id),
       api.comments(n.id),
     ]);
     setCommittees(c);
     setTasks(t);
-    setRequests(r);
     setOverview(ov);
     setComments(cm);
+    if (isAdmin) {
+      const [{ requests: r }, { users: u }] = await Promise.all([api.requests(), api.users()]);
+      setRequests(r);
+      setAllUsers(u);
+    }
     setLoading(false);
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     loadAll();
@@ -229,6 +232,12 @@ export default function SupervisorView({ user }) {
     await refreshTasksAndOverview();
   };
 
+  const updateUser = async (id, payload) => {
+    await api.updateUser(id, payload);
+    await loadUsers();
+    await loadAll();
+  };
+
   const resetUserPassword = async (id) => {
     const pw = window.prompt('كلمة المرور الجديدة (٤ أحرف على الأقل):');
     if (!pw) return;
@@ -387,7 +396,9 @@ export default function SupervisorView({ user }) {
           {committees.map((c) => {
             const memCount = servants.filter((s) => s.committee_id === c.id).length;
             const taskCount = tasks.filter((t) => t.committee_id === c.id).length;
-            const members = servants.filter((s) => s.committee_id === c.id);
+            const members = allUsers.filter(
+              (u) => u.committee_id === c.id && (u.role === 'servant' || u.role === 'committee_supervisor')
+            );
             return (
               <div className="comm-card" key={c.id} style={{ flexWrap: 'wrap' }}>
                 <span className="comm-swatch" style={{ background: c.color }}></span>
@@ -642,7 +653,45 @@ export default function SupervisorView({ user }) {
                     ) : null}
                   </div>
                 </div>
-                <div className="acts" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className="acts" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  {u.id !== user.id ? (
+                    <select
+                      value={u.role === 'committee_supervisor' ? 'servant' : u.role}
+                      onChange={(e) => updateUser(u.id, { role: e.target.value })}
+                      style={{
+                        border: '1px solid var(--line)',
+                        borderRadius: 9,
+                        padding: '7px 9px',
+                        fontFamily: 'inherit',
+                        fontSize: 12.5,
+                        background: '#FCFAF5',
+                      }}
+                    >
+                      <option value="servant">خادمة</option>
+                      <option value="supervisor">مشرفة عامة</option>
+                    </select>
+                  ) : null}
+                  {u.id !== user.id && u.role !== 'supervisor' ? (
+                    <select
+                      value={u.committee_id || ''}
+                      onChange={(e) => updateUser(u.id, { committee_id: e.target.value })}
+                      style={{
+                        border: '1px solid var(--line)',
+                        borderRadius: 9,
+                        padding: '7px 9px',
+                        fontFamily: 'inherit',
+                        fontSize: 12.5,
+                        background: '#FCFAF5',
+                      }}
+                    >
+                      <option value="">بدون لجنة</option>
+                      {committees.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
                   <button className="icon-btn" title="إعادة تعيين كلمة المرور" onClick={() => resetUserPassword(u.id)}>
                     🔑
                   </button>
