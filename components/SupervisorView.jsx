@@ -6,6 +6,7 @@ import TaskCard, { groupByCommittee, CommHead } from './TaskCard';
 import { ProgressRing, Avatar, Icon } from './Shared';
 import AddTaskModal from './AddTaskModal';
 import AddCommitteeModal from './AddCommitteeModal';
+import CommitteeDetailModal from './CommitteeDetailModal';
 import RequestCard from './RequestCard';
 import { toAr, avBg } from '@/lib/palette';
 import { api } from '@/lib/api';
@@ -15,6 +16,7 @@ export default function SupervisorView({ user }) {
   const [tab, setTab] = useState('overview');
   const [taskModal, setTaskModal] = useState(false);
   const [commModal, setCommModal] = useState(false);
+  const [detailCommittee, setDetailCommittee] = useState(null);
   const [night, setNight] = useState(null);
   const [nights, setNights] = useState([]);
   const [committees, setCommittees] = useState([]);
@@ -402,13 +404,13 @@ export default function SupervisorView({ user }) {
             return (
               <div className="comm-card" key={c.id} style={{ flexWrap: 'wrap' }}>
                 <span className="comm-swatch" style={{ background: c.color }}></span>
-                <div>
+                <div style={{ cursor: 'pointer', flex: 1 }} onClick={() => setDetailCommittee(c)}>
                   <div className="nm">{c.name}</div>
                   <div className="meta ar-num">
                     {toAr(memCount)} خادمات · {toAr(taskCount)} مهام
                   </div>
                 </div>
-                <div className="acts" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className="acts" style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
                   <select
                     value={c.supervisor_id || ''}
                     onChange={(e) => setSupervisor(c.id, e.target.value)}
@@ -719,6 +721,20 @@ export default function SupervisorView({ user }) {
         />
       ) : null}
       {commModal ? <AddCommitteeModal committees={committees} onClose={() => setCommModal(false)} onAdd={addCommittee} /> : null}
+      {detailCommittee ? (
+        <CommitteeDetailModal
+          committee={committees.find((c) => c.id === detailCommittee.id) || detailCommittee}
+          members={allUsers.filter(
+            (u) => u.committee_id === detailCommittee.id && (u.role === 'servant' || u.role === 'committee_supervisor')
+          )}
+          tasks={tasks.filter((t) => t.committee_id === detailCommittee.id)}
+          currentUser={user}
+          onClose={() => setDetailCommittee(null)}
+          onToggle={toggle}
+          onComment={comment}
+          onRemoveComment={removeComment}
+        />
+      ) : null}
     </div>
   );
 }
