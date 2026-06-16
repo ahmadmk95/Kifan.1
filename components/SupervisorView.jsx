@@ -35,6 +35,11 @@ export default function SupervisorView({ user }) {
   const [spotNote, setSpotNote] = useState('');
   const [spotBusy, setSpotBusy] = useState(false);
 
+  const [allUsers, setAllUsers] = useState([]);
+  const [userForm, setUserForm] = useState({ name: '', username: '', password: '', role: 'servant', committee_id: '' });
+  const [userBusy, setUserBusy] = useState(false);
+  const [userErr, setUserErr] = useState('');
+
   const loadAll = useCallback(async () => {
     const [{ night: n }, { nights: allNights }] = await Promise.all([api.activeNight(), api.nights()]);
     setNight(n);
@@ -193,6 +198,48 @@ export default function SupervisorView({ user }) {
     }
   };
 
+  const loadUsers = useCallback(async () => {
+    const { users: u } = await api.users();
+    setAllUsers(u);
+  }, []);
+
+  useEffect(() => {
+    if (tab === 'users' && isAdmin) loadUsers();
+  }, [tab, isAdmin, loadUsers]);
+
+  const submitNewUser = async () => {
+    if (userBusy) return;
+    setUserBusy(true);
+    setUserErr('');
+    try {
+      await api.addUser(userForm);
+      setUserForm({ name: '', username: '', password: '', role: 'servant', committee_id: '' });
+      await loadUsers();
+    } catch (e) {
+      setUserErr(e.message || 'حدث خطأ');
+    } finally {
+      setUserBusy(false);
+    }
+  };
+
+  const deleteUser = async (id, name) => {
+    if (!window.confirm('حذف المستخدمة «' + name + '»؟ سيُحذف كل ما يخصها من مهام وتعليقات.')) return;
+    await api.removeUser(id);
+    await loadUsers();
+    await refreshTasksAndOverview();
+  };
+
+  const resetUserPassword = async (id) => {
+    const pw = window.prompt('كلمة المرور الجديدة (٤ أحرف على الأقل):');
+    if (!pw) return;
+    try {
+      await api.resetPassword(id, pw);
+      window.alert('تم تحديث كلمة المرور');
+    } catch (e) {
+      window.alert(e.message || 'حدث خطأ');
+    }
+  };
+
   if (loading || !night) return <div className="main"></div>;
 
   const servants = overview ? overview.members : [];
@@ -237,6 +284,11 @@ export default function SupervisorView({ user }) {
           {isAdmin ? (
             <button className={'tab' + (tab === 'spotlight' ? ' active' : '')} onClick={() => setTab('spotlight')}>
               خادمة اليوم
+            </button>
+          ) : null}
+          {isAdmin ? (
+            <button className={'tab' + (tab === 'users' ? ' active' : '')} onClick={() => setTab('users')}>
+              إدارة المستخدمين
             </button>
           ) : null}
         </div>
@@ -514,6 +566,97 @@ export default function SupervisorView({ user }) {
               {spotlight.note ? <div className="rc-comment">{spotlight.note}</div> : null}
             </div>
           ) : null}
+        </div>
+      ) : null}
+
+      {tab === 'users' ? (
+        <div style={{ maxWidth: 700 }}>
+          <div className="rate-form">
+            <div className="rf-row">
+              <input
+                placeholder="الاسم الكامل"
+                value={userForm.name}
+                onChange={(e) => setUserForm((f) => ({ ...f, name: e.target.value }))}
+                style={{ flex: 1, minWidth: 150 }}
+              />
+              <input
+                placeholder="اسم المستخدم"
+                value={userForm.username}
+                onChange={(e) => setUserForm((f) => ({ ...f, username: e.target.value }))}
+                style={{ flex: 1, minWidth: 130 }}
+              />
+            </div>
+            <div className="rf-row">
+              <input
+                placeholder="كلمة المرور"
+                value={userForm.password}
+                onChange={(e) => setUserForm((f) => ({ ...f, password: e.target.value }))}
+                style={{ flex: 1, minWidth: 130 }}
+              />
+              <select
+                value={userForm.role}
+                onChange={(e) => setUserForm((f) => ({ ...f, role: e.target.value, committee_id: '' }))}
+              >
+                <option value="servant">خادمة</option>
+                <option value="supervisor">مشرفة عامة</option>
+              </select>
+              {userForm.role === 'servant' ? (
+                <select
+                  value={userForm.committee_id}
+                  onChange={(e) => setUserForm((f) => ({ ...f, committee_id: e.target.value }))}
+                >
+                  <option value="">بدون لجنة</option>
+                  {committees.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+            </div>
+            {userErr ? <div style={{ color: 'var(--crimson)', fontSize: 12.5 }}>{userErr}</div> : null}
+            <button
+              className="add-btn"
+              onClick={submitNewUser}
+              disabled={!userForm.name.trim() || !userForm.username.trim() || !userForm.password.trim() || userBusy}
+              style={{ alignSelf: 'flex-end' }}
+            >
+              إضافة مستخدمة
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {allUsers.map((u) => (
+              <div className="comm-card" key={u.id} style={{ flexWrap: 'wrap' }}>
+                <div className="avatar av" style={{ background: avBg(u.id) }}>
+                  {u.name[0]}
+                </div>
+                <div>
+                  <div className="nm">{u.name}</div>
+                  <div className="meta">
+                    @{u.username} · {u.title || (u.role === 'supervisor' ? 'مشرفة عامة' : 'بلا لجنة')}
+                    {u.status === 'pending' ? (
+                      <span className="status-pill pending" style={{ marginInlineStart: 6 }}>
+                        معلّقة
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="acts" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button className="icon-btn" title="إعادة تعيين كلمة المرور" onClick={() => resetUserPassword(u.id)}>
+                    🔑
+                  </button>
+                  {u.id !== user.id ? (
+                    <button className="icon-btn" title="حذف المستخدمة" onClick={() => deleteUser(u.id, u.name)}>
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
+                      </svg>
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
 

@@ -34,6 +34,13 @@ export default function MemberView({ user }) {
     load();
   }, [load]);
 
+  const selectNight = async (n) => {
+    if (night && n.id === night.id) return;
+    setNight(n);
+    const { tasks: t } = await api.myTasks(n.id);
+    setTasks(t);
+  };
+
   const toggle = async (id, done) => {
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done } : t)));
     try {
@@ -60,13 +67,20 @@ export default function MemberView({ user }) {
   const pct = total ? (done / total) * 100 : 0;
   const groups = groupByCommittee(tasks, committees);
   const commById = (id) => committees.find((c) => c.id === id);
+  const myCommittee = committees.find((c) => c.id === user.committee_id);
 
   return (
     <div className="main">
-      <DateRow night={night} nights={nights} />
+      <DateRow night={night} nights={nights} onSelect={selectNight} />
       <div className="greet">
         <h2>السلام عليكِ، {user.name.split(' ')[0]} 🤍</h2>
         <p>{user.title} — وفّقكِ الله في خدمة عزاء الحسين عليه السلام</p>
+        {myCommittee ? (
+          <p style={{ marginTop: 4, fontWeight: 600, color: 'var(--maroon-2)' }}>
+            <span className="cat-dot" style={{ background: myCommittee.color, display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginInlineEnd: 6 }}></span>
+            لجنة {myCommittee.name}
+          </p>
+        ) : null}
       </div>
 
       <div className="summary">

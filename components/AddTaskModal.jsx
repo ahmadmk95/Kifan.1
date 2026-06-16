@@ -38,7 +38,7 @@ export default function AddTaskModal({ committees, servants, nightId, onClose, o
         <div className="modal-body">
           <div className="field">
             <label>عنوان المهمة</label>
-            <input value={f.title} onChange={(e) => set('title', e.target.value)} placeholder="مثال: تجهيز قسم النذور" autoFocus />
+            <input value={f.title} onChange={(e) => set('title', e.target.value)} placeholder="مثال: تجهيز قسم الاستقبال" autoFocus />
           </div>
           <div className="field-row">
             <div className="field">
