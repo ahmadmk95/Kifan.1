@@ -18,7 +18,8 @@ function serializeSpotlight(s, memberName) {
 export async function GET() {
   const row = db
     .prepare(
-      `SELECT s.*, u.name as member_name FROM spotlight s JOIN users u ON u.id = s.member_id ORDER BY s.created_at DESC LIMIT 1`
+      `SELECT s.*, u.name as member_name FROM spotlight s JOIN users u ON u.id = s.member_id
+       WHERE date(s.created_at) = date('now') ORDER BY s.created_at DESC LIMIT 1`
     )
     .get();
   return NextResponse.json({ spotlight: row ? serializeSpotlight(row, row.member_name) : null });
