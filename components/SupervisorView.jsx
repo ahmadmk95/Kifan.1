@@ -202,7 +202,11 @@ export default function SupervisorView({ user }) {
 
   useEffect(() => {
     if (tab === 'spotlight') {
-      api.spotlight().then(({ spotlight: s }) => setSpotlight(s));
+      api.spotlight().then(({ spotlight: s }) => {
+        setSpotlight(s);
+        setSpotMember(s ? s.member_id : '');
+        setSpotNote(s ? s.note : '');
+      });
     }
   }, [tab]);
 
@@ -210,8 +214,22 @@ export default function SupervisorView({ user }) {
     if (!spotMember || spotBusy) return;
     setSpotBusy(true);
     try {
-      const { spotlight: s } = await api.setSpotlight(spotMember, spotNote);
+      const { spotlight: s } = spotlight
+        ? await api.modifySpotlight(spotMember, spotNote)
+        : await api.setSpotlight(spotMember, spotNote);
       setSpotlight(s);
+    } finally {
+      setSpotBusy(false);
+    }
+  };
+
+  const cancelSpotlight = async () => {
+    if (spotBusy) return;
+    setSpotBusy(true);
+    try {
+      await api.cancelSpotlight();
+      setSpotlight(null);
+      setSpotMember('');
       setSpotNote('');
     } finally {
       setSpotBusy(false);
@@ -582,7 +600,7 @@ export default function SupervisorView({ user }) {
               onChange={(e) => setSpotNote(e.target.value)}
             />
             <button className="add-btn" onClick={submitSpotlight} disabled={!spotMember || spotBusy}>
-              نشر التكريم
+              {spotlight ? 'تعديل التكريم' : 'نشر التكريم'}
             </button>
           </div>
           {spotlight ? (
@@ -592,6 +610,9 @@ export default function SupervisorView({ user }) {
                 <span className="ar-num">{toAr(spotlight.cheer_count)} 🤍</span>
               </div>
               {spotlight.note ? <div className="rc-comment">{spotlight.note}</div> : null}
+              <button className="icon-btn" onClick={cancelSpotlight} disabled={spotBusy} style={{ marginTop: 8 }}>
+                🗑 إلغاء التكريم
+              </button>
             </div>
           ) : null}
         </div>

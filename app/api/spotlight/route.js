@@ -49,3 +49,51 @@ export async function POST(req) {
   const row = db.prepare('SELECT * FROM spotlight WHERE id = ?').get(id);
   return NextResponse.json({ spotlight: serializeSpotlight(row, target.name) });
 }
+
+export async function PATCH(req) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: 'غير مسجّل الدخول' }, { status: 401 });
+  if (user.role !== 'supervisor') return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
+
+  const body = await req.json().catch(() => ({}));
+  const memberId = body.memberId;
+  const note = (body.note || '').trim();
+  if (!memberId) return NextResponse.json({ error: 'العضوة مطلوبة' }, { status: 400 });
+
+  const target = db.prepare('SELECT * FROM users WHERE id = ?').get(memberId);
+  if (!target) return NextResponse.json({ error: 'غير موجود' }, { status: 404 });
+
+  const current = db
+    .prepare(`SELECT * FROM spotlight WHERE date(created_at) = date('now') ORDER BY created_at DESC LIMIT 1`)
+    .get();
+
+  if (!current) {
+    const id = crypto.randomUUID();
+    db.prepare('INSERT INTO spotlight (id, member_id, note, set_by, cheer_count) VALUES (?, ?, ?, ?, 0)').run(
+      id,
+      memberId,
+      note,
+      user.id
+    );
+    const row = db.prepare('SELECT * FROM spotlight WHERE id = ?').get(id);
+    return NextResponse.json({ spotlight: serializeSpotlight(row, target.name) });
+  }
+
+  db.prepare('UPDATE spotlight SET member_id = ?, note = ?, set_by = ? WHERE id = ?').run(
+    memberId,
+    note,
+    user.id,
+    current.id
+  );
+  const row = db.prepare('SELECT * FROM spotlight WHERE id = ?').get(current.id);
+  return NextResponse.json({ spotlight: serializeSpotlight(row, target.name) });
+}
+
+export async function DELETE() {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: 'غير مسجّل الدخول' }, { status: 401 });
+  if (user.role !== 'supervisor') return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
+
+  db.prepare(`DELETE FROM spotlight WHERE date(created_at) = date('now')`).run();
+  return NextResponse.json({ ok: true });
+}
