@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import db from '@/lib/db';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, canManageCommittee } from '@/lib/auth';
 import { serializeComment } from '@/lib/serialize';
 
 export async function POST(req, { params }) {
@@ -11,7 +11,7 @@ export async function POST(req, { params }) {
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(params.id);
   if (!task) return NextResponse.json({ error: 'غير موجود' }, { status: 404 });
 
-  if (user.role !== 'supervisor' && task.assignee_id !== user.id) {
+  if (task.assignee_id !== user.id && !canManageCommittee(user, task.committee_id)) {
     return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
   }
 

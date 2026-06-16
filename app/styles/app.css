@@ -297,3 +297,40 @@ body{-webkit-tap-highlight-color:transparent}
   .tb-meta{display:none}
   .greet h2{font-size:21px}
 }
+.spotlight-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--maroon) 0%,var(--maroon-2) 100%);
+  color:#fff;padding:11px 16px;box-shadow:var(--shadow-sm);position:relative;z-index:5}
+.spotlight-banner .sp-ic{font-size:20px;flex:none}
+.spotlight-banner .sp-body{flex:1;min-width:0}
+.spotlight-banner .sp-title{font-family:var(--font-d);font-size:14px;font-weight:600}
+.spotlight-banner .sp-title strong{color:var(--gold-soft)}
+.spotlight-banner .sp-note{font-size:12.5px;color:var(--gold-soft);opacity:.9;margin-top:2px}
+.spotlight-banner .sp-cheer{flex:none;background:rgba(255,255,255,.12);color:#fff;font-size:12.5px;font-weight:600;
+  padding:8px 13px;border-radius:20px;transition:.15s;white-space:nowrap}
+.spotlight-banner .sp-cheer:hover{background:rgba(255,255,255,.22)}
+.spotlight-banner .sp-cheer:disabled{opacity:.7;cursor:default}
+
+.ratings-list{display:flex;flex-direction:column;gap:10px}
+.rating-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;box-shadow:var(--shadow-sm)}
+.rating-card .rc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rating-card .rc-stars{color:var(--gold-deep);font-size:14px;letter-spacing:1px}
+.rating-card .rc-author{font-size:12px;color:var(--muted)}
+.rating-card .rc-comment{font-size:13.5px;color:var(--ink);margin-top:6px}
+.rating-card .rc-time{font-size:11.5px;color:var(--muted);margin-top:6px}
+
+.rate-form{display:flex;flex-direction:column;gap:9px;background:#FCFAF5;border:1px solid var(--line);border-radius:var(--r-md);
+  padding:12px;margin-bottom:12px}
+.rate-form .rf-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.rate-form select, .rate-form input, .rate-form textarea{border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+  font-family:inherit;font-size:13.5px;background:#fff;color:var(--ink);outline:none}
+.rate-form select:focus, .rate-form input:focus, .rate-form textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+.rate-form textarea{resize:vertical;min-height:60px}
+
+.spot-form{display:flex;flex-direction:column;gap:9px;background:#FCFAF5;border:1px solid var(--line);border-radius:var(--r-md);
+  padding:12px;max-width:520px}
+.spot-form select, .spot-form input{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:inherit;
+  font-size:13.5px;background:#fff;color:var(--ink);outline:none}
+
+@media (max-width:430px){
+  .spotlight-banner{flex-wrap:wrap}
+  .spotlight-banner .sp-cheer{margin-inline-start:auto}
+}

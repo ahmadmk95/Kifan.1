@@ -1,5 +1,6 @@
 import './styles/fonts.css';
 import './styles/app.css';
+import SpotlightBanner from '@/components/SpotlightBanner';
 
 export const metadata = {
   title: 'متابعة المهام — لجنة النساء · حسينية الأمير',
@@ -16,7 +17,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
-      <body>{children}</body>
+      <body>
+        <SpotlightBanner />
+        {children}
+      </body>
     </html>
   );
 }

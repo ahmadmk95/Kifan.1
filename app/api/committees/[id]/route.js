@@ -15,7 +15,9 @@ export async function DELETE(req, { params }) {
     const delComments = db.prepare('DELETE FROM comments WHERE task_id = ?');
     taskIds.forEach((tid) => delComments.run(tid));
     db.prepare('DELETE FROM tasks WHERE committee_id = ?').run(params.id);
-    db.prepare("UPDATE users SET committee_id = NULL, status = 'pending', title = '' WHERE committee_id = ?").run(params.id);
+    db.prepare(
+      "UPDATE users SET committee_id = NULL, status = 'pending', title = '', role = CASE WHEN role = 'committee_supervisor' THEN 'servant' ELSE role END WHERE committee_id = ?"
+    ).run(params.id);
     db.prepare('DELETE FROM committees WHERE id = ?').run(params.id);
   });
   txn();

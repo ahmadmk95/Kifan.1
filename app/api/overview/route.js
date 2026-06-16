@@ -1,18 +1,24 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isLead } from '@/lib/auth';
 
 export async function GET(req) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'غير مسجّل الدخول' }, { status: 401 });
-  if (user.role !== 'supervisor') return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
+  if (!isLead(user)) return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
 
   const { searchParams } = new URL(req.url);
   const nightId = searchParams.get('night');
   if (!nightId) return NextResponse.json({ error: 'night مطلوب' }, { status: 400 });
 
-  const servants = db.prepare("SELECT * FROM users WHERE role = 'servant' AND status = 'active'").all();
-  const tasks = db.prepare('SELECT * FROM tasks WHERE night_id = ?').all(nightId);
+  const servants =
+    user.role === 'supervisor'
+      ? db.prepare("SELECT * FROM users WHERE role = 'servant' AND status = 'active'").all()
+      : db.prepare("SELECT * FROM users WHERE role = 'servant' AND status = 'active' AND committee_id = ?").all(user.committee_id);
+  const tasks =
+    user.role === 'supervisor'
+      ? db.prepare('SELECT * FROM tasks WHERE night_id = ?').all(nightId)
+      : db.prepare('SELECT * FROM tasks WHERE night_id = ? AND committee_id = ?').all(nightId, user.committee_id);
 
   const members = servants.map((s) => {
     const mine = tasks.filter((t) => t.assignee_id === s.id);

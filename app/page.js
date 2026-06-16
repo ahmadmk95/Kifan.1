@@ -32,7 +32,11 @@ export default function Home() {
   return (
     <div className="app">
       <TopBar user={user} onLogout={logout} />
-      {user.role === 'supervisor' ? <SupervisorView user={user} /> : <MemberView user={user} />}
+      {user.role === 'supervisor' || user.role === 'committee_supervisor' ? (
+        <SupervisorView user={user} />
+      ) : (
+        <MemberView user={user} />
+      )}
       <div className="footer-dua">رحم الله من أحيا أمرنا</div>
     </div>
   );

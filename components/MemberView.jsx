@@ -12,15 +12,21 @@ export default function MemberView({ user }) {
   const [nights, setNights] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [committees, setCommittees] = useState([]);
+  const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     const [{ night: n }, { nights: allNights }] = await Promise.all([api.activeNight(), api.nights()]);
     setNight(n);
     setNights(allNights);
-    const [{ tasks: t }, { committees: c }] = await Promise.all([api.myTasks(n.id), api.committees()]);
+    const [{ tasks: t }, { committees: c }, { ratings: r }] = await Promise.all([
+      api.myTasks(n.id),
+      api.committees(),
+      api.ratings(),
+    ]);
     setTasks(t);
     setCommittees(c);
+    setRatings(r);
     setLoading(false);
   }, []);
 
@@ -105,6 +111,28 @@ export default function MemberView({ user }) {
       ) : (
         <div className="empty">
           <div className="ic">🕊️</div>لم تُسند إليكِ مهام بعد — ستظهر هنا فور إضافتها
+        </div>
+      )}
+
+      <div className="cat-head">
+        <h4>تقييمات وكلمات تشجيعية</h4>
+      </div>
+      {ratings.length ? (
+        <div className="ratings-list">
+          {ratings.map((r) => (
+            <div className="rating-card" key={r.id}>
+              <div className="rc-top">
+                <span className="rc-stars">{'★'.repeat(r.rating)}</span>
+                <span className="rc-author">{r.author}</span>
+              </div>
+              {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
+              <div className="rc-time ar-num">{r.time}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="empty">
+          <div className="ic">⭐</div>لا تقييمات بعد
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, canManageCommittee } from '@/lib/auth';
 
 export async function DELETE(req, { params }) {
   const user = await getCurrentUser();
@@ -9,7 +9,9 @@ export async function DELETE(req, { params }) {
   const comment = db.prepare('SELECT * FROM comments WHERE id = ? AND task_id = ?').get(params.commentId, params.id);
   if (!comment) return NextResponse.json({ error: 'غير موجود' }, { status: 404 });
 
-  if (user.role !== 'supervisor' && comment.author_id !== user.id) {
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(params.id);
+
+  if (comment.author_id !== user.id && !canManageCommittee(user, task?.committee_id)) {
     return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
   }
 

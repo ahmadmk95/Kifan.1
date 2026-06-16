@@ -11,6 +11,7 @@ import { toAr, avBg } from '@/lib/palette';
 import { api } from '@/lib/api';
 
 export default function SupervisorView({ user }) {
+  const isAdmin = user.role === 'supervisor';
   const [tab, setTab] = useState('overview');
   const [taskModal, setTaskModal] = useState(false);
   const [commModal, setCommModal] = useState(false);
@@ -22,6 +23,17 @@ export default function SupervisorView({ user }) {
   const [overview, setOverview] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [rateMember, setRateMember] = useState('');
+  const [rateValue, setRateValue] = useState('5');
+  const [rateComment, setRateComment] = useState('');
+  const [rateBusy, setRateBusy] = useState(false);
+  const [memberRatings, setMemberRatings] = useState([]);
+
+  const [spotlight, setSpotlight] = useState(null);
+  const [spotMember, setSpotMember] = useState('');
+  const [spotNote, setSpotNote] = useState('');
+  const [spotBusy, setSpotBusy] = useState(false);
 
   const loadAll = useCallback(async () => {
     const [{ night: n }, { nights: allNights }] = await Promise.all([api.activeNight(), api.nights()]);
@@ -128,6 +140,59 @@ export default function SupervisorView({ user }) {
     setRequests((rs) => rs.filter((r) => r.id !== userId));
   };
 
+  const setSupervisor = async (committeeId, userId) => {
+    await api.setCommitteeSupervisor(committeeId, userId || null);
+    await loadAll();
+  };
+
+  const loadMemberRatings = useCallback(async (memberId) => {
+    if (!memberId) {
+      setMemberRatings([]);
+      return;
+    }
+    const { ratings } = await api.ratings(memberId);
+    setMemberRatings(ratings);
+  }, []);
+
+  useEffect(() => {
+    if (tab === 'ratings') loadMemberRatings(rateMember);
+  }, [tab, rateMember, loadMemberRatings]);
+
+  const submitRating = async () => {
+    if (!rateMember || rateBusy) return;
+    setRateBusy(true);
+    try {
+      await api.addRating(rateMember, Number(rateValue), rateComment);
+      setRateComment('');
+      await loadMemberRatings(rateMember);
+    } finally {
+      setRateBusy(false);
+    }
+  };
+
+  const removeRating = async (id) => {
+    await api.removeRating(id);
+    await loadMemberRatings(rateMember);
+  };
+
+  useEffect(() => {
+    if (tab === 'spotlight') {
+      api.spotlight().then(({ spotlight: s }) => setSpotlight(s));
+    }
+  }, [tab]);
+
+  const submitSpotlight = async () => {
+    if (!spotMember || spotBusy) return;
+    setSpotBusy(true);
+    try {
+      const { spotlight: s } = await api.setSpotlight(spotMember, spotNote);
+      setSpotlight(s);
+      setSpotNote('');
+    } finally {
+      setSpotBusy(false);
+    }
+  };
+
   if (loading || !night) return <div className="main"></div>;
 
   const servants = overview ? overview.members : [];
@@ -153,15 +218,27 @@ export default function SupervisorView({ user }) {
           <button className={'tab' + (tab === 'tasks' ? ' active' : '')} onClick={() => setTab('tasks')}>
             المهام
           </button>
-          <button className={'tab' + (tab === 'committees' ? ' active' : '')} onClick={() => setTab('committees')}>
-            اللجان
-          </button>
-          <button className={'tab' + (tab === 'requests' ? ' active' : '')} onClick={() => setTab('requests')}>
-            الطلبات{requests.length ? <span className="badge-n ar-num">{toAr(requests.length)}</span> : null}
-          </button>
+          {isAdmin ? (
+            <button className={'tab' + (tab === 'committees' ? ' active' : '')} onClick={() => setTab('committees')}>
+              اللجان
+            </button>
+          ) : null}
+          {isAdmin ? (
+            <button className={'tab' + (tab === 'requests' ? ' active' : '')} onClick={() => setTab('requests')}>
+              الطلبات{requests.length ? <span className="badge-n ar-num">{toAr(requests.length)}</span> : null}
+            </button>
+          ) : null}
           <button className={'tab' + (tab === 'comments' ? ' active' : '')} onClick={() => setTab('comments')}>
             التعليقات
           </button>
+          <button className={'tab' + (tab === 'ratings' ? ' active' : '')} onClick={() => setTab('ratings')}>
+            التقييم
+          </button>
+          {isAdmin ? (
+            <button className={'tab' + (tab === 'spotlight' ? ' active' : '')} onClick={() => setTab('spotlight')}>
+              خادمة اليوم
+            </button>
+          ) : null}
         </div>
         {tab === 'tasks' ? (
           <button className="add-btn" onClick={() => setTaskModal(true)}>
@@ -258,8 +335,9 @@ export default function SupervisorView({ user }) {
           {committees.map((c) => {
             const memCount = servants.filter((s) => s.committee_id === c.id).length;
             const taskCount = tasks.filter((t) => t.committee_id === c.id).length;
+            const members = servants.filter((s) => s.committee_id === c.id);
             return (
-              <div className="comm-card" key={c.id}>
+              <div className="comm-card" key={c.id} style={{ flexWrap: 'wrap' }}>
                 <span className="comm-swatch" style={{ background: c.color }}></span>
                 <div>
                   <div className="nm">{c.name}</div>
@@ -267,7 +345,26 @@ export default function SupervisorView({ user }) {
                     {toAr(memCount)} خادمات · {toAr(taskCount)} مهام
                   </div>
                 </div>
-                <div className="acts">
+                <div className="acts" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <select
+                    value={c.supervisor_id || ''}
+                    onChange={(e) => setSupervisor(c.id, e.target.value)}
+                    style={{
+                      border: '1px solid var(--line)',
+                      borderRadius: 9,
+                      padding: '7px 9px',
+                      fontFamily: 'inherit',
+                      fontSize: 12.5,
+                      background: '#FCFAF5',
+                    }}
+                  >
+                    <option value="">بدون مشرفة لجنة</option>
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     className="icon-btn"
                     title="حذف اللجنة"
@@ -326,9 +423,103 @@ export default function SupervisorView({ user }) {
         )
       ) : null}
 
+      {tab === 'ratings' ? (
+        <div style={{ maxWidth: 640 }}>
+          <div className="rate-form">
+            <div className="rf-row">
+              <select value={rateMember} onChange={(e) => setRateMember(e.target.value)} style={{ flex: 1, minWidth: 160 }}>
+                <option value="">اختر الخادمة</option>
+                {servants.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <select value={rateValue} onChange={(e) => setRateValue(e.target.value)}>
+                {[5, 4, 3, 2, 1].map((n) => (
+                  <option key={n} value={n}>
+                    {'★'.repeat(n)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <textarea
+              placeholder="كلمة تشجيعية..."
+              value={rateComment}
+              onChange={(e) => setRateComment(e.target.value)}
+            />
+            <button className="add-btn" onClick={submitRating} disabled={!rateMember || rateBusy} style={{ alignSelf: 'flex-end' }}>
+              إضافة تقييم
+            </button>
+          </div>
+          {rateMember ? (
+            memberRatings.length ? (
+              <div className="ratings-list">
+                {memberRatings.map((r) => (
+                  <div className="rating-card" key={r.id}>
+                    <div className="rc-top">
+                      <span className="rc-stars">{'★'.repeat(r.rating)}</span>
+                      <span className="rc-author">{r.author}</span>
+                    </div>
+                    {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
+                    <div className="rc-time ar-num">{r.time}</div>
+                    {r.author_id === user.id || isAdmin ? (
+                      <button
+                        className="icon-btn"
+                        style={{ marginTop: 6 }}
+                        title="حذف"
+                        onClick={() => removeRating(r.id)}
+                      >
+                        حذف
+                      </button>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty">
+                <div className="ic">⭐</div>لا تقييمات لهذه الخادمة بعد
+              </div>
+            )
+          ) : null}
+        </div>
+      ) : null}
+
+      {tab === 'spotlight' ? (
+        <div style={{ maxWidth: 520 }}>
+          <div className="spot-form">
+            <select value={spotMember} onChange={(e) => setSpotMember(e.target.value)}>
+              <option value="">اختر خادمة اليوم</option>
+              {servants.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+            <input
+              placeholder="كلمة شكر وتقدير..."
+              value={spotNote}
+              onChange={(e) => setSpotNote(e.target.value)}
+            />
+            <button className="add-btn" onClick={submitSpotlight} disabled={!spotMember || spotBusy}>
+              نشر التكريم
+            </button>
+          </div>
+          {spotlight ? (
+            <div className="rating-card" style={{ marginTop: 12 }}>
+              <div className="rc-top">
+                <span className="rc-author">حالياً: {spotlight.member_name}</span>
+                <span className="ar-num">{toAr(spotlight.cheer_count)} 🤍</span>
+              </div>
+              {spotlight.note ? <div className="rc-comment">{spotlight.note}</div> : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       {taskModal ? (
         <AddTaskModal
-          committees={committees}
+          committees={isAdmin ? committees : committees.filter((c) => c.id === user.committee_id)}
           servants={servants.map((s) => ({ id: s.id, name: s.name, committee_id: s.committee_id }))}
           nightId={night.id}
           onClose={() => setTaskModal(false)}
