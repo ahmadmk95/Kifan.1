@@ -12,6 +12,8 @@ function serializeRating(r, authorName) {
     author: authorName,
     rating: r.rating,
     comment: r.comment,
+    seen_at: r.seen_at || null,
+    is_new: !r.seen_at,
     time: formatTime(r.created_at),
   };
 }
@@ -38,6 +40,18 @@ export async function GET(req) {
       `SELECT r.*, u.name as author_name FROM ratings r JOIN users u ON u.id = r.author_id WHERE r.member_id = ? ORDER BY r.created_at DESC`
     )
     .all(targetId);
+
+  // When a member fetches their own ratings, mark all unseen ones as seen now
+  if (targetId === user.id) {
+    const unseen = rows.filter((r) => !r.seen_at);
+    if (unseen.length) {
+      const markSeen = db.prepare(`UPDATE ratings SET seen_at = datetime('now') WHERE id = ?`);
+      const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+      db.transaction(() => unseen.forEach((r) => markSeen.run(r.id)))();
+      // reflect seen_at in the rows we're about to return
+      unseen.forEach((r) => { r.seen_at = now; });
+    }
+  }
 
   return NextResponse.json({ ratings: rows.map((r) => serializeRating(r, r.author_name)) });
 }

@@ -13,6 +13,7 @@ export default function MemberView({ user }) {
   const [tasks, setTasks] = useState([]);
   const [committees, setCommittees] = useState([]);
   const [ratings, setRatings] = useState([]);
+  const [newRatingsCount, setNewRatingsCount] = useState(user.unseen_ratings || 0);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -27,6 +28,7 @@ export default function MemberView({ user }) {
     setTasks(t);
     setCommittees(c);
     setRatings(r);
+    setNewRatingsCount(0); // fetching own ratings marks them seen server-side
     setLoading(false);
   }, []);
 
@@ -130,11 +132,20 @@ export default function MemberView({ user }) {
 
       <div className="cat-head">
         <h4>تقييمات وكلمات تشجيعية</h4>
+        {newRatingsCount > 0 ? (
+          <span className="notif-badge">{newRatingsCount}</span>
+        ) : null}
       </div>
+      {newRatingsCount > 0 ? (
+        <div className="notif-banner">
+          🔔 لديكِ {newRatingsCount === 1 ? 'تقييم جديد' : `${newRatingsCount} تقييمات جديدة`} من المشرفة
+        </div>
+      ) : null}
       {ratings.length ? (
         <div className="ratings-list">
           {ratings.map((r) => (
-            <div className="rating-card" key={r.id}>
+            <div className={`rating-card${r.is_new ? ' rating-new' : ''}`} key={r.id}>
+              {r.is_new ? <div className="new-tag">جديد ✨</div> : null}
               <div className="rc-top">
                 <span className="rc-stars">{'★'.repeat(r.rating)}</span>
                 <span className="rc-author">{r.author}</span>

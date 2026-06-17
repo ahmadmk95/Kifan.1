@@ -558,6 +558,9 @@ export default function SupervisorView({ user }) {
                     <div className="rc-top">
                       <span className="rc-stars">{'★'.repeat(r.rating)}</span>
                       <span className="rc-author">{r.author}</span>
+                      <span className={`seen-tag${r.seen_at ? ' seen-yes' : ' seen-no'}`}>
+                        {r.seen_at ? `رأته ✓` : 'لم تره بعد'}
+                      </span>
                     </div>
                     {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
                     <div className="rc-time ar-num">{r.time}</div>
