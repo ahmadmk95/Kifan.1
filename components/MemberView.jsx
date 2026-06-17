@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import DateRow from './DateRow';
 import TaskCard, { groupByCommittee, CommHead } from './TaskCard';
+import CommitteeChat from './CommitteeChat';
 import { ProgressRing } from './Shared';
 import { toAr } from '@/lib/palette';
 import { api } from '@/lib/api';
@@ -118,6 +119,27 @@ export default function MemberView({ user, view = 'tasks' }) {
           <div className="empty">
             <div className="ic">⭐</div>لا توجد تقييمات بعد
           </div>
+        )}
+      </div>
+    );
+  }
+
+  if (view === 'chat') {
+    const myCommitteeObj = committees.find((c) => c.id === user.committee_id);
+    return (
+      <div className="main chat-main">
+        <div className="chat-page-head">
+          {myCommitteeObj ? (
+            <>
+              <span className="cat-dot" style={{ background: myCommitteeObj.color, display: 'inline-block', width: 9, height: 9, borderRadius: '50%', marginInlineEnd: 6 }}></span>
+              <h2>دردشة لجنة {myCommitteeObj.name}</h2>
+            </>
+          ) : <h2>دردشة اللجنة 💬</h2>}
+        </div>
+        {myCommitteeObj ? (
+          <CommitteeChat committee={myCommitteeObj} currentUser={user} />
+        ) : (
+          <div className="empty"><div className="ic">💬</div>لا لجنة مُعيّنة لكِ بعد</div>
         )}
       </div>
     );

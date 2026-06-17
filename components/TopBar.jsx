@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Avatar } from './Shared';
 import ProfileModal from './ProfileModal';
 
-export default function TopBar({ user, onLogout, ratingsCount, onRatingsClick, onTasksClick, memberView }) {
+export default function TopBar({ user, onLogout, ratingsCount, onRatingsClick, chatCount, onChatClick, onTasksClick, memberView }) {
   const [showProfile, setShowProfile] = useState(false);
 
   return (
@@ -18,6 +18,21 @@ export default function TopBar({ user, onLogout, ratingsCount, onRatingsClick, o
           <div className="b">حسينية الأمير · كيفان</div>
         </div>
         <div className="tb-right">
+          {onChatClick ? (
+            <button
+              className={'tb-icon-btn' + (memberView === 'chat' ? ' tb-icon-active' : '')}
+              onClick={memberView === 'chat' ? onTasksClick : onChatClick}
+              title="دردشة اللجنة"
+              style={{ position: 'relative' }}
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill={memberView === 'chat' ? 'var(--gold-deep)' : 'none'} stroke={memberView === 'chat' ? 'var(--gold-deep)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              {chatCount > 0 && memberView !== 'chat' ? (
+                <span className="notif-badge" style={{ position: 'absolute', top: -4, insetInlineEnd: -4, minWidth: 16, height: 16, fontSize: 10, padding: '0 3px' }}>{chatCount}</span>
+              ) : null}
+            </button>
+          ) : null}
           {onRatingsClick ? (
             <button
               className={'tb-icon-btn' + (memberView === 'ratings' ? ' tb-icon-active' : '')}

@@ -8,11 +8,12 @@ import AddTaskModal from './AddTaskModal';
 import EditTaskModal from './EditTaskModal';
 import AddCommitteeModal from './AddCommitteeModal';
 import CommitteeDetailModal from './CommitteeDetailModal';
+import CommitteeChat from './CommitteeChat';
 import RequestCard from './RequestCard';
 import { toAr, avBg } from '@/lib/palette';
 import { api } from '@/lib/api';
 
-export default function SupervisorView({ user }) {
+export default function SupervisorView({ user, chatJump }) {
   const isAdmin = user.role === 'supervisor';
   const [tab, setTab] = useState('overview');
   const [taskModal, setTaskModal] = useState(false);
@@ -179,6 +180,7 @@ export default function SupervisorView({ user }) {
   };
 
   const [unseenComments, setUnseenComments] = useState(user.unseen_comments || 0);
+  const [chatCommittee, setChatCommittee] = useState(null);
 
   const [allRatings, setAllRatings] = useState([]);
 
@@ -195,6 +197,10 @@ export default function SupervisorView({ user }) {
     const { ratings } = await api.allRatings();
     setAllRatings(ratings);
   }, []);
+
+  useEffect(() => {
+    if (chatJump) setTab('chat');
+  }, [chatJump]);
 
   // Poll for new comments every 20s when not viewing comments tab
   useEffect(() => {
@@ -349,6 +355,9 @@ export default function SupervisorView({ user }) {
               الطلبات{requests.length ? <span className="badge-n ar-num">{toAr(requests.length)}</span> : null}
             </button>
           ) : null}
+          <button className={'tab' + (tab === 'chat' ? ' active' : '')} onClick={() => setTab('chat')}>
+            الدردشة
+          </button>
           <button className={'tab' + (tab === 'comments' ? ' active' : '')} onClick={() => { setTab('comments'); setUnseenComments(0); }}>
             التعليقات{unseenComments > 0 ? <span className="badge-n ar-num">{toAr(unseenComments)}</span> : null}
           </button>
@@ -570,6 +579,36 @@ export default function SupervisorView({ user }) {
             <div className="ic">✅</div>لا طلبات تسجيل معلّقة حالياً
           </div>
         )
+      ) : null}
+
+      {tab === 'chat' ? (
+        <div className="chat-admin-wrap">
+          <div className="chat-comm-list">
+            {committees.map((c) => (
+              <button
+                key={c.id}
+                className={'chat-comm-btn' + (chatCommittee?.id === c.id ? ' active' : '')}
+                onClick={() => setChatCommittee(c)}
+              >
+                <span className="cat-dot" style={{ background: c.color, display: 'inline-block', width: 8, height: 8, borderRadius: '50%', flexShrink: 0 }}></span>
+                {c.name}
+              </button>
+            ))}
+          </div>
+          <div className="chat-admin-panel">
+            {chatCommittee ? (
+              <>
+                <div className="chat-page-head" style={{ marginBottom: 8 }}>
+                  <span className="cat-dot" style={{ background: chatCommittee.color, display: 'inline-block', width: 9, height: 9, borderRadius: '50%', marginInlineEnd: 6 }}></span>
+                  <h2>لجنة {chatCommittee.name}</h2>
+                </div>
+                <CommitteeChat committee={chatCommittee} currentUser={user} />
+              </>
+            ) : (
+              <div className="empty"><div className="ic">💬</div>اختاري لجنة للبدء</div>
+            )}
+          </div>
+        </div>
       ) : null}
 
       {tab === 'comments' ? (
