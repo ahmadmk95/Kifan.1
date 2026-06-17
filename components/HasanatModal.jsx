@@ -8,10 +8,17 @@ const MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 export default function HasanatModal({ currentUser, onClose }) {
   const [members, setMembers] = useState([]);
+  const [totalDone, setTotalDone] = useState(0);
+  const [nightsDone, setNightsDone] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.hasanat().then(({ members: m }) => { setMembers(m); setLoading(false); });
+    api.hasanat().then(({ members: m, total_done, nights_done }) => {
+      setMembers(m);
+      setTotalDone(total_done);
+      setNightsDone(nights_done);
+      setLoading(false);
+    });
   }, []);
 
   const me = members.find((m) => m.is_me);
@@ -22,11 +29,29 @@ export default function HasanatModal({ currentUser, onClose }) {
     <div className="overlay" onClick={onClose}>
       <div className="modal hasanat-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h3>🌟 لوحة الحسنات</h3>
+          <h3>🌟 لوحة الحسنات — ليالي محرم العشر</h3>
           <button className="x" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
           <p className="hasanat-sub">كل مهمة تُنجزينها تُضيف حسنة — تنافسي في خدمة الحسين عليه السلام 💚</p>
+          {!loading ? (
+            <div className="hasanat-stats-bar">
+              <div className="hsb-item">
+                <span className="hsb-val ar-num">{toAr(totalDone)}</span>
+                <span className="hsb-lbl">مهمة منجزة</span>
+              </div>
+              <div className="hsb-sep"></div>
+              <div className="hsb-item">
+                <span className="hsb-val ar-num">{toAr(nightsDone)}</span>
+                <span className="hsb-lbl">ليالٍ من محرم</span>
+              </div>
+              <div className="hsb-sep"></div>
+              <div className="hsb-item">
+                <span className="hsb-val ar-num">{toAr(members.length)}</span>
+                <span className="hsb-lbl">خادمة</span>
+              </div>
+            </div>
+          ) : null}
 
           {loading ? (
             <div className="empty" style={{ padding: '30px 0' }}><div className="ic">⏳</div>جاري التحميل</div>

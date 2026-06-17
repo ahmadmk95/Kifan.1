@@ -16,7 +16,8 @@ export async function GET() {
     FROM users u
     LEFT JOIN (
       SELECT assignee_id AS uid, COUNT(*) AS n
-      FROM tasks WHERE done = 1 AND assignee_id IS NOT NULL
+      FROM tasks
+      WHERE done = 1 AND assignee_id IS NOT NULL
       GROUP BY assignee_id
     ) a ON a.uid = u.id
     LEFT JOIN (
@@ -31,6 +32,10 @@ export async function GET() {
   const committees = db.prepare('SELECT * FROM committees').all();
   const commById = Object.fromEntries(committees.map((c) => [c.id, c]));
 
+  // Total completed tasks across all 10 nights
+  const { total_done } = db.prepare(`SELECT COUNT(*) as total_done FROM tasks WHERE done = 1`).get();
+  const { nights_done } = db.prepare(`SELECT COUNT(DISTINCT night_id) as nights_done FROM tasks WHERE done = 1`).get();
+
   const members = rows.map((r, i) => ({
     id: r.id,
     name: r.name,
@@ -41,5 +46,5 @@ export async function GET() {
     is_me: r.id === user.id,
   }));
 
-  return NextResponse.json({ members });
+  return NextResponse.json({ members, total_done, nights_done });
 }

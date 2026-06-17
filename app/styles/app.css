@@ -287,6 +287,11 @@ body{-webkit-tap-highlight-color:transparent}
 .hasanat-modal{max-width:460px;max-height:88vh;display:flex;flex-direction:column}
 .hasanat-modal .modal-body{overflow-y:auto;flex:1}
 .hasanat-sub{font-size:12.5px;color:var(--muted);text-align:center;margin-bottom:18px;line-height:1.6}
+.hasanat-stats-bar{display:flex;align-items:center;justify-content:center;gap:0;background:var(--cream-2);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 16px;margin-bottom:16px}
+.hsb-item{display:flex;flex-direction:column;align-items:center;gap:1px;flex:1}
+.hsb-val{font-size:20px;font-weight:800;color:var(--maroon-2)}
+.hsb-lbl{font-size:11px;color:var(--muted)}
+.hsb-sep{width:1px;height:32px;background:var(--line);flex-shrink:0}
 .hasanat-me-banner{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#FFF8E1,#FFF3E0);border:1.5px solid var(--gold);border-radius:var(--r-md);padding:10px 14px;margin-bottom:16px}
 .hm-rank{font-size:18px;font-weight:800;color:var(--gold-deep);min-width:28px}
 .hm-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
