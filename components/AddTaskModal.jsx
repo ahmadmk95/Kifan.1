@@ -14,7 +14,7 @@ export default function AddTaskModal({ committees, servants, nightId, onClose, o
   const [busy, setBusy] = useState(false);
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
   const inComm = servants.filter((s) => s.committee_id === f.committee);
-  const valid = f.title.trim() && f.time.trim() && f.place.trim() && f.assignee;
+  const valid = f.title.trim() && f.time.trim() && f.place.trim();
 
   const submit = async () => {
     if (!valid || busy) return;
@@ -58,9 +58,9 @@ export default function AddTaskModal({ committees, servants, nightId, onClose, o
               </select>
             </div>
             <div className="field">
-              <label>الخادمة</label>
+              <label>الخادمة (اختياري)</label>
               <select value={f.assignee} onChange={(e) => set('assignee', e.target.value)}>
-                <option value="">اختاري…</option>
+                <option value="">— بدون تحديد —</option>
                 {inComm.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name}
@@ -69,11 +69,6 @@ export default function AddTaskModal({ committees, servants, nightId, onClose, o
               </select>
             </div>
           </div>
-          {!inComm.length ? (
-            <div style={{ fontSize: 12.5, color: 'var(--crimson)', marginTop: -6, marginBottom: 12 }}>
-              لا خادمات في هذه اللجنة بعد — فعّلي حساباً وأسنديه إليها
-            </div>
-          ) : null}
           <div className="field-row">
             <div className="field">
               <label>الوقت</label>
