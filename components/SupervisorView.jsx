@@ -170,6 +170,8 @@ export default function SupervisorView({ user }) {
     await loadAll();
   };
 
+  const [allRatings, setAllRatings] = useState([]);
+
   const loadMemberRatings = useCallback(async (memberId) => {
     if (!memberId) {
       setMemberRatings([]);
@@ -179,9 +181,17 @@ export default function SupervisorView({ user }) {
     setMemberRatings(ratings);
   }, []);
 
+  const loadAllRatings = useCallback(async () => {
+    const { ratings } = await api.allRatings();
+    setAllRatings(ratings);
+  }, []);
+
   useEffect(() => {
-    if (tab === 'ratings') loadMemberRatings(rateMember);
-  }, [tab, rateMember, loadMemberRatings]);
+    if (tab === 'ratings') {
+      loadAllRatings();
+      loadMemberRatings(rateMember);
+    }
+  }, [tab, rateMember, loadMemberRatings, loadAllRatings]);
 
   const submitRating = async () => {
     if (!rateMember || rateBusy) return;
@@ -189,7 +199,7 @@ export default function SupervisorView({ user }) {
     try {
       await api.addRating(rateMember, Number(rateValue), rateComment);
       setRateComment('');
-      await loadMemberRatings(rateMember);
+      await Promise.all([loadMemberRatings(rateMember), loadAllRatings()]);
     } finally {
       setRateBusy(false);
     }
@@ -197,7 +207,7 @@ export default function SupervisorView({ user }) {
 
   const removeRating = async (id) => {
     await api.removeRating(id);
-    await loadMemberRatings(rateMember);
+    await Promise.all([loadMemberRatings(rateMember), loadAllRatings()]);
   };
 
   useEffect(() => {
@@ -550,39 +560,36 @@ export default function SupervisorView({ user }) {
               إضافة تقييم
             </button>
           </div>
-          {rateMember ? (
-            memberRatings.length ? (
-              <div className="ratings-list">
-                {memberRatings.map((r) => (
-                  <div className="rating-card" key={r.id}>
-                    <div className="rc-top">
-                      <span className="rc-stars">{'★'.repeat(r.rating)}</span>
-                      <span className="rc-author">{r.author}</span>
-                      <span className={`seen-tag${r.seen_at ? ' seen-yes' : ' seen-no'}`}>
-                        {r.seen_at ? `رأته ✓` : 'لم تره بعد'}
-                      </span>
-                    </div>
-                    {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
-                    <div className="rc-time ar-num">{r.time}</div>
-                    {r.author_id === user.id || isAdmin ? (
-                      <button
-                        className="icon-btn"
-                        style={{ marginTop: 6 }}
-                        title="حذف"
-                        onClick={() => removeRating(r.id)}
-                      >
-                        حذف
-                      </button>
-                    ) : null}
+          <div className="cat-head" style={{ marginTop: 18 }}>
+            <h4>جميع التقييمات</h4>
+            <span className="count">{allRatings.length}</span>
+          </div>
+          {allRatings.length ? (
+            <div className="ratings-list">
+              {allRatings.map((r) => (
+                <div className="rating-card" key={r.id}>
+                  <div className="rc-top">
+                    <span className="rc-stars">{'★'.repeat(r.rating)}</span>
+                    <span className="rc-author" style={{ fontWeight: 700, color: 'var(--maroon-2)' }}>{r.member_name}</span>
+                    <span className={`seen-tag${r.seen_at ? ' seen-yes' : ' seen-no'}`}>
+                      {r.seen_at ? 'رأته ✓' : 'لم تره بعد'}
+                    </span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty">
-                <div className="ic">⭐</div>لا تقييمات لهذه الخادمة بعد
-              </div>
-            )
-          ) : null}
+                  {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
+                  <div className="rc-time ar-num">{r.time}</div>
+                  {r.author_id === user.id || isAdmin ? (
+                    <button className="icon-btn" style={{ marginTop: 6 }} onClick={() => removeRating(r.id)}>
+                      حذف
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty">
+              <div className="ic">⭐</div>لا تقييمات بعد
+            </div>
+          )}
         </div>
       ) : null}
 

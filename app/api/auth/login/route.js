@@ -17,5 +17,8 @@ export async function POST(req) {
   }
 
   await createSession(user.id);
-  return NextResponse.json({ user: publicUser(user) });
+  const { n: unseen_ratings } = db
+    .prepare(`SELECT COUNT(*) as n FROM ratings WHERE member_id = ? AND seen_at IS NULL`)
+    .get(user.id);
+  return NextResponse.json({ user: { ...publicUser(user), unseen_ratings } });
 }
