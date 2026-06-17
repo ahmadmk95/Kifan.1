@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { Avatar } from './Shared';
 import ProfileModal from './ProfileModal';
+import HasanatModal from './HasanatModal';
 
 export default function TopBar({ user, onLogout, ratingsCount, onRatingsClick, chatCount, onChatClick, onTasksClick, memberView }) {
   const [showProfile, setShowProfile] = useState(false);
+  const [showHasanat, setShowHasanat] = useState(false);
 
   return (
     <div className="topbar">
@@ -18,6 +20,15 @@ export default function TopBar({ user, onLogout, ratingsCount, onRatingsClick, c
           <div className="b">حسينية الأمير · كيفان</div>
         </div>
         <div className="tb-right">
+          <button
+            className="tb-icon-btn"
+            onClick={() => setShowHasanat(true)}
+            title="لوحة الحسنات"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </button>
           {onChatClick ? (
             <button
               className={'tb-icon-btn' + (memberView === 'chat' ? ' tb-icon-active' : '')}
@@ -66,6 +77,7 @@ export default function TopBar({ user, onLogout, ratingsCount, onRatingsClick, c
       </div>
       <div className="topbar-strip"></div>
       {showProfile ? <ProfileModal user={user} onClose={() => setShowProfile(false)} /> : null}
+      {showHasanat ? <HasanatModal currentUser={user} onClose={() => setShowHasanat(false)} /> : null}
     </div>
   );
 }
