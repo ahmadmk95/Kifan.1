@@ -297,7 +297,7 @@ export default function SupervisorView({ user }) {
   if (loading || !night) return <div className="main"></div>;
 
   const servants = overview ? overview.members : [];
-  const totals = overview ? overview.totals : { done: 0, total: 0, servants: 0, committees: committees.length };
+  const totals = overview ? overview.totals : { done: 0, total: 0, assigned: 0, unassigned: 0, servants: 0, committees: committees.length };
   const overall = totals.total ? (totals.done / totals.total) * 100 : 0;
   const commById = (id) => committees.find((c) => c.id === id);
 
@@ -376,6 +376,14 @@ export default function SupervisorView({ user }) {
               <div className="stat">
                 <div className="v r ar-num">{toAr(totals.total - totals.done)}</div>
                 <div className="l">متبقية</div>
+              </div>
+              <div className="stat">
+                <div className="v ar-num" style={{ color: 'var(--maroon-2)' }}>{toAr(totals.assigned)}</div>
+                <div className="l">مُسندة</div>
+              </div>
+              <div className="stat">
+                <div className="v ar-num" style={{ color: 'var(--gold-deep)' }}>{toAr(totals.unassigned)}</div>
+                <div className="l">بدون إسناد</div>
               </div>
             </div>
           </div>

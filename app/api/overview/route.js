@@ -35,10 +35,19 @@ export async function GET(req) {
   });
 
   const totalDone = tasks.filter((t) => t.done).length;
+  const totalAssigned = tasks.filter((t) => t.assignee_id).length;
+  const totalUnassigned = tasks.filter((t) => !t.assignee_id).length;
   const committeesCount = db.prepare('SELECT COUNT(*) as c FROM committees').get().c;
 
   return NextResponse.json({
     members,
-    totals: { done: totalDone, total: tasks.length, servants: servants.length, committees: committeesCount },
+    totals: {
+      done: totalDone,
+      total: tasks.length,
+      assigned: totalAssigned,
+      unassigned: totalUnassigned,
+      servants: servants.length,
+      committees: committeesCount,
+    },
   });
 }
