@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { CheckMark, Icon } from './Shared';
 import { avBg, toAr } from '@/lib/palette';
 
-export default function TaskCard({ task, committee, assignee, currentUser, onToggle, onComment, onRemoveComment, onRemoveTask, showAssignee }) {
+export default function TaskCard({ task, committee, assignee, currentUser, onToggle, onComment, onRemoveComment, onRemoveTask, showAssignee, hideCheck }) {
   const [open, setOpen] = useState(false);
   const [txt, setTxt] = useState('');
   const [busy, setBusy] = useState(false);
@@ -25,9 +25,11 @@ export default function TaskCard({ task, committee, assignee, currentUser, onTog
   return (
     <div className={'task' + (task.done ? ' done' : '')}>
       <div className="task-main">
-        <button className={'check' + (task.done ? ' on' : '')} onClick={() => onToggle(task.id, !task.done)} aria-label="إنجاز">
-          <CheckMark />
-        </button>
+        {!hideCheck && (
+          <button className={'check' + (task.done ? ' on' : '')} onClick={() => onToggle(task.id, !task.done)} aria-label="إنجاز">
+            <CheckMark />
+          </button>
+        )}
         <div className="task-body">
           <div className="task-title">{task.title}</div>
           <div className="task-meta">

@@ -27,16 +27,22 @@ export async function GET(req) {
   const completorsStmt = db.prepare(
     `SELECT u.id, u.name FROM task_completions tc JOIN users u ON u.id = tc.user_id WHERE tc.task_id = ? ORDER BY tc.created_at`
   );
+  const claimorsStmt = db.prepare(
+    `SELECT u.id, u.name FROM task_claims tc JOIN users u ON u.id = tc.user_id WHERE tc.task_id = ? ORDER BY tc.created_at`
+  );
 
   const serialize = (t) =>
     serializeTask(t, { comments: commentStmt.all(t.id).map((c) => serializeComment(c, c.author_name)) });
 
   const unassigned = unassignedRaw.map((t) => {
     const completors = completorsStmt.all(t.id);
+    const claimors = claimorsStmt.all(t.id);
     return {
       ...serializeTask(t, { comments: commentStmt.all(t.id).map((c) => serializeComment(c, c.author_name)) }),
       my_done: completors.some((c) => c.id === user.id),
       completors: completors.map((c) => c.name),
+      my_claimed: claimors.some((c) => c.id === user.id),
+      claimors: claimors.map((c) => c.name),
     };
   });
 

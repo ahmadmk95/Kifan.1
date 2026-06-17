@@ -47,11 +47,9 @@ export default function MemberView({ user }) {
 
   const toggle = async (id, done) => {
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done } : t)));
-    // for unassigned tasks, toggle my_done instead of done
     setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, my_done: done } : t)));
     try {
       await api.toggleTask(id, done);
-      // refresh unassigned list to update completors
       if (unassigned.some((t) => t.id === id)) {
         const { unassigned: u } = await api.myTasks(night.id);
         setUnassigned(u || []);
@@ -59,6 +57,17 @@ export default function MemberView({ user }) {
     } catch {
       setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !done } : t)));
       setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, my_done: !done } : t)));
+    }
+  };
+
+  const claim = async (id, val) => {
+    setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, my_claimed: val } : t)));
+    try {
+      await api.claimTask(id, val);
+      const { unassigned: u } = await api.myTasks(night.id);
+      setUnassigned(u || []);
+    } catch {
+      setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, my_claimed: !val } : t)));
     }
   };
 
@@ -155,10 +164,26 @@ export default function MemberView({ user }) {
                 onToggle={toggle}
                 onComment={comment}
                 onRemoveComment={removeComment}
+                hideCheck
               />
-              {t.completors && t.completors.length ? (
+              <div className="unassigned-actions">
+                <button
+                  className={`ua-btn${t.my_claimed ? ' ua-active' : ''}`}
+                  onClick={() => claim(t.id, !t.my_claimed)}
+                >
+                  {t.my_claimed ? '✓ مُسندة لي' : '＋ أسند لي'}
+                </button>
+                <button
+                  className={`ua-btn ua-done${t.my_done ? ' ua-active' : ''}`}
+                  onClick={() => toggle(t.id, !t.my_done)}
+                >
+                  {t.my_done ? '✓ أنجزتُها' : 'تم الإنجاز'}
+                </button>
+              </div>
+              {(t.claimors && t.claimors.length) || (t.completors && t.completors.length) ? (
                 <div className="completors-row">
-                  ✓ أنجزتها: {t.completors.join('، ')}
+                  {t.claimors && t.claimors.length ? <span>📌 تعمل عليها: {t.claimors.join('، ')}</span> : null}
+                  {t.completors && t.completors.length ? <span>✓ أنجزتها: {t.completors.join('، ')}</span> : null}
                 </div>
               ) : null}
             </div>
