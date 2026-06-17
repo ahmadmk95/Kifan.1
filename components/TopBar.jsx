@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Avatar } from './Shared';
 import ProfileModal from './ProfileModal';
 
-export default function TopBar({ user, onLogout }) {
+export default function TopBar({ user, onLogout, ratingsCount, onRatingsClick, onTasksClick, memberView }) {
   const [showProfile, setShowProfile] = useState(false);
 
   return (
@@ -18,6 +18,21 @@ export default function TopBar({ user, onLogout }) {
           <div className="b">حسينية الأمير · كيفان</div>
         </div>
         <div className="tb-right">
+          {onRatingsClick ? (
+            <button
+              className={'tb-icon-btn' + (memberView === 'ratings' ? ' tb-icon-active' : '')}
+              onClick={memberView === 'ratings' ? onTasksClick : onRatingsClick}
+              title="كلمات تشجيعية"
+              style={{ position: 'relative' }}
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill={memberView === 'ratings' ? 'var(--gold-deep)' : 'none'} stroke={memberView === 'ratings' ? 'var(--gold-deep)' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              {ratingsCount > 0 && memberView !== 'ratings' ? (
+                <span className="notif-badge" style={{ position: 'absolute', top: -4, insetInlineEnd: -4, minWidth: 16, height: 16, fontSize: 10, padding: '0 3px' }}>{ratingsCount}</span>
+              ) : null}
+            </button>
+          ) : null}
           <button
             className="tb-user"
             onClick={() => setShowProfile(true)}

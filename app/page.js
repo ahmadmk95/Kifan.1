@@ -26,16 +26,37 @@ export default function Home() {
     setUser(null);
   };
 
+  const [memberView, setMemberView] = useState('tasks');
+  const [ratingsCount, setRatingsCount] = useState(0);
+
+  useEffect(() => {
+    if (user) setRatingsCount(user.unseen_ratings || 0);
+  }, [user]);
+
+  const openRatings = () => {
+    setMemberView('ratings');
+    setRatingsCount(0);
+  };
+
   if (!checked) return null;
-  if (!user) return <AuthScreen onAuthed={setUser} />;
+  if (!user) return <AuthScreen onAuthed={(u) => { setUser(u); setRatingsCount(u.unseen_ratings || 0); }} />;
+
+  const isServant = user.role === 'servant';
 
   return (
     <div className="app">
-      <TopBar user={user} onLogout={logout} />
-      {user.role === 'supervisor' || user.role === 'committee_supervisor' ? (
+      <TopBar
+        user={user}
+        onLogout={logout}
+        ratingsCount={isServant ? ratingsCount : 0}
+        onRatingsClick={isServant ? openRatings : null}
+        onTasksClick={isServant ? () => setMemberView('tasks') : null}
+        memberView={isServant ? memberView : null}
+      />
+      {!isServant ? (
         <SupervisorView user={user} />
       ) : (
-        <MemberView user={user} />
+        <MemberView user={user} view={memberView} />
       )}
       <div className="footer-dua">رحم الله من أحيا أمرنا</div>
     </div>

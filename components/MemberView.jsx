@@ -7,7 +7,7 @@ import { ProgressRing } from './Shared';
 import { toAr } from '@/lib/palette';
 import { api } from '@/lib/api';
 
-export default function MemberView({ user }) {
+export default function MemberView({ user, view = 'tasks' }) {
   const [night, setNight] = useState(null);
   const [nights, setNights] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -83,6 +83,36 @@ export default function MemberView({ user }) {
 
   if (loading) return <div className="main"></div>;
 
+  if (view === 'ratings') {
+    return (
+      <div className="main">
+        <div className="ratings-page-head">
+          <h2>كلمات تشجيعية 🤍</h2>
+          <p style={{ color: 'var(--muted)', fontSize: 13 }}>التقييمات التي أرسلتها لكِ المشرفات</p>
+        </div>
+        {ratings.length ? (
+          <div className="ratings-list">
+            {ratings.map((r) => (
+              <div className={`rating-card${r.is_new ? ' rating-new' : ''}`} key={r.id}>
+                {r.is_new ? <div className="new-tag">جديد ✨</div> : null}
+                <div className="rc-top">
+                  <span className="rc-stars">{'★'.repeat(r.rating)}</span>
+                  <span className="rc-author">{r.author}</span>
+                </div>
+                {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
+                <div className="rc-time ar-num">{r.time}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty">
+            <div className="ic">⭐</div>لا توجد تقييمات بعد
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const done = tasks.filter((t) => t.done).length;
   const total = tasks.length;
   const pct = total ? (done / total) * 100 : 0;
@@ -129,27 +159,6 @@ export default function MemberView({ user }) {
         </div>
       </div>
 
-      {ratings.length || newRatingsCount > 0 ? (
-        <div className="ratings-pinned">
-          <div className="ratings-pinned-head">
-            <span>كلمات تشجيعية 🤍</span>
-            {newRatingsCount > 0 ? <span className="notif-badge">{newRatingsCount}</span> : null}
-          </div>
-          <div className="ratings-scroll">
-            {ratings.map((r) => (
-              <div className={`rating-card rc-compact${r.is_new ? ' rating-new' : ''}`} key={r.id}>
-                {r.is_new ? <div className="new-tag">جديد ✨</div> : null}
-                <div className="rc-top">
-                  <span className="rc-stars">{'★'.repeat(r.rating)}</span>
-                  <span className="rc-author">{r.author}</span>
-                </div>
-                {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
-                <div className="rc-time ar-num">{r.time}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
 
       {groups.length ? (
         groups.map((g) => (
