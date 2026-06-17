@@ -15,7 +15,7 @@ export async function GET(req) {
     .prepare('SELECT * FROM tasks WHERE night_id = ? AND assignee_id = ? ORDER BY time')
     .all(nightId, user.id);
 
-  const unassigned = user.committee_id
+  const unassignedRaw = user.committee_id
     ? db
         .prepare('SELECT * FROM tasks WHERE night_id = ? AND committee_id = ? AND assignee_id IS NULL ORDER BY time')
         .all(nightId, user.committee_id)
@@ -24,9 +24,21 @@ export async function GET(req) {
   const commentStmt = db.prepare(
     `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.author_id WHERE c.task_id = ? ORDER BY c.created_at`
   );
+  const completorsStmt = db.prepare(
+    `SELECT u.id, u.name FROM task_completions tc JOIN users u ON u.id = tc.user_id WHERE tc.task_id = ? ORDER BY tc.created_at`
+  );
 
   const serialize = (t) =>
     serializeTask(t, { comments: commentStmt.all(t.id).map((c) => serializeComment(c, c.author_name)) });
 
-  return NextResponse.json({ tasks: myTasks.map(serialize), unassigned: unassigned.map(serialize) });
+  const unassigned = unassignedRaw.map((t) => {
+    const completors = completorsStmt.all(t.id);
+    return {
+      ...serializeTask(t, { comments: commentStmt.all(t.id).map((c) => serializeComment(c, c.author_name)) }),
+      my_done: completors.some((c) => c.id === user.id),
+      completors: completors.map((c) => c.name),
+    };
+  });
+
+  return NextResponse.json({ tasks: myTasks.map(serialize), unassigned });
 }

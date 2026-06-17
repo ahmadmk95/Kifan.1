@@ -46,21 +46,19 @@ export default function MemberView({ user }) {
   };
 
   const toggle = async (id, done) => {
-    // optimistic update across both lists
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done } : t)));
-    setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, done } : t)));
+    // for unassigned tasks, toggle my_done instead of done
+    setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, my_done: done } : t)));
     try {
       await api.toggleTask(id, done);
-      // if this was an unassigned task and is now done, it gets auto-assigned — refresh both lists
-      const wasUnassigned = unassigned.some((t) => t.id === id);
-      if (wasUnassigned && done) {
-        const { tasks: t, unassigned: u } = await api.myTasks(night.id);
-        setTasks(t);
+      // refresh unassigned list to update completors
+      if (unassigned.some((t) => t.id === id)) {
+        const { unassigned: u } = await api.myTasks(night.id);
         setUnassigned(u || []);
       }
     } catch {
       setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !done } : t)));
-      setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, done: !done } : t)));
+      setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, my_done: !done } : t)));
     }
   };
 
@@ -149,15 +147,21 @@ export default function MemberView({ user }) {
             <span className="count">{unassigned.length}</span>
           </div>
           {unassigned.map((t) => (
-            <TaskCard
-              key={t.id}
-              task={t}
-              committee={commById(t.committee_id)}
-              currentUser={user}
-              onToggle={toggle}
-              onComment={comment}
-              onRemoveComment={removeComment}
-            />
+            <div key={t.id}>
+              <TaskCard
+                task={{ ...t, done: t.my_done }}
+                committee={commById(t.committee_id)}
+                currentUser={user}
+                onToggle={toggle}
+                onComment={comment}
+                onRemoveComment={removeComment}
+              />
+              {t.completors && t.completors.length ? (
+                <div className="completors-row">
+                  ✓ أنجزتها: {t.completors.join('، ')}
+                </div>
+              ) : null}
+            </div>
           ))}
         </>
       ) : null}
