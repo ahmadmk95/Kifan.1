@@ -4,7 +4,7 @@ import db from '@/lib/db';
 import { getCurrentUser, isLead } from '@/lib/auth';
 import { formatTime } from '@/lib/serialize';
 
-function serializeRating(r, authorName) {
+function serializeRating(r, authorName, isNew = false) {
   return {
     id: r.id,
     member_id: r.member_id,
@@ -13,7 +13,7 @@ function serializeRating(r, authorName) {
     rating: r.rating,
     comment: r.comment,
     seen_at: r.seen_at || null,
-    is_new: !r.seen_at,
+    is_new: isNew,
     time: formatTime(r.created_at),
   };
 }
@@ -68,17 +68,17 @@ export async function GET(req) {
 
   // When a member fetches their own ratings, mark all unseen ones as seen now
   if (targetId === user.id) {
-    const unseen = rows.filter((r) => !r.seen_at);
-    if (unseen.length) {
+    const unseenIds = new Set(rows.filter((r) => !r.seen_at).map((r) => r.id));
+    if (unseenIds.size) {
       const markSeen = db.prepare(`UPDATE ratings SET seen_at = datetime('now') WHERE id = ?`);
       const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-      db.transaction(() => unseen.forEach((r) => markSeen.run(r.id)))();
-      // reflect seen_at in the rows we're about to return
-      unseen.forEach((r) => { r.seen_at = now; });
+      db.transaction(() => rows.filter((r) => unseenIds.has(r.id)).forEach((r) => markSeen.run(r.id)))();
+      rows.forEach((r) => { if (unseenIds.has(r.id)) r.seen_at = now; });
     }
+    return NextResponse.json({ ratings: rows.map((r) => serializeRating(r, r.author_name, unseenIds.has(r.id))) });
   }
 
-  return NextResponse.json({ ratings: rows.map((r) => serializeRating(r, r.author_name)) });
+  return NextResponse.json({ ratings: rows.map((r) => serializeRating(r, r.author_name, false)) });
 }
 
 export async function POST(req) {

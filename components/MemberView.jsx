@@ -28,7 +28,6 @@ export default function MemberView({ user }) {
     setTasks(t);
     setCommittees(c);
     setRatings(r);
-    setNewRatingsCount(0); // fetching own ratings marks them seen server-side
     setLoading(false);
   }, []);
 
