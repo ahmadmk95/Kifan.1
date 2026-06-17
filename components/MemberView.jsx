@@ -90,6 +90,9 @@ export default function MemberView({ user }) {
   const commById = (id) => committees.find((c) => c.id === id);
   const myCommittee = committees.find((c) => c.id === user.committee_id);
 
+  const claimedByMe = unassigned.filter((t) => t.my_claimed);
+  const available = unassigned.filter((t) => !t.my_claimed);
+
   return (
     <div className="main">
       <DateRow night={night} nights={nights} onSelect={selectNight} />
@@ -149,13 +152,13 @@ export default function MemberView({ user }) {
         </div>
       )}
 
-      {unassigned.length ? (
+      {claimedByMe.length ? (
         <>
           <div className="cat-head" style={{ marginTop: 22 }}>
-            <h4>مهام لجنتكِ — متاحة للمساعدة</h4>
-            <span className="count">{unassigned.length}</span>
+            <h4>مهام أسندتها لنفسي</h4>
+            <span className="count">{claimedByMe.length}</span>
           </div>
-          {unassigned.map((t) => (
+          {claimedByMe.map((t) => (
             <div key={t.id}>
               <TaskCard
                 task={{ ...t, done: t.my_done }}
@@ -167,11 +170,46 @@ export default function MemberView({ user }) {
                 hideCheck
               />
               <div className="unassigned-actions">
+                <button className="ua-btn" onClick={() => claim(t.id, false)}>
+                  إلغاء الإسناد
+                </button>
                 <button
-                  className={`ua-btn${t.my_claimed ? ' ua-active' : ''}`}
-                  onClick={() => claim(t.id, !t.my_claimed)}
+                  className={`ua-btn ua-done${t.my_done ? ' ua-active' : ''}`}
+                  onClick={() => toggle(t.id, !t.my_done)}
                 >
-                  {t.my_claimed ? '✓ مُسندة لي' : '＋ أسند لي'}
+                  {t.my_done ? '✓ أنجزتُها' : 'تم الإنجاز'}
+                </button>
+              </div>
+              {t.completors && t.completors.length ? (
+                <div className="completors-row">
+                  <span>✓ أنجزتها أيضاً: {t.completors.filter((n) => n !== user.name).join('، ')}</span>
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </>
+      ) : null}
+
+      {available.length ? (
+        <>
+          <div className="cat-head" style={{ marginTop: 22 }}>
+            <h4>مهام لجنتكِ — متاحة للمساعدة</h4>
+            <span className="count">{available.length}</span>
+          </div>
+          {available.map((t) => (
+            <div key={t.id}>
+              <TaskCard
+                task={{ ...t, done: t.my_done }}
+                committee={commById(t.committee_id)}
+                currentUser={user}
+                onToggle={toggle}
+                onComment={comment}
+                onRemoveComment={removeComment}
+                hideCheck
+              />
+              <div className="unassigned-actions">
+                <button className="ua-btn" onClick={() => claim(t.id, true)}>
+                  ＋ أسند لي
                 </button>
                 <button
                   className={`ua-btn ua-done${t.my_done ? ' ua-active' : ''}`}

@@ -25,6 +25,7 @@ export default function SupervisorView({ user }) {
   const [overview, setOverview] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [overviewFilter, setOverviewFilter] = useState(null);
 
   const [rateMember, setRateMember] = useState('');
   const [rateValue, setRateValue] = useState('5');
@@ -369,24 +370,61 @@ export default function SupervisorView({ user }) {
               </p>
             </div>
             <div className="summary-stats">
-              <div className="stat">
-                <div className="v g ar-num">{toAr(totals.done)}</div>
-                <div className="l">منجزة</div>
-              </div>
-              <div className="stat">
-                <div className="v r ar-num">{toAr(totals.total - totals.done)}</div>
-                <div className="l">متبقية</div>
-              </div>
-              <div className="stat">
-                <div className="v ar-num" style={{ color: 'var(--maroon-2)' }}>{toAr(totals.assigned)}</div>
-                <div className="l">مُسندة</div>
-              </div>
-              <div className="stat">
-                <div className="v ar-num" style={{ color: 'var(--gold-deep)' }}>{toAr(totals.unassigned)}</div>
-                <div className="l">بدون إسناد</div>
-              </div>
+              {[
+                { key: 'done', label: 'منجزة', val: totals.done, color: 'var(--green)' },
+                { key: 'pending', label: 'متبقية', val: totals.total - totals.done, color: 'var(--crimson)' },
+                { key: 'assigned', label: 'مُسندة', val: totals.assigned, color: 'var(--maroon-2)' },
+                { key: 'unassigned', label: 'بدون إسناد', val: totals.unassigned, color: 'var(--gold-deep)' },
+              ].map(({ key, label, val, color }) => (
+                <div
+                  key={key}
+                  className={'stat stat-btn' + (overviewFilter === key ? ' stat-active' : '')}
+                  onClick={() => setOverviewFilter(overviewFilter === key ? null : key)}
+                  title={`اضغطي لعرض ${label}`}
+                >
+                  <div className="v ar-num" style={{ color }}>{toAr(val)}</div>
+                  <div className="l">{label}</div>
+                </div>
+              ))}
             </div>
           </div>
+
+          {overviewFilter ? (() => {
+            const allUsers = overview ? overview.members : [];
+            const userById = (id) => allUsers.find((m) => m.id === id);
+            const filtered = tasks.filter((t) => {
+              if (overviewFilter === 'done') return t.done;
+              if (overviewFilter === 'pending') return !t.done;
+              if (overviewFilter === 'assigned') return t.assignee_id || (t.claimors && t.claimors.length);
+              if (overviewFilter === 'unassigned') return !t.assignee_id && !(t.claimors && t.claimors.length);
+              return true;
+            });
+            const filterLabel = { done: 'المهام المنجزة', pending: 'المهام المتبقية', assigned: 'المهام المُسندة', unassigned: 'المهام بدون إسناد' }[overviewFilter];
+            return (
+              <div style={{ marginBottom: 18 }}>
+                <div className="cat-head">
+                  <h4>{filterLabel}</h4>
+                  <span className="count">{filtered.length}</span>
+                  <button className="icon-btn" style={{ marginInlineStart: 'auto' }} onClick={() => setOverviewFilter(null)}>✕</button>
+                </div>
+                {filtered.length ? filtered.map((t) => (
+                  <TaskCard
+                    key={t.id}
+                    task={t}
+                    committee={committees.find((c) => c.id === t.committee_id)}
+                    assignee={servants.find((s) => s.id === t.assignee_id) || { name: '' }}
+                    currentUser={user}
+                    onToggle={toggle}
+                    onComment={comment}
+                    onRemoveComment={removeComment}
+                    onRemoveTask={removeTask}
+                    showAssignee
+                  />
+                )) : <div className="empty"><div className="ic">📋</div>لا مهام في هذه الفئة</div>}
+              </div>
+            );
+          })() : null}
+
           <div className="cat-head">
             <h4>الخادمات</h4>
           </div>
