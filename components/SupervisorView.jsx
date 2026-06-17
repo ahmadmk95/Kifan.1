@@ -178,6 +178,8 @@ export default function SupervisorView({ user }) {
     await loadAll();
   };
 
+  const [unseenComments, setUnseenComments] = useState(user.unseen_comments || 0);
+
   const [allRatings, setAllRatings] = useState([]);
 
   const loadMemberRatings = useCallback(async (memberId) => {
@@ -193,6 +195,16 @@ export default function SupervisorView({ user }) {
     const { ratings } = await api.allRatings();
     setAllRatings(ratings);
   }, []);
+
+  // Poll for new comments every 20s when not viewing comments tab
+  useEffect(() => {
+    if (tab === 'comments') return;
+    const interval = setInterval(async () => {
+      const { count } = await api.unseenCommentsCount();
+      setUnseenComments(count);
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [tab]);
 
   useEffect(() => {
     if (tab === 'ratings') {
@@ -337,8 +349,8 @@ export default function SupervisorView({ user }) {
               الطلبات{requests.length ? <span className="badge-n ar-num">{toAr(requests.length)}</span> : null}
             </button>
           ) : null}
-          <button className={'tab' + (tab === 'comments' ? ' active' : '')} onClick={() => setTab('comments')}>
-            التعليقات
+          <button className={'tab' + (tab === 'comments' ? ' active' : '')} onClick={() => { setTab('comments'); setUnseenComments(0); }}>
+            التعليقات{unseenComments > 0 ? <span className="badge-n ar-num">{toAr(unseenComments)}</span> : null}
           </button>
           <button className={'tab' + (tab === 'ratings' ? ' active' : '')} onClick={() => setTab('ratings')}>
             التقييم
@@ -564,7 +576,7 @@ export default function SupervisorView({ user }) {
         comments.length ? (
           <div className="feed">
             {comments.map((c) => (
-              <div className="feed-item" key={c.id}>
+              <div className={'feed-item' + (c.is_new ? ' feed-item-new' : '')} key={c.id}>
                 <div className="avatar av" style={{ background: avBg(c.author_id) }}>
                   {c.author[0]}
                 </div>
@@ -572,6 +584,7 @@ export default function SupervisorView({ user }) {
                   <div className="fi-top">
                     <span className="au">{c.author}</span>
                     <span className="ctx">على مهمة: {c.task_title}</span>
+                    {c.is_new ? <span className="new-tag" style={{ marginInlineStart: 'auto' }}>جديد ✨</span> : null}
                   </div>
                   <div className="tx">{c.text}</div>
                   <div className="tm ar-num">{c.time}</div>

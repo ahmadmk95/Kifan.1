@@ -35,6 +35,19 @@ export async function GET(req) {
           )
           .all(nightId, user.committee_id);
 
-  const comments = rows.map((c) => ({ ...serializeComment(c, c.author_name), task_title: c.task_title }));
+  // Capture unseen BEFORE marking seen
+  const unseenIds = new Set(rows.filter((c) => !c.seen_at).map((c) => c.id));
+
+  // Mark all as seen now
+  if (unseenIds.size > 0) {
+    const placeholders = [...unseenIds].map(() => '?').join(',');
+    db.prepare(`UPDATE comments SET seen_at = datetime('now') WHERE id IN (${placeholders})`).run(...unseenIds);
+  }
+
+  const comments = rows.map((c) => ({
+    ...serializeComment(c, c.author_name),
+    task_title: c.task_title,
+    is_new: unseenIds.has(c.id),
+  }));
   return NextResponse.json({ comments });
 }

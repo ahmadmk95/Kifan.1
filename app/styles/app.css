@@ -210,6 +210,7 @@ body{-webkit-tap-highlight-color:transparent}
 .feed-item .ctx{font-size:12px;color:var(--muted)}
 .feed-item .tx{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
 .feed-item .tm{font-size:11px;color:var(--muted);margin-top:5px}
+.feed-item-new{border-color:var(--gold);background:#FFFDF5}
 
 /* empty */
 .empty{text-align:center;padding:50px 20px;color:var(--muted)}
