@@ -37,6 +37,16 @@ export default function MemberView({ user, view = 'tasks' }) {
     load();
   }, [load]);
 
+  // Refresh unassigned tasks every 20s so claimors/completors from other members appear
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (!night) return;
+      const { unassigned: u } = await api.myTasks(night.id);
+      setUnassigned(u || []);
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [night]);
+
   const selectNight = async (n) => {
     if (night && n.id === night.id) return;
     setNight(n);
