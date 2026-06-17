@@ -35,8 +35,11 @@ export async function GET(req) {
   });
 
   const totalDone = tasks.filter((t) => t.done).length;
-  const totalAssigned = tasks.filter((t) => t.assignee_id).length;
-  const totalUnassigned = tasks.filter((t) => !t.assignee_id).length;
+  const claimedTaskIds = new Set(
+    db.prepare('SELECT DISTINCT task_id FROM task_claims').all().map((r) => r.task_id)
+  );
+  const totalAssigned = tasks.filter((t) => t.assignee_id || claimedTaskIds.has(t.id)).length;
+  const totalUnassigned = tasks.filter((t) => !t.assignee_id && !claimedTaskIds.has(t.id)).length;
   const committeesCount = db.prepare('SELECT COUNT(*) as c FROM committees').get().c;
 
   return NextResponse.json({

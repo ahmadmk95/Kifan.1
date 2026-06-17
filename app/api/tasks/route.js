@@ -20,9 +20,16 @@ export async function GET(req) {
   const commentStmt = db.prepare(
     `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.author_id WHERE c.task_id = ? ORDER BY c.created_at`
   );
-  const result = tasks.map((t) =>
-    serializeTask(t, { comments: commentStmt.all(t.id).map((c) => serializeComment(c, c.author_name)) })
+  const claimorsStmt = db.prepare(
+    `SELECT u.name FROM task_claims tc JOIN users u ON u.id = tc.user_id WHERE tc.task_id = ? ORDER BY tc.created_at`
   );
+  const result = tasks.map((t) => {
+    const claimors = t.assignee_id ? [] : claimorsStmt.all(t.id).map((r) => r.name);
+    return serializeTask(t, {
+      comments: commentStmt.all(t.id).map((c) => serializeComment(c, c.author_name)),
+      claimors,
+    });
+  });
 
   return NextResponse.json({ tasks: result });
 }

@@ -39,8 +39,10 @@ export default function TaskCard({ task, committee, assignee, currentUser, onTog
             <span>
               <Icon.pin /> {task.place}
             </span>
-            {showAssignee && assignee ? (
+            {showAssignee && assignee && assignee.name ? (
               <span style={{ color: 'var(--maroon-2)', fontWeight: 600 }}>♦ {assignee.name}</span>
+            ) : showAssignee && task.claimors && task.claimors.length ? (
+              <span style={{ color: 'var(--gold-deep)', fontWeight: 600 }}>📌 {task.claimors.join('، ')}</span>
             ) : null}
           </div>
           {task.note ? (
