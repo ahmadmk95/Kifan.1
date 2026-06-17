@@ -11,19 +11,22 @@ export async function GET(req) {
   const nightId = searchParams.get('night');
   if (!nightId) return NextResponse.json({ error: 'night مطلوب' }, { status: 400 });
 
-  const tasks = db
+  const myTasks = db
     .prepare('SELECT * FROM tasks WHERE night_id = ? AND assignee_id = ? ORDER BY time')
     .all(nightId, user.id);
+
+  const unassigned = user.committee_id
+    ? db
+        .prepare('SELECT * FROM tasks WHERE night_id = ? AND committee_id = ? AND assignee_id IS NULL ORDER BY time')
+        .all(nightId, user.committee_id)
+    : [];
 
   const commentStmt = db.prepare(
     `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.author_id WHERE c.task_id = ? ORDER BY c.created_at`
   );
 
-  const result = tasks.map((t) =>
-    serializeTask(t, {
-      comments: commentStmt.all(t.id).map((c) => serializeComment(c, c.author_name)),
-    })
-  );
+  const serialize = (t) =>
+    serializeTask(t, { comments: commentStmt.all(t.id).map((c) => serializeComment(c, c.author_name)) });
 
-  return NextResponse.json({ tasks: result });
+  return NextResponse.json({ tasks: myTasks.map(serialize), unassigned: unassigned.map(serialize) });
 }

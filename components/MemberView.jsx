@@ -11,6 +11,7 @@ export default function MemberView({ user }) {
   const [night, setNight] = useState(null);
   const [nights, setNights] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [unassigned, setUnassigned] = useState([]);
   const [committees, setCommittees] = useState([]);
   const [ratings, setRatings] = useState([]);
   const [newRatingsCount, setNewRatingsCount] = useState(user.unseen_ratings || 0);
@@ -20,12 +21,13 @@ export default function MemberView({ user }) {
     const [{ night: n }, { nights: allNights }] = await Promise.all([api.activeNight(), api.nights()]);
     setNight(n);
     setNights(allNights);
-    const [{ tasks: t }, { committees: c }, { ratings: r }] = await Promise.all([
+    const [{ tasks: t, unassigned: u }, { committees: c }, { ratings: r }] = await Promise.all([
       api.myTasks(n.id),
       api.committees(),
       api.ratings(),
     ]);
     setTasks(t);
+    setUnassigned(u || []);
     setCommittees(c);
     setRatings(r);
     setLoading(false);
@@ -38,16 +40,27 @@ export default function MemberView({ user }) {
   const selectNight = async (n) => {
     if (night && n.id === night.id) return;
     setNight(n);
-    const { tasks: t } = await api.myTasks(n.id);
+    const { tasks: t, unassigned: u } = await api.myTasks(n.id);
     setTasks(t);
+    setUnassigned(u || []);
   };
 
   const toggle = async (id, done) => {
+    // optimistic update across both lists
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done } : t)));
+    setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, done } : t)));
     try {
       await api.toggleTask(id, done);
+      // if this was an unassigned task and is now done, it gets auto-assigned — refresh both lists
+      const wasUnassigned = unassigned.some((t) => t.id === id);
+      if (wasUnassigned && done) {
+        const { tasks: t, unassigned: u } = await api.myTasks(night.id);
+        setTasks(t);
+        setUnassigned(u || []);
+      }
     } catch {
       setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !done } : t)));
+      setUnassigned((ts) => ts.map((t) => (t.id === id ? { ...t, done: !done } : t)));
     }
   };
 
@@ -128,6 +141,26 @@ export default function MemberView({ user }) {
           <div className="ic">🕊️</div>لم تُسند إليكِ مهام بعد — ستظهر هنا فور إضافتها
         </div>
       )}
+
+      {unassigned.length ? (
+        <>
+          <div className="cat-head" style={{ marginTop: 22 }}>
+            <h4>مهام لجنتكِ — متاحة للمساعدة</h4>
+            <span className="count">{unassigned.length}</span>
+          </div>
+          {unassigned.map((t) => (
+            <TaskCard
+              key={t.id}
+              task={t}
+              committee={commById(t.committee_id)}
+              currentUser={user}
+              onToggle={toggle}
+              onComment={comment}
+              onRemoveComment={removeComment}
+            />
+          ))}
+        </>
+      ) : null}
 
       <div className="cat-head">
         <h4>تقييمات وكلمات تشجيعية</h4>
