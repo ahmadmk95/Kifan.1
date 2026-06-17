@@ -425,6 +425,7 @@ export default function SupervisorView({ user }) {
                     onComment={comment}
                     onRemoveComment={removeComment}
                     onRemoveTask={removeTask}
+                    onEditTask={setEditingTask}
                     showAssignee
                   />
                 )) : <div className="empty"><div className="ic">📋</div>لا مهام في هذه الفئة</div>}
@@ -842,6 +843,8 @@ export default function SupervisorView({ user }) {
           onToggle={toggle}
           onComment={comment}
           onRemoveComment={removeComment}
+          onEditTask={setEditingTask}
+          onRemoveTask={removeTask}
         />
       ) : null}
     </div>

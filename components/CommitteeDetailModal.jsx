@@ -4,7 +4,7 @@ import { Avatar } from './Shared';
 import { toAr, avBg } from '@/lib/palette';
 import TaskCard from './TaskCard';
 
-export default function CommitteeDetailModal({ committee, members, tasks, currentUser, onClose, onToggle, onComment, onRemoveComment }) {
+export default function CommitteeDetailModal({ committee, members, tasks, currentUser, onClose, onToggle, onComment, onRemoveComment, onEditTask, onRemoveTask }) {
   const supervisor = members.find((m) => m.id === committee.supervisor_id);
   const done = tasks.filter((t) => t.done).length;
 
@@ -67,6 +67,8 @@ export default function CommitteeDetailModal({ committee, members, tasks, curren
                 onToggle={onToggle}
                 onComment={onComment}
                 onRemoveComment={onRemoveComment}
+                onEditTask={onEditTask}
+                onRemoveTask={onRemoveTask}
                 showAssignee
               />
             ))
