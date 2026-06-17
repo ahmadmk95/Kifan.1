@@ -9,12 +9,17 @@ export async function PATCH(req, { params }) {
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(params.id);
   if (!task) return NextResponse.json({ error: 'غير موجود' }, { status: 404 });
 
-  if (task.assignee_id !== user.id && !canManageCommittee(user, task.committee_id)) {
+  const isUnassigned = !task.assignee_id;
+  if (!isUnassigned && task.assignee_id !== user.id && !canManageCommittee(user, task.committee_id)) {
     return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
   }
 
   const body = await req.json().catch(() => ({}));
   const done = !!body.done;
-  db.prepare('UPDATE tasks SET done = ? WHERE id = ?').run(done ? 1 : 0, params.id);
+  if (isUnassigned && done) {
+    db.prepare('UPDATE tasks SET done = 1, assignee_id = ? WHERE id = ?').run(user.id, params.id);
+  } else {
+    db.prepare('UPDATE tasks SET done = ? WHERE id = ?').run(done ? 1 : 0, params.id);
+  }
   return NextResponse.json({ ok: true, done });
 }
