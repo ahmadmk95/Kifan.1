@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import DateRow from './DateRow';
 import TaskCard, { groupByCommittee, CommHead } from './TaskCard';
 import CommitteeChat from './CommitteeChat';
+import AddSelfTaskModal from './AddSelfTaskModal';
 import { ProgressRing } from './Shared';
 import { toAr } from '@/lib/palette';
 import { api } from '@/lib/api';
@@ -17,6 +18,7 @@ export default function MemberView({ user, view = 'tasks' }) {
   const [ratings, setRatings] = useState([]);
   const [newRatingsCount, setNewRatingsCount] = useState(user.unseen_ratings || 0);
   const [loading, setLoading] = useState(true);
+  const [addModal, setAddModal] = useState(false);
 
   const load = useCallback(async () => {
     const [{ night: n }, { nights: allNights }] = await Promise.all([api.activeNight(), api.nights()]);
@@ -90,6 +92,12 @@ export default function MemberView({ user, view = 'tasks' }) {
   const removeComment = async (taskId, commentId) => {
     await api.removeComment(taskId, commentId);
     setTasks((ts) => ts.map((t) => (t.id === taskId ? { ...t, comments: (t.comments || []).filter((c) => c.id !== commentId) } : t)));
+  };
+
+  const addTask = async ({ title, time, place, note }) => {
+    await api.addTask({ night: night.id, committee: user.committee_id, title, time, place, note });
+    const { tasks: t } = await api.myTasks(night.id);
+    setTasks(t);
   };
 
   if (loading) return <div className="main"></div>;
@@ -191,6 +199,14 @@ export default function MemberView({ user, view = 'tasks' }) {
         </div>
       </div>
 
+      {user.committee_id ? (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6 }}>
+          <button className="add-btn" onClick={() => setAddModal(true)}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            إضافة مهمة لنفسي
+          </button>
+        </div>
+      ) : null}
 
       {groups.length ? (
         groups.map((g) => (
@@ -211,7 +227,7 @@ export default function MemberView({ user, view = 'tasks' }) {
         ))
       ) : (
         <div className="empty">
-          <div className="ic">🕊️</div>لم تُسند إليكِ مهام بعد — ستظهر هنا فور إضافتها
+          <div className="ic">🕊️</div>لم تُسند إليكِ مهام بعد — اضغطي على إضافة مهمة لتبدئي
         </div>
       )}
 
@@ -291,6 +307,10 @@ export default function MemberView({ user, view = 'tasks' }) {
             </div>
           ))}
         </>
+      ) : null}
+
+      {addModal ? (
+        <AddSelfTaskModal onClose={() => setAddModal(false)} onAdd={addTask} />
       ) : null}
 
     </div>

@@ -37,21 +37,27 @@ export async function GET(req) {
 export async function POST(req) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'غير مسجّل الدخول' }, { status: 401 });
-  if (!isLead(user)) return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
   const { night, committee, assignee, title, time, place, note } = body;
   if (!night || !committee || !title?.trim() || !time?.trim() || !place?.trim()) {
     return NextResponse.json({ error: 'بيانات غير مكتملة' }, { status: 400 });
   }
-  if (user.role === 'committee_supervisor' && committee !== user.committee_id) {
+
+  // Servants can only add tasks assigned to themselves in their own committee
+  if (user.role === 'servant') {
+    if (committee !== user.committee_id) return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
+    // force assignee to self
+  } else if (user.role === 'committee_supervisor' && committee !== user.committee_id) {
     return NextResponse.json({ error: 'غير مسموح' }, { status: 403 });
   }
+
+  const resolvedAssignee = user.role === 'servant' ? user.id : (assignee || null);
 
   const id = crypto.randomUUID();
   db.prepare(
     'INSERT INTO tasks (id, night_id, committee_id, assignee_id, title, time, place, note, done) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)'
-  ).run(id, night, committee, assignee || null, title.trim(), time.trim(), place.trim(), note?.trim() || null);
+  ).run(id, night, committee, resolvedAssignee, title.trim(), time.trim(), place.trim(), note?.trim() || null);
 
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
   return NextResponse.json({ task: serializeTask(task, { comments: [] }) });
