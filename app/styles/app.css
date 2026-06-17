@@ -326,6 +326,11 @@ body{-webkit-tap-highlight-color:transparent}
 .seen-tag.seen-no{background:#FFF3E0;color:#E65100}
 .notif-badge{background:var(--crimson);color:#fff;border-radius:20px;font-size:11px;font-weight:700;padding:2px 7px;min-width:20px;text-align:center}
 .notif-banner{background:#FFF8E1;border:1px solid #FFD54F;border-radius:var(--r-md);padding:10px 14px;font-size:13.5px;color:#5D4037;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ratings-pinned{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 14px;margin-bottom:18px;box-shadow:var(--shadow-sm)}
+.ratings-pinned-head{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--gold-deep);margin-bottom:8px}
+.ratings-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.ratings-scroll::-webkit-scrollbar{height:4px} .ratings-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.rc-compact{min-width:180px;max-width:220px;flex-shrink:0}
 .completors-row{font-size:12px;color:var(--muted);padding:3px 14px 8px;display:flex;flex-direction:column;gap:2px}
 .unassigned-actions{display:flex;gap:8px;padding:6px 14px 2px}
 .ua-btn{flex:1;padding:7px 10px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:var(--card);font-size:13px;font-family:var(--font-d);cursor:pointer;color:var(--ink);transition:background .15s}

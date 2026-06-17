@@ -129,6 +129,28 @@ export default function MemberView({ user }) {
         </div>
       </div>
 
+      {ratings.length || newRatingsCount > 0 ? (
+        <div className="ratings-pinned">
+          <div className="ratings-pinned-head">
+            <span>كلمات تشجيعية 🤍</span>
+            {newRatingsCount > 0 ? <span className="notif-badge">{newRatingsCount}</span> : null}
+          </div>
+          <div className="ratings-scroll">
+            {ratings.map((r) => (
+              <div className={`rating-card rc-compact${r.is_new ? ' rating-new' : ''}`} key={r.id}>
+                {r.is_new ? <div className="new-tag">جديد ✨</div> : null}
+                <div className="rc-top">
+                  <span className="rc-stars">{'★'.repeat(r.rating)}</span>
+                  <span className="rc-author">{r.author}</span>
+                </div>
+                {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
+                <div className="rc-time ar-num">{r.time}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {groups.length ? (
         groups.map((g) => (
           <div key={g.committee.id}>
@@ -180,9 +202,10 @@ export default function MemberView({ user }) {
                   {t.my_done ? '✓ أنجزتُها' : 'تم الإنجاز'}
                 </button>
               </div>
-              {t.completors && t.completors.length ? (
+              {((t.claimors && t.claimors.filter((n) => n !== user.name).length > 0) || (t.completors && t.completors.filter((n) => n !== user.name).length > 0)) ? (
                 <div className="completors-row">
-                  <span>✓ أنجزتها أيضاً: {t.completors.filter((n) => n !== user.name).join('، ')}</span>
+                  {t.claimors && t.claimors.filter((n) => n !== user.name).length > 0 ? <span>📌 تعمل معكِ أيضاً: {t.claimors.filter((n) => n !== user.name).join('، ')}</span> : null}
+                  {t.completors && t.completors.filter((n) => n !== user.name).length > 0 ? <span>✓ أنجزتها أيضاً: {t.completors.filter((n) => n !== user.name).join('، ')}</span> : null}
                 </div>
               ) : null}
             </div>
@@ -229,36 +252,6 @@ export default function MemberView({ user }) {
         </>
       ) : null}
 
-      <div className="cat-head">
-        <h4>تقييمات وكلمات تشجيعية</h4>
-        {newRatingsCount > 0 ? (
-          <span className="notif-badge">{newRatingsCount}</span>
-        ) : null}
-      </div>
-      {newRatingsCount > 0 ? (
-        <div className="notif-banner">
-          🔔 لديكِ {newRatingsCount === 1 ? 'تقييم جديد' : `${newRatingsCount} تقييمات جديدة`} من المشرفة
-        </div>
-      ) : null}
-      {ratings.length ? (
-        <div className="ratings-list">
-          {ratings.map((r) => (
-            <div className={`rating-card${r.is_new ? ' rating-new' : ''}`} key={r.id}>
-              {r.is_new ? <div className="new-tag">جديد ✨</div> : null}
-              <div className="rc-top">
-                <span className="rc-stars">{'★'.repeat(r.rating)}</span>
-                <span className="rc-author">{r.author}</span>
-              </div>
-              {r.comment ? <div className="rc-comment">{r.comment}</div> : null}
-              <div className="rc-time ar-num">{r.time}</div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="empty">
-          <div className="ic">⭐</div>لا تقييمات بعد
-        </div>
-      )}
     </div>
   );
 }

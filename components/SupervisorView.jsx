@@ -5,6 +5,7 @@ import DateRow from './DateRow';
 import TaskCard, { groupByCommittee, CommHead } from './TaskCard';
 import { ProgressRing, Avatar, Icon } from './Shared';
 import AddTaskModal from './AddTaskModal';
+import EditTaskModal from './EditTaskModal';
 import AddCommitteeModal from './AddCommitteeModal';
 import CommitteeDetailModal from './CommitteeDetailModal';
 import RequestCard from './RequestCard';
@@ -15,6 +16,7 @@ export default function SupervisorView({ user }) {
   const isAdmin = user.role === 'supervisor';
   const [tab, setTab] = useState('overview');
   const [taskModal, setTaskModal] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
   const [commModal, setCommModal] = useState(false);
   const [detailCommittee, setDetailCommittee] = useState(null);
   const [night, setNight] = useState(null);
@@ -91,6 +93,11 @@ export default function SupervisorView({ user }) {
 
   const removeTask = async (id) => {
     await api.removeTask(id);
+    await refreshTasksAndOverview();
+  };
+
+  const saveEditTask = async (id, payload) => {
+    await api.editTask(id, payload);
     await refreshTasksAndOverview();
   };
 
@@ -470,6 +477,7 @@ export default function SupervisorView({ user }) {
                   onComment={comment}
                   onRemoveComment={removeComment}
                   onRemoveTask={removeTask}
+                  onEditTask={setEditingTask}
                   showAssignee
                 />
               ))}
@@ -810,6 +818,15 @@ export default function SupervisorView({ user }) {
           nightId={night.id}
           onClose={() => setTaskModal(false)}
           onAdd={addTask}
+        />
+      ) : null}
+      {editingTask ? (
+        <EditTaskModal
+          task={editingTask}
+          committees={isAdmin ? committees : committees.filter((c) => c.id === user.committee_id)}
+          servants={servants.map((s) => ({ id: s.id, name: s.name, committee_id: s.committee_id }))}
+          onClose={() => setEditingTask(null)}
+          onSave={saveEditTask}
         />
       ) : null}
       {commModal ? <AddCommitteeModal committees={committees} onClose={() => setCommModal(false)} onAdd={addCommittee} /> : null}
