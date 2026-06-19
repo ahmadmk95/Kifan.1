@@ -328,7 +328,7 @@ export default function SupervisorView({ user, chatJump }) {
   const commById = (id) => committees.find((c) => c.id === id);
 
   return (
-    <div className="main">
+    <div className={'main' + (tab === 'chat' ? ' main-wide' : '')}>
       <DateRow night={night} nights={nights} onSelect={selectNight} />
       <div className="greet">
         <h2>لوحة المتابعة — {user.name.split(' ')[0]}</h2>

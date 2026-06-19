@@ -81,6 +81,7 @@ body{-webkit-tap-highlight-color:transparent}
 .topbar-strip{height:3px;background:repeating-linear-gradient(90deg,var(--gold) 0 12px,transparent 12px 20px);opacity:.7}
 
 .main{max-width:480px;margin:0 auto;width:100%;padding:18px 16px 40px;flex:1}
+.main.main-wide{max-width:900px}
 
 /* date / nights */
 .daterow{display:flex;flex-direction:column;align-items:stretch;gap:12px;margin-bottom:16px}
@@ -324,12 +325,12 @@ body{-webkit-tap-highlight-color:transparent}
 .hr-pts-label{font-size:10.5px;color:var(--muted)}
 
 /* Admin chat layout */
-.chat-admin-wrap{display:flex;gap:14px;align-items:flex-start;min-height:calc(100vh - 240px)}
-.chat-comm-list{display:flex;flex-direction:column;gap:6px;min-width:130px;flex-shrink:0}
-.chat-comm-btn{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;font-size:13px;text-align:start;display:flex;align-items:center;gap:7px;transition:.15s;cursor:pointer}
+.chat-admin-wrap{display:flex;gap:0;align-items:stretch;min-height:calc(100vh - 180px);margin:0 -16px}
+.chat-comm-list{display:flex;flex-direction:column;gap:4px;width:150px;flex-shrink:0;padding:12px 10px;border-inline-end:1px solid var(--line);background:var(--cream-2)}
+.chat-comm-btn{background:transparent;border:1px solid transparent;border-radius:var(--r-sm);padding:10px 11px;font-size:13px;text-align:start;display:flex;align-items:center;gap:8px;transition:.15s;cursor:pointer;width:100%}
 .chat-comm-btn.active,.chat-comm-btn:hover{background:var(--maroon-2);color:#fff;border-color:var(--maroon-2)}
-.chat-admin-panel{flex:1;min-width:0;display:flex;flex-direction:column}
-.chat-admin-panel .chat-wrap{height:calc(100vh - 270px)}
+.chat-admin-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 16px 0}
+.chat-admin-panel .chat-wrap{height:calc(100vh - 220px)}
 
 .footer-dua{text-align:center;padding:26px 20px 30px;color:var(--maroon-2);font-family:var(--font-d);
   font-size:15px;font-weight:500;letter-spacing:.3px;opacity:.85}
