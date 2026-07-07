@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "seed": "node scripts/seed.js",
-    "reset-admin": "node scripts/reset-and-create-admin.js"
+    "reset-admin": "node scripts/reset-and-create-admin.js",
+    "design:check": "node scripts/design-check.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

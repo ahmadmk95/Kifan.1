@@ -1,0 +1,64 @@
+<!-- @dsCard group="Components" -->
+<!-- @dsName الأزرار -->
+<!-- @dsSubtitle Primary, ghost, ok/reject, icon, add, auth submit -->
+<!-- @dsViewport width=420 height=560 -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Buttons — Kifan Design System</title>
+<link rel="stylesheet" href="../assets/app.css">
+<style>
+  body{padding:24px}
+  .ds-h{font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--maroon-2);margin:24px 0 12px}
+  .ds-h:first-child{margin-top:0}
+  .ds-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+</style>
+</head>
+<body>
+
+  <div class="ds-h">أساسي / ثانوي</div>
+  <div class="ds-row">
+    <button class="btn-primary">حفظ التعديلات</button>
+    <button class="btn-ghost">إلغاء</button>
+  </div>
+
+  <div class="ds-h">تأكيد / رفض (طلبات التسجيل)</div>
+  <div class="ds-row">
+    <button class="btn-ok">تفعيل وإسناد</button>
+    <button class="btn-ok" disabled>تفعيل وإسناد</button>
+    <button class="btn-reject">رفض</button>
+  </div>
+
+  <div class="ds-h">إضافة (لوحة المشرفة)</div>
+  <div class="ds-row" style="width:100%">
+    <button class="add-btn"><span>+</span> إضافة مهمة جديدة</button>
+  </div>
+
+  <div class="ds-h">دخول / تسجيل</div>
+  <div class="ds-row" style="width:100%">
+    <button class="auth-submit" style="max-width:260px">دخول</button>
+  </div>
+
+  <div class="ds-h">أزرار أيقونة</div>
+  <div class="ds-row">
+    <button class="icon-btn" title="تعديل">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </button>
+    <button class="icon-btn" title="حذف">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+    </button>
+    <button class="tb-icon-btn" title="دردشة">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+  </div>
+
+  <div class="ds-h">تعليق / إرسال</div>
+  <div class="ds-row">
+    <button class="cmt-btn">تعليق</button>
+    <button class="cmt-btn has">تعليق <span class="ar-num">٣</span></button>
+    <button class="chat-send"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+
+</body>
+</html>

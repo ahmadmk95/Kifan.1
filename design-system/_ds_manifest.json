@@ -1,0 +1,145 @@
+{
+  "generatedAt": "2026-07-07T17:23:24.673Z",
+  "cards": [
+    {
+      "path": "design-system/previews/buttons.html",
+      "group": "Components",
+      "name": "الأزرار",
+      "subtitle": "Primary, ghost, ok/reject, icon, add, auth submit",
+      "viewport": {
+        "width": 420,
+        "height": 560
+      }
+    },
+    {
+      "path": "design-system/previews/chips-badges.html",
+      "group": "Components",
+      "name": "الشارات والوسوم",
+      "subtitle": "Category tags, status pills, notification badges, committee card",
+      "viewport": {
+        "width": 420,
+        "height": 480
+      }
+    },
+    {
+      "path": "design-system/previews/avatars-progress.html",
+      "group": "Components",
+      "name": "الصورة الرمزية وحلقة التقدم",
+      "subtitle": "Avatar sizes across the committee palette, progress ring",
+      "viewport": {
+        "width": 420,
+        "height": 420
+      }
+    },
+    {
+      "path": "design-system/previews/member-card.html",
+      "group": "Components",
+      "name": "بطاقة الخادمة (لوحة المشرفة)",
+      "subtitle": "Member progress card with bar and stats",
+      "viewport": {
+        "width": 420,
+        "height": 420
+      }
+    },
+    {
+      "path": "design-system/previews/task-card.html",
+      "group": "Components",
+      "name": "بطاقة المهمة",
+      "subtitle": "Open, done, with note, with claimors, with comments expanded",
+      "viewport": {
+        "width": 420,
+        "height": 760
+      }
+    },
+    {
+      "path": "design-system/previews/tabs-nights.html",
+      "group": "Components",
+      "name": "علامات التبويب وشريط الليالي",
+      "subtitle": "Tabs, date card, night selector (active/done), summary ring+stats",
+      "viewport": {
+        "width": 480,
+        "height": 560
+      }
+    },
+    {
+      "path": "design-system/previews/modal-form.html",
+      "group": "Components",
+      "name": "نافذة منبثقة — تعديل مهمة",
+      "subtitle": "Modal shell, form fields, field-row, footer actions",
+      "viewport": {
+        "width": 480,
+        "height": 620
+      }
+    },
+    {
+      "path": "design-system/previews/tokens.html",
+      "group": "Foundations",
+      "name": "الألوان والخطوط",
+      "subtitle": "Colors, type scale, radii, shadows",
+      "viewport": {
+        "width": 480,
+        "height": 760
+      }
+    },
+    {
+      "path": "design-system/previews/spotlight-ratings.html",
+      "group": "Screens",
+      "name": "التكريم والتقييمات",
+      "subtitle": "Spotlight banner, rating cards, seen/unseen tags",
+      "viewport": {
+        "width": 480,
+        "height": 520
+      }
+    },
+    {
+      "path": "design-system/previews/login-auth.html",
+      "group": "Screens",
+      "name": "الدخول والتسجيل",
+      "subtitle": "Login card, profile picker, auth tabs, form, messages",
+      "viewport": {
+        "width": 480,
+        "height": 780
+      }
+    },
+    {
+      "path": "design-system/previews/topbar.html",
+      "group": "Screens",
+      "name": "الشريط العلوي",
+      "subtitle": "App topbar with logo, icon actions, notification badges, user menu",
+      "viewport": {
+        "width": 480,
+        "height": 140
+      }
+    },
+    {
+      "path": "design-system/previews/chat.html",
+      "group": "Screens",
+      "name": "دردشة اللجنة",
+      "subtitle": "Committee chat bubbles, self vs. other, input, admin sidebar",
+      "viewport": {
+        "width": 420,
+        "height": 520
+      }
+    },
+    {
+      "path": "design-system/previews/requests.html",
+      "group": "Screens",
+      "name": "طلبات التسجيل",
+      "subtitle": "Pending registration request card with committee assignment",
+      "viewport": {
+        "width": 480,
+        "height": 260
+      }
+    },
+    {
+      "path": "design-system/previews/hasanat.html",
+      "group": "Screens",
+      "name": "لوحة الحسنات",
+      "subtitle": "Stats bar, my-position banner, podium, ranked list",
+      "viewport": {
+        "width": 480,
+        "height": 820
+      }
+    }
+  ]
+}
