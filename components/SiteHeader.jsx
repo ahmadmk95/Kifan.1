@@ -10,7 +10,7 @@ export default function SiteHeader({ variant = 'public' }) {
         <span>
           <span className="t1">موكب أمير المؤمنين (ع)</span>
           <span className={'t2' + (isPrivate ? ' private' : '')}>
-            {isPrivate ? 'دليل تعليمات العمل — زيارة الأربعين ٢٠٢٦ · نسخة خاصة' : 'دليل تعليمات العمل — زيارة الأربعين ٢٠٢٦'}
+            {isPrivate ? 'دليل تعليمات العمل — زيارة الأربعين 2026 · نسخة خاصة' : 'دليل تعليمات العمل — زيارة الأربعين 2026'}
           </span>
         </span>
       </Link>

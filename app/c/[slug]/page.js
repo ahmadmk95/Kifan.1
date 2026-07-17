@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import RichContent from '@/components/RichContent';
+import Highlighter from '@/components/Highlighter';
 import { getCommitteeBySlug, listCommittees } from '@/lib/committees';
-import { toAr } from '@/lib/slug';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +25,7 @@ export default function CommitteePage({ params }) {
       <main className="main-wrap">
         <Link href="/" className="back-link">→ الفهرس / رجوع</Link>
         <div className="detail-head">
-          {index >= 0 ? <span className="num">{toAr(index + 1)}</span> : null}
+          {index >= 0 ? <span className="num">{index + 1}</span> : null}
           <h1>{committee.name}</h1>
         </div>
         <div className="content-card">
@@ -37,6 +37,7 @@ export default function CommitteePage({ params }) {
         </div>
       </main>
       <SiteFooter />
+      <Highlighter />
     </div>
   );
 }

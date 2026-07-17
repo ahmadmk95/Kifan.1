@@ -5,7 +5,7 @@ export default function SiteFooter() {
         <img src="/logo.png" alt="الشعار" />
         <span>موكب أمير المؤمنين (ع)</span>
       </div>
-      <span className="tag">دليل تعليمات العمل · زيارة الأربعين ٢٠٢٦</span>
+      <span className="tag">دليل تعليمات العمل · زيارة الأربعين 2026</span>
     </footer>
   );
 }

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { api } from '@/lib/api';
-import { toAr } from '@/lib/slug';
 
 const VIS_LABEL = { public: 'عام', private: 'خاص', both: 'كلاهما' };
 const VIS_CLASS = { public: 'vis-public', private: 'vis-private', both: 'vis-both' };
@@ -53,7 +52,7 @@ export default function AdminList() {
             <tbody>
               {committees.map((c) => (
                 <tr key={c.id}>
-                  <td className="ar-num">{toAr(c.sort)}</td>
+                  <td className="ar-num">{c.sort}</td>
                   <td style={{ fontWeight: 600 }}>{c.name}</td>
                   <td><span className={'vis-pill ' + VIS_CLASS[c.visibility]}>{VIS_LABEL[c.visibility]}</span></td>
                   <td>
