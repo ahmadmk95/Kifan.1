@@ -1,23 +1,28 @@
+import { redirect } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import CommitteeGrid from '@/components/CommitteeGrid';
+import { getCurrentUser } from '@/lib/auth';
 import { listCommittees } from '@/lib/committees';
 
 export const dynamic = 'force-dynamic';
 
-export default function HomePage() {
-  const committees = listCommittees({ includePrivate: false });
+export default async function PrivateHome() {
+  const user = await getCurrentUser();
+  if (!user) redirect('/login?next=/private');
+
+  const committees = listCommittees({ includePrivate: true });
   return (
     <div className="page">
-      <SiteHeader variant="public" />
+      <SiteHeader variant="private" />
       <section className="hero">
         <img src="/logo.png" alt="شعار موكب أمير المؤمنين (ع)" />
         <h1>دليل تعليمات الموكب</h1>
-        <p>موكب أمير المؤمنين (ع) — زيارة الأربعين ٢٠٢٦</p>
+        <p>النسخة الخاصة — جميع اللجان</p>
       </section>
       <main className="main-wrap">
         <h2 className="grid-title">اللجان</h2>
-        <CommitteeGrid committees={committees} basePath="/c" />
+        <CommitteeGrid committees={committees} basePath="/private/c" />
       </main>
       <SiteFooter />
     </div>
