@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { toAr } from '@/lib/slug';
 
 export default function CommitteeGrid({ committees, basePath = '/c' }) {
   if (!committees.length) {
@@ -14,7 +13,7 @@ export default function CommitteeGrid({ committees, basePath = '/c' }) {
     <div className="committee-grid">
       {committees.map((c, i) => (
         <Link key={c.id} href={`${basePath}/${c.slug}`} className="committee-card">
-          <span className="num">{toAr(i + 1)}</span>
+          <span className="num">{i + 1}</span>
           <span className="nm">{c.name}</span>
           {c.visibility === 'private' ? <span className="badge-private">خاص</span> : null}
         </Link>

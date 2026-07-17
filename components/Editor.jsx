@@ -72,9 +72,9 @@ export default function Editor({ value, onChange }) {
           heading: {
             options: [
               { model: 'paragraph', title: 'نص', class: 'ck-heading_paragraph' },
-              { model: 'heading2', view: 'h2', title: 'عنوان ٢', class: 'ck-heading_heading2' },
-              { model: 'heading3', view: 'h3', title: 'عنوان فرعي ٣', class: 'ck-heading_heading3' },
-              { model: 'heading4', view: 'h4', title: 'عنوان ٤', class: 'ck-heading_heading4' },
+              { model: 'heading2', view: 'h2', title: 'عنوان 2', class: 'ck-heading_heading2' },
+              { model: 'heading3', view: 'h3', title: 'عنوان فرعي 3', class: 'ck-heading_heading3' },
+              { model: 'heading4', view: 'h4', title: 'عنوان 4', class: 'ck-heading_heading4' },
             ],
           },
           table: {
