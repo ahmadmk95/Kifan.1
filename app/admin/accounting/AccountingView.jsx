@@ -20,7 +20,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 export default function AccountingView() {
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
-  const [modal, setModal] = useState(null); // 'donation' | 'purchase' | null
+  const [modal, setModal] = useState(null); // { type, existing? } | null
   const [filter, setFilter] = useState('all');
 
   const load = () => api.accounting().then(setData).catch(() => setErr('تعذّر تحميل البيانات'));
@@ -42,8 +42,9 @@ export default function AccountingView() {
       <div className="admin-bar">
         <h1>المحاسبة</h1>
         <div className="admin-actions">
-          <button className="btn-add" onClick={() => setModal('donation')}>＋ تبرع</button>
-          <button className="btn-add btn-out" onClick={() => setModal('purchase')}>＋ مشترى</button>
+          <Link href="/admin/accounting/report" className="btn-ghost">تقرير PDF</Link>
+          <button className="btn-add" onClick={() => setModal({ type: 'donation' })}>＋ تبرع</button>
+          <button className="btn-add btn-out" onClick={() => setModal({ type: 'purchase' })}>＋ مشترى</button>
         </div>
       </div>
 
@@ -106,7 +107,7 @@ export default function AccountingView() {
                 <th style={{ width: 130 }}>المبلغ</th>
                 <th style={{ width: 100 }}>بالدولار</th>
                 <th style={{ width: 90 }}>الفواتير</th>
-                <th style={{ width: 60 }}></th>
+                <th style={{ width: 120 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -119,8 +120,13 @@ export default function AccountingView() {
                     </span>
                   </td>
                   <td>
-                    <div style={{ fontWeight: 600 }}>{tx.party || '—'}</div>
-                    {tx.description ? <div style={{ fontSize: 12.5, color: 'var(--mawkab-muted)' }}>{tx.description}</div> : null}
+                    <div style={{ fontWeight: 600 }}>
+                      {tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}
+                    </div>
+                    {(() => {
+                      const sub = [tx.type === 'purchase' ? tx.party : null, tx.description].filter(Boolean).join(' · ');
+                      return sub ? <div style={{ fontSize: 12.5, color: 'var(--mawkab-muted)' }}>{sub}</div> : null;
+                    })()}
                   </td>
                   <td>{tx.category_name || (tx.type === 'purchase' ? 'غير مصنّف' : '—')}</td>
                   <td>{amt(tx.amount)} <span style={{ color: 'var(--mawkab-muted)', fontSize: 12 }}>{tx.currency}</span></td>
@@ -139,12 +145,15 @@ export default function AccountingView() {
                     )}
                   </td>
                   <td>
-                    <button
-                      className="btn-danger"
-                      onClick={async () => {
-                        if (window.confirm('حذف هذه الحركة؟')) { await api.removeTransaction(tx.id); load(); }
-                      }}
-                    >حذف</button>
+                    <div className="acts">
+                      <button className="btn-small" onClick={() => setModal({ type: tx.type, existing: tx })}>تعديل</button>
+                      <button
+                        className="btn-danger"
+                        onClick={async () => {
+                          if (window.confirm('حذف هذه الحركة؟')) { await api.removeTransaction(tx.id); load(); }
+                        }}
+                      >حذف</button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -155,7 +164,8 @@ export default function AccountingView() {
 
       {modal ? (
         <TransactionModal
-          type={modal}
+          type={modal.type}
+          existing={modal.existing}
           categories={data.categories}
           onClose={() => setModal(null)}
           onSaved={() => { setModal(null); load(); }}
@@ -244,17 +254,19 @@ function CategoriesPanel({ categories, onChanged }) {
   );
 }
 
-function TransactionModal({ type, categories, onClose, onSaved }) {
+function TransactionModal({ type, existing, categories, onClose, onSaved }) {
   const isPurchase = type === 'purchase';
+  const isEdit = !!existing;
   const [f, setF] = useState({
-    amount: '',
-    currency: isPurchase ? 'IQD' : 'USD',
-    category_id: '',
-    party: '',
-    description: '',
-    occurred_on: today(),
+    amount: existing ? String(existing.amount) : '',
+    currency: existing ? existing.currency : (isPurchase ? 'IQD' : 'USD'),
+    category_id: existing?.category_id || '',
+    item: existing?.item || '',
+    party: existing?.party || '',
+    description: existing?.description || '',
+    occurred_on: existing?.occurred_on || today(),
   });
-  const [images, setImages] = useState([]); // {url}
+  const [images, setImages] = useState(existing?.images ? existing.images.map((im) => ({ url: im.url })) : []); // {url}
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
@@ -280,18 +292,22 @@ function TransactionModal({ type, categories, onClose, onSaved }) {
   const submit = async () => {
     if (busy) return;
     if (!(Number(f.amount) > 0)) { setErr('أدخل مبلغاً صحيحاً'); return; }
+    if (isPurchase && !f.item.trim()) { setErr('اسم الصنف مطلوب'); return; }
     setBusy(true); setErr(null);
+    const payload = {
+      type,
+      amount: Number(f.amount),
+      currency: f.currency,
+      category_id: isPurchase ? (f.category_id || null) : null,
+      item: isPurchase ? f.item.trim() : null,
+      party: f.party.trim(),
+      description: f.description.trim(),
+      occurred_on: f.occurred_on,
+      images: images.map((i) => i.url),
+    };
     try {
-      await api.addTransaction({
-        type,
-        amount: Number(f.amount),
-        currency: f.currency,
-        category_id: isPurchase ? (f.category_id || null) : null,
-        party: f.party.trim(),
-        description: f.description.trim(),
-        occurred_on: f.occurred_on,
-        images: images.map((i) => i.url),
-      });
+      if (isEdit) await api.updateTransaction(existing.id, payload);
+      else await api.addTransaction(payload);
       onSaved();
     } catch (ex) {
       setErr(ex.message);
@@ -303,15 +319,21 @@ function TransactionModal({ type, categories, onClose, onSaved }) {
     <div className="overlay" onClick={onClose}>
       <div className="modal2" onClick={(e) => e.stopPropagation()}>
         <div className="modal2-head">
-          <h3>{isPurchase ? 'إضافة مشترى' : 'إضافة تبرع'}</h3>
+          <h3>{isEdit ? (isPurchase ? 'تعديل مشترى' : 'تعديل تبرع') : (isPurchase ? 'إضافة مشترى' : 'إضافة تبرع')}</h3>
           <button className="x" onClick={onClose}>×</button>
         </div>
         <div className="modal2-body">
           {err ? <div className="form-msg err">{err}</div> : null}
+          {isPurchase ? (
+            <div className="form-field">
+              <label>اسم الصنف / المادة <span style={{ color: 'var(--mawkab-red)' }}>*</span></label>
+              <input value={f.item} onChange={(e) => set('item', e.target.value)} placeholder="مثال: أرز، غاز، أكياس" autoFocus />
+            </div>
+          ) : null}
           <div className="form-row">
             <div className="form-field">
               <label>المبلغ</label>
-              <input type="number" inputMode="decimal" value={f.amount} onChange={(e) => set('amount', e.target.value)} dir="ltr" autoFocus />
+              <input type="number" inputMode="decimal" value={f.amount} onChange={(e) => set('amount', e.target.value)} dir="ltr" autoFocus={!isPurchase} />
             </div>
             <div className="form-field" style={{ maxWidth: 170 }}>
               <label>العملة</label>
