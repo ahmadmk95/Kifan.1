@@ -9,7 +9,7 @@ import TransactionModal from '@/components/TransactionModal';
 import { api } from '@/lib/api';
 import { usd, amt, CUR_LABEL } from '@/lib/money';
 
-export default function TxDetail({ tx, categories }) {
+export default function TxDetail({ tx, categories, readOnly = false }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const isPurchase = tx.type === 'purchase';
@@ -40,8 +40,12 @@ export default function TxDetail({ tx, categories }) {
           <h1>تفاصيل الحركة</h1>
           <div className="admin-actions">
             <Link href="/admin/accounting" className="btn-ghost">← رجوع للمحاسبة</Link>
-            <button className="btn-small" onClick={() => setEditing(true)}>تعديل</button>
-            <button className="btn-danger" onClick={remove}>حذف</button>
+            {!readOnly ? (
+              <>
+                <button className="btn-small" onClick={() => setEditing(true)}>تعديل</button>
+                <button className="btn-danger" onClick={remove}>حذف</button>
+              </>
+            ) : null}
           </div>
         </div>
 

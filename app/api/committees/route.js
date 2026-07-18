@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import db from '@/lib/db';
-import { getCurrentUser, isAdmin } from '@/lib/auth';
+import { getCurrentUser, isAdmin, canViewAdmin } from '@/lib/auth';
 import { listCommittees } from '@/lib/committees';
 import { uniqueSlug } from '@/lib/slug';
 import { cleanRichHtml } from '@/lib/sanitize';
 
 export async function GET() {
   const user = await getCurrentUser();
-  if (!isAdmin(user)) {
+  if (!canViewAdmin(user)) {
     return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
   }
   const committees = db.prepare('SELECT id, name, slug, sort, visibility, updated_at FROM committees ORDER BY sort ASC, name ASC').all();
