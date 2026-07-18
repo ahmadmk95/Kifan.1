@@ -1,0 +1,13 @@
+import { NextResponse } from 'next/server';
+import db from '@/lib/db';
+import { getCurrentUser, isAdmin } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+
+export async function DELETE(req, { params }) {
+  const user = await getCurrentUser();
+  if (!isAdmin(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
+  db.prepare('DELETE FROM acc_transaction_images WHERE transaction_id = ?').run(params.id);
+  db.prepare('DELETE FROM acc_transactions WHERE id = ?').run(params.id);
+  return NextResponse.json({ ok: true });
+}
