@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
-import { getCurrentUser, isAdmin } from '@/lib/auth';
+import { getCurrentUser, isAdmin, authorityToRole } from '@/lib/auth';
 
 export async function PATCH(req, { params }) {
   const admin = await getCurrentUser();
@@ -9,11 +9,17 @@ export async function PATCH(req, { params }) {
   const target = db.prepare('SELECT * FROM users WHERE id = ?').get(params.id);
   if (!target) return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 });
   const body = await req.json().catch(() => ({}));
+
   if (body.password) {
     db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(bcrypt.hashSync(String(body.password), 10), params.id);
   }
-  if (body.role && ['admin', 'member'].includes(body.role)) {
-    db.prepare('UPDATE users SET role = ? WHERE id = ?').run(body.role, params.id);
+  // Set authority (used for approving a pending user and for changing access).
+  if (body.authority !== undefined) {
+    const { role, access } = authorityToRole(body.authority);
+    db.prepare('UPDATE users SET role = ?, access = ? WHERE id = ?').run(role, access, params.id);
+  }
+  if (body.status === 'active' || body.status === 'pending') {
+    db.prepare('UPDATE users SET status = ? WHERE id = ?').run(body.status, params.id);
   }
   if (body.name !== undefined && String(body.name).trim()) {
     db.prepare('UPDATE users SET name = ? WHERE id = ?').run(String(body.name).trim(), params.id);

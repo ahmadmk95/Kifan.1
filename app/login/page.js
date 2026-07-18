@@ -1,28 +1,35 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
+
+function landingFor(user) {
+  if (user?.role === 'admin') return '/admin';
+  if (user?.access === 'accounting') return '/admin/accounting';
+  return '/private';
+}
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get('next') || '/private';
+  const next = params.get('next');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [err, setErr] = useState(false);
+  const [err, setErr] = useState(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     if (busy || !username || !password) return;
     setBusy(true);
-    setErr(false);
+    setErr(null);
     try {
-      await api.login(username.trim(), password);
-      router.push(next);
+      const { user } = await api.login(username.trim(), password);
+      router.push(next || landingFor(user));
       router.refresh();
-    } catch {
-      setErr(true);
+    } catch (e) {
+      setErr(e.message || 'رقم الهاتف أو كلمة المرور غير صحيحة');
       setBusy(false);
     }
   };
@@ -34,9 +41,10 @@ function LoginForm() {
         <h1>دليل تعليمات الموكب</h1>
         <div className="pill-private">نسخة خاصة — للمخوّلين فقط</div>
         <input
-          type="text"
+          type="tel"
           dir="ltr"
-          placeholder="اسم المستخدم"
+          inputMode="tel"
+          placeholder="رقم الهاتف"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
@@ -49,8 +57,9 @@ function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
         />
-        {err ? <div className="login-err">اسم المستخدم أو كلمة المرور غير صحيحة</div> : null}
+        {err ? <div className="login-err">{err}</div> : null}
         <button className="btn-primary" onClick={submit} disabled={busy}>دخول</button>
+        <Link href="/register" className="splash-link">مستخدم جديد؟ إنشاء حساب</Link>
       </div>
     </div>
   );

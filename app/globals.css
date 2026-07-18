@@ -52,12 +52,17 @@ input, select, textarea { font-family: inherit; }
   width: 240px; height: 240px; max-width: 70vw; max-height: 70vw; display: block;
   filter: drop-shadow(0 18px 40px rgba(139, 120, 0, 0.28));
 }
-.splash-enter {
-  font-size: 14px; font-weight: 600; color: var(--mawkab-muted);
-  border: 1px solid var(--mawkab-border); border-radius: 999px; padding: 8px 20px;
+.splash-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.splash-btn {
+  font-size: 15px; font-weight: 600; color: var(--mawkab-ink); background: #fff;
+  border: 1px solid var(--mawkab-border); border-radius: 999px; padding: 11px 24px;
   transition: color .15s, border-color .15s, background .15s;
 }
-.splash-enter:hover { color: var(--mawkab-red); border-color: var(--mawkab-red); background: #fff; }
+.splash-btn:hover { color: var(--mawkab-red); border-color: var(--mawkab-red); }
+.splash-btn.primary { background: var(--mawkab-red); color: #fff; border-color: var(--mawkab-red); }
+.splash-btn.primary:hover { background: var(--mawkab-red-dark); color: #fff; }
+.splash-link { font-size: 13.5px; font-weight: 600; color: var(--mawkab-green); }
+.splash-link:hover { color: var(--mawkab-red); }
 @keyframes splash-in { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
 
 /* ============ Header ============ */
@@ -360,6 +365,23 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .inv-gallery a { display: block; }
 .inv-gallery img { max-width: 260px; max-height: 340px; border-radius: 12px; border: 1px solid var(--mawkab-border); display: block; }
 
+/* Join requests (pending users) */
+.req-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+.req-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  background: #fff; border: 1px solid var(--mawkab-border); border-radius: 12px; padding: 14px 16px;
+}
+.req-name { font-weight: 700; font-size: 16px; }
+.req-phone { font-size: 13.5px; color: var(--mawkab-muted); direction: ltr; text-align: start; }
+.req-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.req-controls select {
+  font-family: inherit; font-size: 16px; padding: 8px 12px; border: 1.5px solid var(--mawkab-border);
+  border-radius: 10px; background: var(--mawkab-paper); color: var(--mawkab-ink);
+}
+.btn-ok { background: var(--mawkab-green); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13.5px; font-weight: 700; }
+.btn-ok:hover { background: var(--mawkab-green-dark); }
+.users-table select { font-family: inherit; font-size: 15px; padding: 7px 10px; border: 1.5px solid var(--mawkab-border); border-radius: 8px; background: var(--mawkab-paper); }
+
 /* modal used across accounting */
 .overlay {
   position: fixed; inset: 0; z-index: 80; background: rgba(32,28,16,0.5);
@@ -464,28 +486,29 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
     display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
   }
 
-  /* The accounting transactions table has too many columns for a phone row —
-     render each transaction as a full-width, readable card instead. */
-  .acc-table { overflow: visible; white-space: normal; border: none; }
-  .acc-table thead { display: none; }
-  .acc-table tbody, .acc-table tr, .acc-table td { display: block; width: 100%; }
-  .acc-table tr {
+  /* Dense tables (accounting, users) render each row as a full-width card on
+     phones instead of a cramped, too-wide row. */
+  .acc-table, .users-table { overflow: visible; white-space: normal; border: none; }
+  .acc-table thead, .users-table thead { display: none; }
+  .acc-table tbody, .acc-table tr, .acc-table td,
+  .users-table tbody, .users-table tr, .users-table td { display: block; width: 100%; }
+  .acc-table tr, .users-table tr {
     border: 1px solid var(--mawkab-border); border-radius: 12px; margin-bottom: 12px;
     padding: 4px 14px; background: #fff;
   }
-  .acc-table td {
+  .acc-table td, .users-table td {
     display: flex; justify-content: space-between; align-items: center; gap: 12px;
     padding: 10px 0; border-bottom: 1px solid #F3EFE2; font-size: 15px; text-align: start;
   }
-  .acc-table tr td:last-child { border-bottom: none; }
-  .acc-table td::before {
+  .acc-table tr td:last-child, .users-table tr td:last-child { border-bottom: none; }
+  .acc-table td::before, .users-table td::before {
     content: attr(data-label); font-weight: 600; color: var(--mawkab-muted); font-size: 13px; flex-shrink: 0;
   }
   /* البيان and the actions cell stack their content under the label. */
   .acc-table td[data-label="البيان"] { display: block; }
   .acc-table td[data-label="البيان"]::before { display: block; margin-bottom: 3px; }
-  .acc-table td[data-label=""] { display: block; }
-  .acc-table td[data-label=""]::before { content: none; }
-  .acc-table .acts { justify-content: flex-start; flex-wrap: wrap; width: 100%; }
+  .acc-table td[data-label=""], .users-table td[data-label=""] { display: block; }
+  .acc-table td[data-label=""]::before, .users-table td[data-label=""]::before { content: none; }
+  .acc-table .acts, .users-table .acts { justify-content: flex-start; flex-wrap: wrap; width: 100%; }
   .acc-table .inv-thumbs { justify-content: flex-end; }
 }

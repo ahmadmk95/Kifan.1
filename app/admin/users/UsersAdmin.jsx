@@ -1,38 +1,61 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { api } from '@/lib/api';
 
-const ROLE_LABEL = { admin: 'مدير', member: 'مخوّل' };
+const AUTHORITIES = [
+  { value: 'committees', label: 'عرض اللجان فقط' },
+  { value: 'accounting', label: 'المحاسبة فقط' },
+  { value: 'admin', label: 'مدير كامل' },
+];
+const AUTH_LABEL = { admin: 'مدير كامل', committees: 'عرض اللجان', accounting: 'المحاسبة' };
+
+function authorityOf(u) {
+  if (u.role === 'admin') return 'admin';
+  return u.access === 'accounting' ? 'accounting' : 'committees';
+}
 
 export default function UsersAdmin({ currentUserId }) {
   const [users, setUsers] = useState(null);
-  const [f, setF] = useState({ name: '', username: '', password: '', role: 'member' });
   const [msg, setMsg] = useState(null);
+  const [pendingAuth, setPendingAuth] = useState({}); // id -> chosen authority
+  const [f, setF] = useState({ name: '', username: '', password: '', authority: 'committees' });
   const [busy, setBusy] = useState(false);
 
   const load = () => api.users().then(({ users }) => setUsers(users)).catch(() => setUsers([]));
   useEffect(() => { load(); }, []);
 
+  const { pending, active } = useMemo(() => {
+    const list = users || [];
+    return {
+      pending: list.filter((u) => u.status === 'pending'),
+      active: list.filter((u) => u.status !== 'pending'),
+    };
+  }, [users]);
+
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
 
-  const add = async () => {
-    if (busy) return;
-    if (!f.name.trim() || !f.username.trim() || !f.password) { setMsg({ t: 'err', x: 'يرجى تعبئة جميع الحقول' }); return; }
-    setBusy(true); setMsg(null);
+  const approve = async (u) => {
+    const authority = pendingAuth[u.id] || 'committees';
     try {
-      await api.addUser({ name: f.name.trim(), username: f.username.trim(), password: f.password, role: f.role });
-      setF({ name: '', username: '', password: '', role: 'member' });
-      setMsg({ t: 'ok', x: 'تمت إضافة المستخدم' });
+      await api.updateUser(u.id, { status: 'active', authority });
+      setMsg({ t: 'ok', x: `تم قبول ${u.name}` });
       load();
-    } catch (e) {
-      setMsg({ t: 'err', x: e.message });
-    } finally {
-      setBusy(false);
-    }
+    } catch (e) { setMsg({ t: 'err', x: e.message }); }
+  };
+
+  const reject = async (u) => {
+    if (!window.confirm(`رفض طلب «${u.name}»؟ سيُحذف الطلب.`)) return;
+    try { await api.removeUser(u.id); setMsg({ t: 'ok', x: 'تم رفض الطلب' }); load(); }
+    catch (e) { setMsg({ t: 'err', x: e.message }); }
+  };
+
+  const changeAuthority = async (u, authority) => {
+    try { await api.updateUser(u.id, { authority }); load(); }
+    catch (e) { setMsg({ t: 'err', x: e.message }); }
   };
 
   const remove = async (u) => {
@@ -48,9 +71,25 @@ export default function UsersAdmin({ currentUserId }) {
     setMsg({ t: 'ok', x: 'تم تحديث كلمة المرور' });
   };
 
+  const add = async () => {
+    if (busy) return;
+    if (!f.name.trim() || !f.username.trim() || !f.password) { setMsg({ t: 'err', x: 'يرجى تعبئة جميع الحقول' }); return; }
+    setBusy(true); setMsg(null);
+    try {
+      await api.addUser({ name: f.name.trim(), username: f.username.trim(), password: f.password, authority: f.authority });
+      setF({ name: '', username: '', password: '', authority: 'committees' });
+      setMsg({ t: 'ok', x: 'تمت إضافة المستخدم' });
+      load();
+    } catch (e) {
+      setMsg({ t: 'err', x: e.message });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="page">
-      <SiteHeader variant="private" />
+      <SiteHeader />
       <main className="main-wrap">
         <div className="admin-bar">
           <h1>المستخدمون</h1>
@@ -59,25 +98,93 @@ export default function UsersAdmin({ currentUserId }) {
 
         {msg ? <div className={'form-msg ' + msg.t}>{msg.x}</div> : null}
 
-        <div className="editor-page" style={{ marginBottom: 28 }}>
+        {/* Pending registration requests */}
+        <h2 className="acc-h">طلبات الانضمام {pending.length ? `(${pending.length})` : ''}</h2>
+        {users === null ? null : pending.length === 0 ? (
+          <p style={{ color: 'var(--mawkab-muted)', marginBottom: 20 }}>لا توجد طلبات جديدة.</p>
+        ) : (
+          <div className="req-list">
+            {pending.map((u) => (
+              <div className="req-card" key={u.id}>
+                <div className="req-info">
+                  <div className="req-name">{u.name}</div>
+                  <div className="req-phone" dir="ltr">{u.username}</div>
+                </div>
+                <div className="req-controls">
+                  <select
+                    value={pendingAuth[u.id] || 'committees'}
+                    onChange={(e) => setPendingAuth((s) => ({ ...s, [u.id]: e.target.value }))}
+                  >
+                    {AUTHORITIES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+                  </select>
+                  <button className="btn-ok" onClick={() => approve(u)}>قبول</button>
+                  <button className="btn-danger" onClick={() => reject(u)}>رفض</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Active users */}
+        <h2 className="acc-h" style={{ marginTop: 26 }}>المستخدمون المفعّلون</h2>
+        {users === null ? null : (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="admin-table users-table">
+              <thead>
+                <tr>
+                  <th>الاسم</th>
+                  <th>رقم الهاتف</th>
+                  <th style={{ width: 170 }}>الصلاحية</th>
+                  <th style={{ width: 190 }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {active.map((u) => (
+                  <tr key={u.id}>
+                    <td data-label="الاسم" style={{ fontWeight: 600 }}>{u.name}</td>
+                    <td data-label="رقم الهاتف" dir="ltr" style={{ textAlign: 'right' }}>{u.username}</td>
+                    <td data-label="الصلاحية">
+                      {u.id === currentUserId ? (
+                        AUTH_LABEL[authorityOf(u)]
+                      ) : (
+                        <select value={authorityOf(u)} onChange={(e) => changeAuthority(u, e.target.value)}>
+                          {AUTHORITIES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+                        </select>
+                      )}
+                    </td>
+                    <td data-label="">
+                      <div className="acts">
+                        <button className="btn-small" onClick={() => resetPw(u)}>كلمة المرور</button>
+                        {u.id !== currentUserId ? <button className="btn-danger" onClick={() => remove(u)}>حذف</button> : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Manual add (active immediately) */}
+        <h2 className="acc-h" style={{ marginTop: 26 }}>إضافة مستخدم يدوياً</h2>
+        <div className="editor-page">
           <div className="form-row">
             <div className="form-field">
               <label>الاسم</label>
               <input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="الاسم الكامل" />
             </div>
             <div className="form-field">
-              <label>اسم المستخدم</label>
-              <input value={f.username} onChange={(e) => set('username', e.target.value)} placeholder="username" dir="ltr" />
+              <label>رقم الهاتف</label>
+              <input value={f.username} onChange={(e) => set('username', e.target.value)} placeholder="رقم الهاتف" dir="ltr" />
             </div>
             <div className="form-field">
               <label>كلمة المرور</label>
               <input type="text" value={f.password} onChange={(e) => set('password', e.target.value)} placeholder="••••" dir="ltr" />
             </div>
-            <div className="form-field" style={{ maxWidth: 160 }}>
-              <label>الدور</label>
-              <select value={f.role} onChange={(e) => set('role', e.target.value)}>
-                <option value="member">مخوّل</option>
-                <option value="admin">مدير</option>
+            <div className="form-field" style={{ maxWidth: 180 }}>
+              <label>الصلاحية</label>
+              <select value={f.authority} onChange={(e) => set('authority', e.target.value)}>
+                {AUTHORITIES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
               </select>
             </div>
           </div>
@@ -85,34 +192,6 @@ export default function UsersAdmin({ currentUserId }) {
             <button className="btn-add" onClick={add} disabled={busy}>+ إضافة مستخدم</button>
           </div>
         </div>
-
-        {users === null ? null : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>الاسم</th>
-                <th>اسم المستخدم</th>
-                <th style={{ width: 90 }}>الدور</th>
-                <th style={{ width: 200 }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td style={{ fontWeight: 600 }}>{u.name}</td>
-                  <td dir="ltr" style={{ textAlign: 'right' }}>{u.username}</td>
-                  <td>{ROLE_LABEL[u.role]}</td>
-                  <td>
-                    <div className="acts">
-                      <button className="btn-small" onClick={() => resetPw(u)}>كلمة المرور</button>
-                      {u.id !== currentUserId ? <button className="btn-danger" onClick={() => remove(u)}>حذف</button> : null}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
       </main>
       <SiteFooter />
     </div>

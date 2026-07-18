@@ -4,7 +4,7 @@ import SiteFooter from '@/components/SiteFooter';
 import CommitteeGrid from '@/components/CommitteeGrid';
 import SearchBox from '@/components/SearchBox';
 import TrackView from '@/components/TrackView';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, canCommittees, landingFor } from '@/lib/auth';
 import { listCommittees } from '@/lib/committees';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
 export default async function PrivateHome() {
   const user = await getCurrentUser();
   if (!user) redirect('/login?next=/private');
+  if (!canCommittees(user)) redirect(landingFor(user));
 
   const committees = listCommittees({ includePrivate: true });
   return (

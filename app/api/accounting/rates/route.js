@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { getCurrentUser, isAdmin } from '@/lib/auth';
+import { getCurrentUser, canAccounting } from '@/lib/auth';
 import { getRates } from '@/lib/accounting';
 
 export const dynamic = 'force-dynamic';
 
 export async function PUT(req) {
   const user = await getCurrentUser();
-  if (!isAdmin(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
+  if (!canAccounting(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
 
   const body = await req.json().catch(() => ({}));
   const upsert = db.prepare(

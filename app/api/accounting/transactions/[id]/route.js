@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import db from '@/lib/db';
-import { getCurrentUser, isAdmin } from '@/lib/auth';
+import { getCurrentUser, canAccounting } from '@/lib/auth';
 import { CURRENCIES } from '@/lib/accounting';
 
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(req, { params }) {
   const user = await getCurrentUser();
-  if (!isAdmin(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
+  if (!canAccounting(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
 
   const existing = db.prepare('SELECT * FROM acc_transactions WHERE id = ?').get(params.id);
   if (!existing) return NextResponse.json({ error: 'الحركة غير موجودة' }, { status: 404 });
@@ -57,7 +57,7 @@ export async function PATCH(req, { params }) {
 
 export async function DELETE(req, { params }) {
   const user = await getCurrentUser();
-  if (!isAdmin(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
+  if (!canAccounting(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
   db.prepare('DELETE FROM acc_transaction_images WHERE transaction_id = ?').run(params.id);
   db.prepare('DELETE FROM acc_transactions WHERE id = ?').run(params.id);
   return NextResponse.json({ ok: true });
