@@ -104,13 +104,13 @@ export default function AccountingView() {
             <tbody>
               {filtered.map((tx) => (
                 <tr key={tx.id}>
-                  <td style={{ direction: 'ltr', textAlign: 'right' }}>{tx.occurred_on}</td>
-                  <td>
+                  <td data-label="التاريخ" style={{ direction: 'ltr', textAlign: 'right' }}>{tx.occurred_on}</td>
+                  <td data-label="النوع">
                     <span className={'tx-pill ' + (tx.type === 'donation' ? 'tx-in' : 'tx-out')}>
                       {tx.type === 'donation' ? 'تبرع' : 'مشترى'}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="البيان">
                     <Link href={`/admin/accounting/tx/${tx.id}`} className="tx-link" style={{ fontWeight: 600 }}>
                       {tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}
                     </Link>
@@ -119,10 +119,10 @@ export default function AccountingView() {
                       return sub ? <div style={{ fontSize: 12.5, color: 'var(--mawkab-muted)' }}>{sub}</div> : null;
                     })()}
                   </td>
-                  <td>{tx.category_name || (tx.type === 'purchase' ? 'غير مصنّف' : '—')}</td>
-                  <td>{amt(tx.amount)} <span style={{ color: 'var(--mawkab-muted)', fontSize: 12 }}>{tx.currency}</span></td>
-                  <td style={{ fontWeight: 700 }}>{usd(tx.amount_usd)}</td>
-                  <td>
+                  <td data-label="الفئة">{tx.category_name || (tx.type === 'purchase' ? 'غير مصنّف' : '—')}</td>
+                  <td data-label="المبلغ">{amt(tx.amount)} <span style={{ color: 'var(--mawkab-muted)', fontSize: 12 }}>{tx.currency}</span></td>
+                  <td data-label="بالدولار" style={{ fontWeight: 700 }}>{usd(tx.amount_usd)}</td>
+                  <td data-label="الفواتير">
                     {tx.images.length ? (
                       <div className="inv-thumbs">
                         {tx.images.map((im) => (
@@ -135,7 +135,7 @@ export default function AccountingView() {
                       <span style={{ color: 'var(--mawkab-muted)' }}>—</span>
                     )}
                   </td>
-                  <td>
+                  <td data-label="">
                     <div className="acts">
                       <Link href={`/admin/accounting/tx/${tx.id}`} className="btn-small">تفاصيل</Link>
                       <button className="btn-small" onClick={() => setModal({ type: tx.type, existing: tx })}>تعديل</button>

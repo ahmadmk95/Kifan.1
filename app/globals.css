@@ -430,6 +430,9 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
   .site-footer { padding: 28px 20px; }
   .detail-head h1 { font-size: 24px; }
   .stat-cards { grid-template-columns: repeat(2, 1fr); }
+  .acc-cards { grid-template-columns: 1fr; }
+  .rate-row { flex-wrap: wrap; }
+  .admin-bar h1 { font-size: 26px; }
 
   /* Keep all form controls at 16px so iOS Safari doesn't auto-zoom on focus. */
   input, select, textarea { font-size: 16px; }
@@ -438,4 +441,29 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
   .admin-table, .report-table {
     display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
   }
+
+  /* The accounting transactions table has too many columns for a phone row —
+     render each transaction as a full-width, readable card instead. */
+  .acc-table { overflow: visible; white-space: normal; border: none; }
+  .acc-table thead { display: none; }
+  .acc-table tbody, .acc-table tr, .acc-table td { display: block; width: 100%; }
+  .acc-table tr {
+    border: 1px solid var(--mawkab-border); border-radius: 12px; margin-bottom: 12px;
+    padding: 4px 14px; background: #fff;
+  }
+  .acc-table td {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid #F3EFE2; font-size: 15px; text-align: start;
+  }
+  .acc-table tr td:last-child { border-bottom: none; }
+  .acc-table td::before {
+    content: attr(data-label); font-weight: 600; color: var(--mawkab-muted); font-size: 13px; flex-shrink: 0;
+  }
+  /* البيان and the actions cell stack their content under the label. */
+  .acc-table td[data-label="البيان"] { display: block; }
+  .acc-table td[data-label="البيان"]::before { display: block; margin-bottom: 3px; }
+  .acc-table td[data-label=""] { display: block; }
+  .acc-table td[data-label=""]::before { content: none; }
+  .acc-table .acts { justify-content: flex-start; flex-wrap: wrap; width: 100%; }
+  .acc-table .inv-thumbs { justify-content: flex-end; }
 }
