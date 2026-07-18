@@ -43,7 +43,7 @@ export default function RegisterPage() {
           ) : (
             <>
               <h1>إنشاء حساب جديد</h1>
-              <div className="pill-private">سيُراجع طلبك من قبل الإدارة</div>
+              <div className="pill-private">سيتم مراجعة طلبك</div>
               {err ? <div className="login-err">{err}</div> : null}
               <input
                 type="text"
