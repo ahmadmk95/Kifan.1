@@ -13,9 +13,11 @@ export default function SiteHeader() {
   const role = user?.role;
   const access = user?.access;
   const isAdmin = role === 'admin';
-  const canCommittees = isAdmin || access === 'committees';
-  const canAccounting = isAdmin || access === 'accounting';
-  const home = isAdmin ? '/admin' : canAccounting ? '/admin/accounting' : canCommittees ? '/private' : '/login';
+  const isViewer = !isAdmin && access === 'viewer';
+  const canCommittees = isAdmin || isViewer || access === 'committees';
+  const canAccounting = isAdmin || isViewer || access === 'accounting';
+  const canAdminArea = isAdmin || isViewer;
+  const home = canAdminArea ? '/admin' : canAccounting ? '/admin/accounting' : canCommittees ? '/private' : '/login';
 
   return (
     <header className="site-header">
@@ -29,7 +31,7 @@ export default function SiteHeader() {
       <nav>
         {canCommittees ? <Link href="/private">اللجان</Link> : null}
         {canAccounting ? <Link href="/admin/accounting">المحاسبة</Link> : null}
-        {isAdmin ? <Link href="/admin">الإدارة</Link> : null}
+        {canAdminArea ? <Link href="/admin">الإدارة</Link> : null}
         <LogoutButton />
       </nav>
     </header>

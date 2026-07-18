@@ -8,7 +8,7 @@ import TransactionModal from '@/components/TransactionModal';
 import { api } from '@/lib/api';
 import { usd, amt } from '@/lib/money';
 
-export default function AccountingView() {
+export default function AccountingView({ readOnly = false }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
   const [modal, setModal] = useState(null); // { type, existing? } | null
@@ -34,8 +34,12 @@ export default function AccountingView() {
         <h1>المحاسبة</h1>
         <div className="admin-actions">
           <Link href="/admin/accounting/report" className="btn-ghost">تقرير PDF</Link>
-          <button className="btn-add" onClick={() => setModal({ type: 'donation' })}>＋ تبرع</button>
-          <button className="btn-add btn-out" onClick={() => setModal({ type: 'purchase' })}>＋ مشترى</button>
+          {!readOnly ? (
+            <>
+              <button className="btn-add" onClick={() => setModal({ type: 'donation' })}>＋ تبرع</button>
+              <button className="btn-add btn-out" onClick={() => setModal({ type: 'purchase' })}>＋ مشترى</button>
+            </>
+          ) : null}
         </div>
       </div>
 
@@ -56,8 +60,8 @@ export default function AccountingView() {
       </div>
 
       <div className="acc-grid">
-        <RatesPanel rates={data.rates} onSaved={load} />
-        <CategoriesPanel categories={data.categories} onChanged={load} />
+        <RatesPanel rates={data.rates} onSaved={load} readOnly={readOnly} />
+        <CategoriesPanel categories={data.categories} onChanged={load} readOnly={readOnly} />
       </div>
 
       {data.by_category.length > 0 && (
@@ -138,13 +142,17 @@ export default function AccountingView() {
                   <td data-label="">
                     <div className="acts">
                       <Link href={`/admin/accounting/tx/${tx.id}`} className="btn-small">تفاصيل</Link>
-                      <button className="btn-small" onClick={() => setModal({ type: tx.type, existing: tx })}>تعديل</button>
-                      <button
-                        className="btn-danger"
-                        onClick={async () => {
-                          if (window.confirm('حذف هذه الحركة؟')) { await api.removeTransaction(tx.id); load(); }
-                        }}
-                      >حذف</button>
+                      {!readOnly ? (
+                        <>
+                          <button className="btn-small" onClick={() => setModal({ type: tx.type, existing: tx })}>تعديل</button>
+                          <button
+                            className="btn-danger"
+                            onClick={async () => {
+                              if (window.confirm('حذف هذه الحركة؟')) { await api.removeTransaction(tx.id); load(); }
+                            }}
+                          >حذف</button>
+                        </>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -177,7 +185,7 @@ function Shell({ children }) {
   );
 }
 
-function RatesPanel({ rates, onSaved }) {
+function RatesPanel({ rates, onSaved, readOnly = false }) {
   const [iqd, setIqd] = useState(rates.IQD ?? '');
   const [kwd, setKwd] = useState(rates.KWD ?? '');
   const [busy, setBusy] = useState(false);
@@ -199,21 +207,21 @@ function RatesPanel({ rates, onSaved }) {
       <p className="acc-note">كل المبالغ تُحوَّل إلى الدولار حسب هذه الأسعار.</p>
       <div className="rate-row">
         <label>$100 =</label>
-        <input type="number" inputMode="decimal" value={iqd} onChange={(e) => setIqd(e.target.value)} dir="ltr" />
+        <input type="number" inputMode="decimal" value={iqd} onChange={(e) => setIqd(e.target.value)} dir="ltr" disabled={readOnly} />
         <span>دينار عراقي</span>
       </div>
       <div className="rate-row">
         <label>$100 =</label>
-        <input type="number" inputMode="decimal" value={kwd} onChange={(e) => setKwd(e.target.value)} dir="ltr" />
+        <input type="number" inputMode="decimal" value={kwd} onChange={(e) => setKwd(e.target.value)} dir="ltr" disabled={readOnly} />
         <span>دينار كويتي</span>
       </div>
-      <button className="btn-add" onClick={save} disabled={busy} style={{ marginTop: 6 }}>حفظ الأسعار</button>
+      {!readOnly ? <button className="btn-add" onClick={save} disabled={busy} style={{ marginTop: 6 }}>حفظ الأسعار</button> : null}
       {msg ? <div className="acc-inline-msg">{msg}</div> : null}
     </div>
   );
 }
 
-function CategoriesPanel({ categories, onChanged }) {
+function CategoriesPanel({ categories, onChanged, readOnly = false }) {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -228,17 +236,21 @@ function CategoriesPanel({ categories, onChanged }) {
   return (
     <div className="acc-panel">
       <h2 className="acc-h">فئات المشتريات</h2>
-      <div className="rate-row">
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم الفئة (مثال: مواد غذائية)"
-          onKeyDown={(e) => { if (e.key === 'Enter') add(); }} style={{ flex: 1 }} />
-        <button className="btn-add" onClick={add} disabled={busy}>＋</button>
-      </div>
+      {!readOnly ? (
+        <div className="rate-row">
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم الفئة (مثال: مواد غذائية)"
+            onKeyDown={(e) => { if (e.key === 'Enter') add(); }} style={{ flex: 1 }} />
+          <button className="btn-add" onClick={add} disabled={busy}>＋</button>
+        </div>
+      ) : null}
       <div className="cat-chips">
         {categories.length === 0 ? <span style={{ color: 'var(--mawkab-muted)', fontSize: 13 }}>لا توجد فئات بعد</span> : null}
         {categories.map((c) => (
           <span key={c.id} className="cat-chip">
             {c.name}
-            <button onClick={async () => { if (window.confirm('حذف فئة «' + c.name + '»؟')) { await api.removeCategory(c.id); onChanged(); } }}>×</button>
+            {!readOnly ? (
+              <button onClick={async () => { if (window.confirm('حذف فئة «' + c.name + '»؟')) { await api.removeCategory(c.id); onChanged(); } }}>×</button>
+            ) : null}
           </span>
         ))}
       </div>

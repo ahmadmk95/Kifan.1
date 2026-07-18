@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import db from '@/lib/db';
-import { getCurrentUser, isAdmin } from '@/lib/auth';
+import { getCurrentUser, canViewAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,7 @@ const VID_COOKIE = 'mwk_vid';
 export async function POST(req) {
   // Don't count the site's own admins browsing their content.
   const user = await getCurrentUser();
-  if (isAdmin(user)) return NextResponse.json({ ok: true, skipped: true });
+  if (canViewAdmin(user)) return NextResponse.json({ ok: true, skipped: true });
 
   const { slug } = await req.json().catch(() => ({}));
 

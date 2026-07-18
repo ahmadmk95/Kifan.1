@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 const VIS_LABEL = { public: 'عام', private: 'خاص', both: 'كلاهما' };
 const VIS_CLASS = { public: 'vis-public', private: 'vis-private', both: 'vis-both' };
 
-export default function AdminList() {
+export default function AdminList({ readOnly = false }) {
   const [committees, setCommittees] = useState(null);
 
   const load = () => api.committees().then(({ committees }) => setCommittees(committees)).catch(() => setCommittees([]));
@@ -23,7 +23,7 @@ export default function AdminList() {
 
   return (
     <div className="page">
-      <SiteHeader variant="private" />
+      <SiteHeader />
       <main className="main-wrap">
         <div className="admin-bar">
           <h1>إدارة اللجان</h1>
@@ -31,7 +31,7 @@ export default function AdminList() {
             <Link href="/admin/accounting" className="btn-ghost">المحاسبة</Link>
             <Link href="/admin/stats" className="btn-ghost">الزيارات</Link>
             <Link href="/admin/users" className="btn-ghost">المستخدمون</Link>
-            <Link href="/admin/edit/new" className="btn-add">+ إضافة لجنة</Link>
+            {!readOnly ? <Link href="/admin/edit/new" className="btn-add">+ إضافة لجنة</Link> : null}
           </div>
         </div>
 
@@ -39,7 +39,7 @@ export default function AdminList() {
           <div className="empty-state">
             <img src="/logo.png" alt="الشعار" />
             <p>لا توجد لجان بعد</p>
-            <Link href="/admin/edit/new" className="btn-add">+ إضافة لجنة</Link>
+            {!readOnly ? <Link href="/admin/edit/new" className="btn-add">+ إضافة لجنة</Link> : null}
           </div>
         ) : (
           <table className="admin-table">
@@ -58,10 +58,12 @@ export default function AdminList() {
                   <td style={{ fontWeight: 600 }}>{c.name}</td>
                   <td><span className={'vis-pill ' + VIS_CLASS[c.visibility]}>{VIS_LABEL[c.visibility]}</span></td>
                   <td>
-                    <div className="acts">
-                      <Link href={`/admin/edit/${c.id}`} className="btn-small">تعديل</Link>
-                      <button className="btn-danger" onClick={() => remove(c)}>حذف</button>
-                    </div>
+                    {!readOnly ? (
+                      <div className="acts">
+                        <Link href={`/admin/edit/${c.id}`} className="btn-small">تعديل</Link>
+                        <button className="btn-danger" onClick={() => remove(c)}>حذف</button>
+                      </div>
+                    ) : null}
                   </td>
                 </tr>
               ))}

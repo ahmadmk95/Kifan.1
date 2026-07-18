@@ -9,16 +9,18 @@ import { api } from '@/lib/api';
 const AUTHORITIES = [
   { value: 'committees', label: 'عرض اللجان فقط' },
   { value: 'accounting', label: 'المحاسبة فقط' },
+  { value: 'viewer', label: 'مشرف — عرض فقط' },
   { value: 'admin', label: 'مدير كامل' },
 ];
-const AUTH_LABEL = { admin: 'مدير كامل', committees: 'عرض اللجان', accounting: 'المحاسبة' };
+const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', committees: 'عرض اللجان', accounting: 'المحاسبة' };
 
 function authorityOf(u) {
   if (u.role === 'admin') return 'admin';
+  if (u.access === 'viewer') return 'viewer';
   return u.access === 'accounting' ? 'accounting' : 'committees';
 }
 
-export default function UsersAdmin({ currentUserId }) {
+export default function UsersAdmin({ currentUserId, canManage = true }) {
   const [users, setUsers] = useState(null);
   const [msg, setMsg] = useState(null);
   const [pendingAuth, setPendingAuth] = useState({}); // id -> chosen authority
@@ -115,7 +117,9 @@ export default function UsersAdmin({ currentUserId }) {
                     value={pendingAuth[u.id] || 'committees'}
                     onChange={(e) => setPendingAuth((s) => ({ ...s, [u.id]: e.target.value }))}
                   >
-                    {AUTHORITIES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+                    {AUTHORITIES.filter((a) => canManage || a.value !== 'admin').map((a) => (
+                      <option key={a.value} value={a.value}>{a.label}</option>
+                    ))}
                   </select>
                   <button className="btn-ok" onClick={() => approve(u)}>قبول</button>
                   <button className="btn-danger" onClick={() => reject(u)}>رفض</button>
@@ -144,7 +148,7 @@ export default function UsersAdmin({ currentUserId }) {
                     <td data-label="الاسم" style={{ fontWeight: 600 }}>{u.name}</td>
                     <td data-label="رقم الهاتف" dir="ltr" style={{ textAlign: 'right' }}>{u.username}</td>
                     <td data-label="الصلاحية">
-                      {u.id === currentUserId ? (
+                      {!canManage || u.id === currentUserId ? (
                         AUTH_LABEL[authorityOf(u)]
                       ) : (
                         <select value={authorityOf(u)} onChange={(e) => changeAuthority(u, e.target.value)}>
@@ -153,10 +157,12 @@ export default function UsersAdmin({ currentUserId }) {
                       )}
                     </td>
                     <td data-label="">
-                      <div className="acts">
-                        <button className="btn-small" onClick={() => resetPw(u)}>كلمة المرور</button>
-                        {u.id !== currentUserId ? <button className="btn-danger" onClick={() => remove(u)}>حذف</button> : null}
-                      </div>
+                      {canManage ? (
+                        <div className="acts">
+                          <button className="btn-small" onClick={() => resetPw(u)}>كلمة المرور</button>
+                          {u.id !== currentUserId ? <button className="btn-danger" onClick={() => remove(u)}>حذف</button> : null}
+                        </div>
+                      ) : null}
                     </td>
                   </tr>
                 ))}
@@ -166,6 +172,7 @@ export default function UsersAdmin({ currentUserId }) {
         )}
 
         {/* Manual add (active immediately) */}
+        {canManage ? (<>
         <h2 className="acc-h" style={{ marginTop: 26 }}>إضافة مستخدم يدوياً</h2>
         <div className="editor-page">
           <div className="form-row">
@@ -192,6 +199,7 @@ export default function UsersAdmin({ currentUserId }) {
             <button className="btn-add" onClick={add} disabled={busy}>+ إضافة مستخدم</button>
           </div>
         </div>
+        </>) : null}
       </main>
       <SiteFooter />
     </div>

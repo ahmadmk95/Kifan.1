@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 
 function landingFor(user) {
-  if (user?.role === 'admin') return '/admin';
+  if (user?.role === 'admin' || user?.access === 'viewer') return '/admin';
   if (user?.access === 'accounting') return '/admin/accounting';
   return '/private';
 }

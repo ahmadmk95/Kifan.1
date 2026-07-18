@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
-import { getCurrentUser, isAdmin, authorityToRole } from '@/lib/auth';
+import { getCurrentUser, isAdmin, canViewAdmin, authorityToRole } from '@/lib/auth';
 
 export async function GET() {
   const user = await getCurrentUser();
-  if (!isAdmin(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
+  if (!canViewAdmin(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
   const users = db
     .prepare('SELECT id, name, username, role, access, status, created_at FROM users ORDER BY created_at ASC')
     .all();
