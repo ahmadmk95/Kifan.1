@@ -355,6 +355,16 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .report-table td { font-variant-numeric: tabular-nums; }
 .report-foot { text-align: center; color: var(--mawkab-red); font-family: var(--font-heading), serif; margin-top: 26px; font-size: 14px; }
 
+/* Consistent numerals everywhere: numbers use the body (sans) font, not the
+   serif heading font, so digits look identical across the whole site. */
+.committee-card .num,
+.detail-head .num,
+.sc-value,
+.rs-val {
+  font-family: var(--font-body), sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
 @media print {
   .no-print { display: none !important; }
   body { background: #fff; }
