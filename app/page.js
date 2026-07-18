@@ -1,31 +1,16 @@
-import SiteHeader from '@/components/SiteHeader';
-import SiteFooter from '@/components/SiteFooter';
-import CommitteeGrid from '@/components/CommitteeGrid';
-import SearchBox from '@/components/SearchBox';
-import TrackView from '@/components/TrackView';
-import { listCommittees } from '@/lib/committees';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
+// Public landing is closed: the site shows only the logo. Authorized users tap
+// it (or the discreet link) to reach the login and the private area.
 export default function HomePage() {
-  const committees = listCommittees({ includePrivate: false });
   return (
-    <div className="page">
-      <SiteHeader variant="public" />
-      <section className="hero">
-        <img src="/logo.png" alt="شعار موكب أمير المؤمنين (ع)" />
-        <h1>دليل تعليمات الموكب</h1>
-        <p>موكب أمير المؤمنين (ع) — زيارة الأربعين 2026</p>
-      </section>
-      <main className="main-wrap">
-        <div className="search-wrap">
-          <SearchBox basePath="/c" scope="public" />
-        </div>
-        <h2 className="grid-title">اللجان</h2>
-        <CommitteeGrid committees={committees} basePath="/c" />
-      </main>
-      <SiteFooter />
-      <TrackView />
+    <div className="splash">
+      <Link href="/login" className="splash-logo" aria-label="دخول">
+        <img src="/logo.png" alt="موكب أمير المؤمنين (ع)" />
+      </Link>
+      <Link href="/login" className="splash-enter">دخول المخوّلين</Link>
     </div>
   );
 }
