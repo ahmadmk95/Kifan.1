@@ -10,7 +10,10 @@ export async function POST(req) {
   }
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(String(username).trim());
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-    return NextResponse.json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' }, { status: 401 });
+    return NextResponse.json({ error: 'رقم الهاتف أو كلمة المرور غير صحيحة' }, { status: 401 });
+  }
+  if (user.status === 'pending') {
+    return NextResponse.json({ error: 'حسابك قيد المراجعة — بانتظار موافقة الإدارة' }, { status: 403 });
   }
   await createSession(user.id);
   return NextResponse.json({ user: publicUser(user) });

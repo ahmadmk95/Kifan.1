@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { getCurrentUser, isAdmin } from '@/lib/auth';
+import { getCurrentUser, canAccounting } from '@/lib/auth';
 import { uploadsDir } from '@/lib/db';
 
 const EXT_BY_TYPE = {
@@ -15,7 +15,7 @@ const EXT_BY_TYPE = {
 
 export async function POST(req) {
   const user = await getCurrentUser();
-  if (!isAdmin(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
+  if (!canAccounting(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
 
   const form = await req.formData().catch(() => null);
   const file = form?.get('file') || form?.get('upload');

@@ -10,7 +10,10 @@ export default function HomePage() {
       <Link href="/login" className="splash-logo" aria-label="دخول">
         <img src="/logo.png" alt="موكب أمير المؤمنين (ع)" />
       </Link>
-      <Link href="/login" className="splash-enter">دخول المخوّلين</Link>
+      <div className="splash-actions">
+        <Link href="/register" className="splash-btn primary">إنشاء حساب جديد</Link>
+        <Link href="/login" className="splash-btn">دخول المخوّلين</Link>
+      </div>
     </div>
   );
 }

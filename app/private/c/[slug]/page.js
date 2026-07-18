@@ -5,7 +5,7 @@ import SiteFooter from '@/components/SiteFooter';
 import RichContent from '@/components/RichContent';
 import Highlighter from '@/components/Highlighter';
 import TrackView from '@/components/TrackView';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, canCommittees, landingFor } from '@/lib/auth';
 import { getCommitteeBySlug, listCommittees } from '@/lib/committees';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +17,7 @@ function decodeSlug(raw) {
 export default async function PrivateCommitteePage({ params }) {
   const user = await getCurrentUser();
   if (!user) redirect(`/login?next=/private/c/${params.slug}`);
+  if (!canCommittees(user)) redirect(landingFor(user));
 
   const committee = getCommitteeBySlug(decodeSlug(params.slug), { includePrivate: true });
   if (!committee) notFound();
