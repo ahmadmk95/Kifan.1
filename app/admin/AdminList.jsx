@@ -28,6 +28,7 @@ export default function AdminList() {
         <div className="admin-bar">
           <h1>إدارة اللجان</h1>
           <div className="admin-actions">
+            <Link href="/admin/stats" className="btn-ghost">الزيارات</Link>
             <Link href="/admin/users" className="btn-ghost">المستخدمون</Link>
             <Link href="/admin/edit/new" className="btn-add">+ إضافة لجنة</Link>
           </div>

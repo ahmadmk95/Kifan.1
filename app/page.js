@@ -2,6 +2,7 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import CommitteeGrid from '@/components/CommitteeGrid';
 import SearchBox from '@/components/SearchBox';
+import TrackView from '@/components/TrackView';
 import { listCommittees } from '@/lib/committees';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,7 @@ export default function HomePage() {
         <CommitteeGrid committees={committees} basePath="/c" />
       </main>
       <SiteFooter />
+      <TrackView />
     </div>
   );
 }

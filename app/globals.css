@@ -240,6 +240,26 @@ input, select, textarea { font-family: inherit; }
 mark.search-hit { background: var(--mawkab-yellow); color: inherit; border-radius: 3px; padding: 0 2px; }
 mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 
+/* ============ Stats ============ */
+.stat-cards {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;
+}
+.stat-card {
+  background: #fff; border: 1px solid var(--mawkab-border); border-radius: 14px;
+  padding: 22px 18px; text-align: center;
+}
+.sc-value {
+  font-family: var(--font-heading), serif; font-weight: 700; font-size: 40px;
+  color: var(--mawkab-red); line-height: 1.1; font-variant-numeric: tabular-nums;
+}
+.sc-label { font-size: 13.5px; color: var(--mawkab-muted); margin-top: 6px; }
+.admin-table td { font-variant-numeric: tabular-nums; }
+.stats-note {
+  margin-top: 18px; font-size: 13px; color: var(--mawkab-muted);
+  background: var(--mawkab-yellow-soft); border: 1px solid var(--mawkab-border);
+  border-radius: 10px; padding: 12px 16px; line-height: 1.9;
+}
+
 /* ============ Responsive ============ */
 @media (max-width: 720px) {
   .site-header { padding: 12px 20px; }
@@ -254,4 +274,5 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
   .site-footer { padding: 28px 20px; }
   .detail-head h1 { font-size: 24px; }
   .search-box input { font-size: 15px; }
+  .stat-cards { grid-template-columns: repeat(2, 1fr); }
 }

@@ -3,6 +3,7 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import CommitteeGrid from '@/components/CommitteeGrid';
 import SearchBox from '@/components/SearchBox';
+import TrackView from '@/components/TrackView';
 import { getCurrentUser } from '@/lib/auth';
 import { listCommittees } from '@/lib/committees';
 
@@ -29,6 +30,7 @@ export default async function PrivateHome() {
         <CommitteeGrid committees={committees} basePath="/private/c" />
       </main>
       <SiteFooter />
+      <TrackView />
     </div>
   );
 }
