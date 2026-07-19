@@ -353,6 +353,18 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .tx-link { color: var(--mawkab-green); }
 .tx-link:hover { color: var(--mawkab-red); text-decoration: underline; }
 
+/* one-line transaction summaries on the main accounting page */
+.tx-lines { display: flex; flex-direction: column; gap: 8px; }
+.tx-line {
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; border: 1px solid var(--mawkab-border); border-radius: 12px;
+  padding: 11px 14px; color: var(--mawkab-ink); transition: border-color .15s, box-shadow .15s;
+}
+.tx-line:hover { border-color: var(--mawkab-red); color: var(--mawkab-ink); box-shadow: 0 3px 12px rgba(60,50,10,0.07); }
+.tx-line-name { flex: 1; min-width: 0; font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-line-date { font-size: 12.5px; color: var(--mawkab-muted); direction: ltr; flex-shrink: 0; }
+.tx-line-usd { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
 /* transaction detail page */
 .tx-detail-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 3px solid var(--mawkab-yellow); padding-bottom: 16px; }
 .tx-detail-title { font-family: var(--font-heading), serif; font-size: 26px; font-weight: 700; }
@@ -462,7 +474,12 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
   .report-page { padding: 24px 20px; }
   .rpt-doc-meta { text-align: right; }
   .tx-detail-usd { margin-inline-start: 0; }
-  .site-header { padding: 12px 20px; }
+  /* Compact header on phones: brand on one line, nav wraps neatly below. */
+  .site-header { padding: 8px 14px; gap: 4px 12px; flex-wrap: wrap; justify-content: center; }
+  .site-header .brand { gap: 8px; }
+  .site-header .brand img { width: 32px; height: 32px; }
+  .site-header .brand .t1 { font-size: 15px; line-height: 1.3; white-space: nowrap; }
+  .site-header .brand .t2 { display: none; }
   .site-header nav { gap: 14px; font-size: 13.5px; }
   .hero { padding: 48px 20px 44px; }
   .hero img { width: 150px; height: 150px; }
@@ -471,7 +488,11 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
   .main-wrap { padding: 36px 20px 56px; }
   .committee-grid { grid-template-columns: 1fr; }
   .content-card { padding: 22px 18px; }
-  .site-footer { padding: 28px 20px; }
+  /* Compact footer on phones: centered stack, smaller logo and text. */
+  .site-footer { padding: 18px 16px; flex-direction: column; text-align: center; gap: 8px; }
+  .site-footer .brand img { width: 30px; height: 30px; }
+  .site-footer .brand span { font-size: 16px; }
+  .site-footer .tag { font-size: 12.5px; }
   .detail-head h1 { font-size: 24px; }
   .stat-cards { grid-template-columns: repeat(2, 1fr); }
   .acc-cards { grid-template-columns: 1fr; }
