@@ -353,6 +353,17 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .tx-link { color: var(--mawkab-green); }
 .tx-link:hover { color: var(--mawkab-red); text-decoration: underline; }
 
+/* currency toggle for the accounting totals */
+.cur-toggle {
+  display: inline-flex; gap: 4px; background: #fff; border: 1px solid var(--mawkab-border);
+  border-radius: 999px; padding: 4px; margin-bottom: 18px;
+}
+.cur-toggle .ct {
+  border: none; background: none; padding: 8px 18px; border-radius: 999px; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 600; color: var(--mawkab-muted);
+}
+.cur-toggle .ct.active { background: var(--mawkab-red); color: #fff; }
+
 /* one-line transaction summaries on the main accounting page */
 .tx-lines { display: flex; flex-direction: column; gap: 8px; }
 .tx-line {

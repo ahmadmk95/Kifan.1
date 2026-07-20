@@ -6,12 +6,19 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import TransactionModal from '@/components/TransactionModal';
 import { api } from '@/lib/api';
-import { usd } from '@/lib/money';
+import { fmtCur } from '@/lib/money';
+
+const DISPLAY_CURRENCIES = [
+  { value: 'USD', label: 'دولار $' },
+  { value: 'IQD', label: 'دينار عراقي' },
+  { value: 'KWD', label: 'دينار كويتي' },
+];
 
 export default function AccountingView({ readOnly = false }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
   const [modal, setModal] = useState(null); // { type, existing? } | null
+  const [cur, setCur] = useState('USD');
 
   const load = () => api.accounting().then(setData).catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(); }, []);
@@ -20,6 +27,7 @@ export default function AccountingView({ readOnly = false }) {
   if (!data) return <Shell><p style={{ color: 'var(--mawkab-muted)' }}>جارٍ التحميل…</p></Shell>;
 
   const t = data.totals;
+  const show = (v) => fmtCur(v, cur, data.rates);
 
   return (
     <Shell>
@@ -36,18 +44,27 @@ export default function AccountingView({ readOnly = false }) {
         </div>
       </div>
 
+      {/* Currency toggle for the totals (USD by default) */}
+      <div className="cur-toggle">
+        {DISPLAY_CURRENCIES.map((c) => (
+          <button key={c.value} className={'ct' + (cur === c.value ? ' active' : '')} onClick={() => setCur(c.value)}>
+            {c.label}
+          </button>
+        ))}
+      </div>
+
       {/* Summary */}
       <div className="stat-cards acc-cards">
         <div className="stat-card acc-in">
-          <div className="sc-value">{usd(t.donations_usd)}</div>
+          <div className="sc-value">{show(t.donations_usd)}</div>
           <div className="sc-label">إجمالي التبرعات</div>
         </div>
         <div className="stat-card acc-out">
-          <div className="sc-value">{usd(t.purchases_usd)}</div>
+          <div className="sc-value">{show(t.purchases_usd)}</div>
           <div className="sc-label">إجمالي المشتريات</div>
         </div>
         <div className={'stat-card ' + (t.balance_usd >= 0 ? 'acc-bal' : 'acc-neg')}>
-          <div className="sc-value">{usd(t.balance_usd)}</div>
+          <div className="sc-value">{show(t.balance_usd)}</div>
           <div className="sc-label">الرصيد المتبقّي</div>
         </div>
       </div>
@@ -64,7 +81,7 @@ export default function AccountingView({ readOnly = false }) {
             {data.by_category.map((c) => (
               <div key={c.name} className="cbd-row">
                 <span className="cbd-name">{c.name}</span>
-                <span className="cbd-val">{usd(c.usd)}</span>
+                <span className="cbd-val">{show(c.usd)}</span>
               </div>
             ))}
           </div>
@@ -88,7 +105,7 @@ export default function AccountingView({ readOnly = false }) {
               </span>
               <span className="tx-line-name">{tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}</span>
               <span className="tx-line-date">{tx.occurred_on}</span>
-              <span className="tx-line-usd">{usd(tx.amount_usd)}</span>
+              <span className="tx-line-usd">{show(tx.amount_usd)}</span>
             </Link>
           ))}
         </div>
