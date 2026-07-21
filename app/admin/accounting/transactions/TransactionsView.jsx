@@ -138,6 +138,7 @@ export default function TransactionsView({ readOnly = false }) {
           type={modal.type}
           existing={modal.existing}
           categories={data.categories}
+          suggestions={data.suggestions}
           onClose={() => setModal(null)}
           onSaved={() => { setModal(null); load(); }}
         />

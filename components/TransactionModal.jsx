@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { api } from '@/lib/api';
 import { CURRENCIES, CUR_LABEL, today } from '@/lib/money';
 
-export default function TransactionModal({ type, existing, categories, onClose, onSaved }) {
+export default function TransactionModal({ type, existing, categories, suggestions = {}, onClose, onSaved }) {
   const isPurchase = type === 'purchase';
   const isEdit = !!existing;
+  const sg = { items: [], parties: [], descriptions: [], ...suggestions };
   const [f, setF] = useState({
     amount: existing ? String(existing.amount) : '',
     currency: existing ? existing.currency : (isPurchase ? 'IQD' : 'USD'),
@@ -77,7 +78,8 @@ export default function TransactionModal({ type, existing, categories, onClose, 
           {isPurchase ? (
             <div className="form-field">
               <label>اسم الصنف / المادة <span style={{ color: 'var(--mawkab-red)' }}>*</span></label>
-              <input value={f.item} onChange={(e) => set('item', e.target.value)} placeholder="مثال: أرز، غاز، أكياس" autoFocus />
+              <input value={f.item} onChange={(e) => set('item', e.target.value)} placeholder="مثال: أرز، غاز، أكياس" autoFocus list="dl-items" autoComplete="off" />
+              <datalist id="dl-items">{sg.items.map((v) => <option key={v} value={v} />)}</datalist>
             </div>
           ) : null}
           <div className="form-row">
@@ -96,7 +98,8 @@ export default function TransactionModal({ type, existing, categories, onClose, 
           <div className="form-row">
             <div className="form-field">
               <label>{isPurchase ? 'المورّد / الجهة (اختياري)' : 'المتبرّع (اختياري)'}</label>
-              <input value={f.party} onChange={(e) => set('party', e.target.value)} />
+              <input value={f.party} onChange={(e) => set('party', e.target.value)} list="dl-parties" autoComplete="off" />
+              <datalist id="dl-parties">{sg.parties.map((v) => <option key={v} value={v} />)}</datalist>
             </div>
             <div className="form-field" style={{ maxWidth: 170 }}>
               <label>التاريخ</label>
@@ -116,7 +119,8 @@ export default function TransactionModal({ type, existing, categories, onClose, 
 
           <div className="form-field">
             <label>ملاحظة / بيان (اختياري)</label>
-            <input value={f.description} onChange={(e) => set('description', e.target.value)} />
+            <input value={f.description} onChange={(e) => set('description', e.target.value)} list="dl-desc" autoComplete="off" />
+            <datalist id="dl-desc">{sg.descriptions.map((v) => <option key={v} value={v} />)}</datalist>
           </div>
 
           {isPurchase ? (

@@ -9,7 +9,7 @@ import TransactionModal from '@/components/TransactionModal';
 import { api } from '@/lib/api';
 import { usd, amt, CUR_LABEL } from '@/lib/money';
 
-export default function TxDetail({ tx, categories, readOnly = false }) {
+export default function TxDetail({ tx, categories, suggestions = {}, readOnly = false }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const isPurchase = tx.type === 'purchase';
@@ -90,6 +90,7 @@ export default function TxDetail({ tx, categories, readOnly = false }) {
           type={tx.type}
           existing={tx}
           categories={categories}
+          suggestions={suggestions}
           onClose={() => setEditing(false)}
           onSaved={() => { setEditing(false); router.refresh(); }}
         />
