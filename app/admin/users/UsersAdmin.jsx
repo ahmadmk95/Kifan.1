@@ -9,15 +9,18 @@ import { api } from '@/lib/api';
 const AUTHORITIES = [
   { value: 'committees', label: 'عرض اللجان فقط' },
   { value: 'accounting', label: 'المحاسبة فقط' },
+  { value: 'fridge', label: 'الثلاجة فقط' },
   { value: 'viewer', label: 'مشرف — عرض فقط' },
   { value: 'admin', label: 'مدير كامل' },
 ];
-const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', committees: 'عرض اللجان', accounting: 'المحاسبة' };
+const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', committees: 'عرض اللجان', accounting: 'المحاسبة', fridge: 'الثلاجة' };
 
 function authorityOf(u) {
   if (u.role === 'admin') return 'admin';
   if (u.access === 'viewer') return 'viewer';
-  return u.access === 'accounting' ? 'accounting' : 'committees';
+  if (u.access === 'accounting') return 'accounting';
+  if (u.access === 'fridge') return 'fridge';
+  return 'committees';
 }
 
 export default function UsersAdmin({ currentUserId, canManage = true }) {

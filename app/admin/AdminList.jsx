@@ -29,6 +29,7 @@ export default function AdminList({ readOnly = false }) {
           <h1>إدارة اللجان</h1>
           <div className="admin-actions">
             <Link href="/admin/accounting" className="btn-ghost">المحاسبة</Link>
+            <Link href="/admin/fridge" className="btn-ghost">الثلاجة</Link>
             <Link href="/admin/stats" className="btn-ghost">الزيارات</Link>
             <Link href="/admin/users" className="btn-ghost">المستخدمون</Link>
             {!readOnly ? <Link href="/admin/edit/new" className="btn-add">+ إضافة لجنة</Link> : null}
