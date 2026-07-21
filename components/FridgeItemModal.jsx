@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import Autocomplete from '@/components/Autocomplete';
 
 const UNIT_SUGGESTIONS = ['كيلو', 'غرام', 'قطعة', 'حبة', 'علبة', 'كيس', 'كرتون', 'صندوق', 'لتر', 'عبوة'];
 
-export default function FridgeItemModal({ existing, onClose, onSaved }) {
+export default function FridgeItemModal({ existing, suggestions = {}, onClose, onSaved }) {
   const isEdit = !!existing;
+  const sg = { names: [], units: [], notes: [], ...suggestions };
+  // Offer the user's previously-used units first, then the common defaults.
+  const unitOptions = [...sg.units, ...UNIT_SUGGESTIONS.filter((u) => !sg.units.includes(u))];
   const [f, setF] = useState({
     name: existing?.name || '',
     unit: existing?.unit || '',
@@ -69,14 +73,13 @@ export default function FridgeItemModal({ existing, onClose, onSaved }) {
 
           <div className="form-field">
             <label>اسم الصنف <span style={{ color: 'var(--mawkab-red)' }}>*</span></label>
-            <input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="مثال: دجاج، أرز، طماطة" autoFocus />
+            <Autocomplete value={f.name} onChange={(v) => set('name', v)} options={sg.names} placeholder="مثال: دجاج، أرز، طماطة" autoFocus />
           </div>
 
           <div className="form-row">
             <div className="form-field">
               <label>وحدة القياس</label>
-              <input value={f.unit} onChange={(e) => set('unit', e.target.value)} placeholder="مثال: كيلو، قطعة، كرتون" list="dl-units" autoComplete="off" />
-              <datalist id="dl-units">{UNIT_SUGGESTIONS.map((v) => <option key={v} value={v} />)}</datalist>
+              <Autocomplete value={f.unit} onChange={(v) => set('unit', v)} options={unitOptions} placeholder="مثال: كيلو، قطعة، كرتون" />
             </div>
             {!isEdit ? (
               <div className="form-field" style={{ maxWidth: 160 }}>
@@ -93,7 +96,7 @@ export default function FridgeItemModal({ existing, onClose, onSaved }) {
 
           <div className="form-field">
             <label>ملاحظة (اختياري)</label>
-            <input value={f.note} onChange={(e) => set('note', e.target.value)} placeholder="مثال: مكان التخزين، الماركة…" />
+            <Autocomplete value={f.note} onChange={(v) => set('note', v)} options={sg.notes} placeholder="مثال: مكان التخزين، الماركة…" />
           </div>
 
           <div className="form-field">

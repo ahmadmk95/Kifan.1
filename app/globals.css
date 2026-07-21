@@ -222,6 +222,23 @@ input, select, textarea { font-family: inherit; }
 .form-msg.err { background: #FFF0EE; border: 1px solid #F3C4BE; color: var(--mawkab-red); }
 .form-msg.ok { background: #EFF7EC; border: 1px solid #CBE3C2; color: var(--mawkab-green-dark); }
 
+/* Autocomplete (custom suggestion dropdown — reliable on iOS) */
+.ac-wrap { position: relative; width: 100%; }
+.ac-input {
+  width: 100%; font-family: inherit; font-size: 16px; padding: 10px 14px;
+  border: 1.5px solid var(--mawkab-border); border-radius: 10px; outline: none;
+  background: var(--mawkab-paper); color: var(--mawkab-ink);
+}
+.ac-input:focus { border-color: var(--mawkab-green); background: #fff; }
+.ac-list {
+  position: absolute; top: calc(100% + 4px); inset-inline-start: 0; inset-inline-end: 0; z-index: 60;
+  background: #fff; border: 1.5px solid var(--mawkab-border); border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(60, 50, 10, 0.16); max-height: 210px; overflow-y: auto;
+  list-style: none; margin: 0; padding: 4px; -webkit-overflow-scrolling: touch;
+}
+.ac-item { padding: 10px 12px; border-radius: 7px; font-size: 15px; cursor: pointer; text-align: start; }
+.ac-item.hi, .ac-item:hover { background: var(--mawkab-yellow-soft); }
+
 /* CKEditor frame */
 .editor-shell { background: #fff; border: 1px solid var(--mawkab-border); border-radius: 14px; overflow: hidden; }
 .editor-shell .ck-editor__editable { min-height: 420px; font-size: 16px; line-height: 2; }

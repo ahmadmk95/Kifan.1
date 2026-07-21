@@ -5,6 +5,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import TransactionModal from '@/components/TransactionModal';
+import Autocomplete from '@/components/Autocomplete';
 import { api } from '@/lib/api';
 import { fmtCur } from '@/lib/money';
 
@@ -188,9 +189,8 @@ function CategoriesPanel({ categories, onChanged, readOnly = false }) {
       <h2 className="acc-h">فئات المشتريات</h2>
       {!readOnly ? (
         <div className="rate-row">
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم الفئة (مثال: مواد غذائية)"
-            onKeyDown={(e) => { if (e.key === 'Enter') add(); }} style={{ flex: 1 }} list="dl-cats" autoComplete="off" />
-          <datalist id="dl-cats">{categories.map((c) => <option key={c.id} value={c.name} />)}</datalist>
+          <Autocomplete value={name} onChange={setName} options={categories.map((c) => c.name)}
+            placeholder="اسم الفئة (مثال: مواد غذائية)" onEnter={add} wrapStyle={{ flex: 1 }} />
           <button className="btn-add" onClick={add} disabled={busy}>＋</button>
         </div>
       ) : null}

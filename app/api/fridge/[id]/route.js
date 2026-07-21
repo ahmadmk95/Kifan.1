@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getCurrentUser, canFridge, canFridgeView } from '@/lib/auth';
-import { getItem } from '@/lib/fridge';
+import { getItem, listFridgeSuggestions } from '@/lib/fridge';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,7 @@ export async function GET(req, { params }) {
   if (!canFridgeView(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
   const item = getItem(params.id);
   if (!item) return NextResponse.json({ error: 'الصنف غير موجود' }, { status: 404 });
-  return NextResponse.json({ item });
+  return NextResponse.json({ item, suggestions: listFridgeSuggestions() });
 }
 
 export async function PATCH(req, { params }) {

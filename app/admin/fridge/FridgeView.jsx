@@ -10,10 +10,13 @@ import { fmtQty } from '@/lib/qty';
 
 export default function FridgeView({ readOnly = false }) {
   const [items, setItems] = useState(null);
+  const [suggestions, setSuggestions] = useState({});
   const [err, setErr] = useState(null);
   const [adding, setAdding] = useState(false);
 
-  const load = () => api.fridge().then(({ items }) => setItems(items)).catch(() => setErr('تعذّر تحميل البيانات'));
+  const load = () => api.fridge()
+    .then(({ items, suggestions }) => { setItems(items); setSuggestions(suggestions || {}); })
+    .catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(); }, []);
 
   const lowCount = (items || []).filter((it) => it.min_qty != null && Number(it.quantity) <= Number(it.min_qty)).length;
@@ -70,7 +73,7 @@ export default function FridgeView({ readOnly = false }) {
       <SiteFooter />
 
       {adding ? (
-        <FridgeItemModal onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />
+        <FridgeItemModal suggestions={suggestions} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />
       ) : null}
     </div>
   );
