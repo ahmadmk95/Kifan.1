@@ -27,16 +27,6 @@ export async function PATCH(req, { params }) {
   if (!name) return NextResponse.json({ error: 'اسم الصنف مطلوب' }, { status: 400 });
 
   const location = body.location !== undefined && BRANCH_VALUES.includes(body.location) ? body.location : existing.location;
-
-  let categoryId = existing.category_id;
-  if (body.category_id !== undefined) {
-    categoryId = null;
-    if (body.category_id) {
-      const cat = db.prepare('SELECT id FROM fridge_categories WHERE id = ?').get(String(body.category_id));
-      if (cat) categoryId = cat.id;
-    }
-  }
-
   const unit = body.unit !== undefined ? (String(body.unit || '').trim().slice(0, 40) || null) : existing.unit;
   const note = body.note !== undefined ? (String(body.note || '').trim().slice(0, 2000) || null) : existing.note;
 
@@ -54,9 +44,9 @@ export async function PATCH(req, { params }) {
   const flagged = body.flagged !== undefined ? (body.flagged ? 1 : 0) : existing.flagged;
 
   db.prepare(
-    `UPDATE fridge_items SET name = ?, location = ?, category_id = ?, unit = ?, min_qty = ?, flagged = ?, image_url = ?, note = ?, updated_at = datetime('now')
+    `UPDATE fridge_items SET name = ?, location = ?, unit = ?, min_qty = ?, flagged = ?, image_url = ?, note = ?, updated_at = datetime('now')
      WHERE id = ?`
-  ).run(name, location, categoryId, unit, minQty, flagged, imageUrl, note, params.id);
+  ).run(name, location, unit, minQty, flagged, imageUrl, note, params.id);
 
   return NextResponse.json({ ok: true });
 }

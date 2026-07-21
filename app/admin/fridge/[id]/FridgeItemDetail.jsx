@@ -11,7 +11,7 @@ import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 import { BRANCH_LABEL } from '@/lib/fridgeBranches';
 
-export default function FridgeItemDetail({ item: initial, suggestions = {}, categories = [], readOnly = false }) {
+export default function FridgeItemDetail({ item: initial, suggestions = {}, units = [], readOnly = false }) {
   const router = useRouter();
   const [item, setItem] = useState(initial);
   const [editing, setEditing] = useState(false);
@@ -95,7 +95,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, cate
             <div className="fd-qtybox">
               <div className="fd-qty">{fmtQty(item.quantity)}<span className="fd-unit">{item.unit ? ' ' + item.unit : ''}</span></div>
               <div className="fd-qty-label">الكمية المتوفّرة{low ? (out ? ' — نفد المخزون' : ' — منخفض') : ''}</div>
-              <div className="fd-min">الفرع: {BRANCH_LABEL[item.location] || 'ثلاجة'}{item.category_name ? ` · الفئة: ${item.category_name}` : ''}</div>
+              <div className="fd-min">الفرع: {BRANCH_LABEL[item.location] || 'ثلاجة'}</div>
               {item.min_qty != null ? <div className="fd-min">حد التنبيه: {fmtQty(item.min_qty)}{item.unit ? ' ' + item.unit : ''}</div> : null}
               {(low || item.flagged) ? (
                 <div className="fd-lowtag">⚠ ضمن قائمة النواقص{low && !item.flagged ? ' (تلقائياً — أقل من الحد)' : item.flagged && !low ? ' (يدوياً)' : ''}</div>
@@ -166,7 +166,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, cate
         <FridgeItemModal
           existing={item}
           suggestions={suggestions}
-          categories={categories}
+          units={units}
           onClose={() => setEditing(false)}
           onSaved={async () => { setEditing(false); await reload(); }}
         />
