@@ -189,7 +189,8 @@ function CategoriesPanel({ categories, onChanged, readOnly = false }) {
       {!readOnly ? (
         <div className="rate-row">
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم الفئة (مثال: مواد غذائية)"
-            onKeyDown={(e) => { if (e.key === 'Enter') add(); }} style={{ flex: 1 }} />
+            onKeyDown={(e) => { if (e.key === 'Enter') add(); }} style={{ flex: 1 }} list="dl-cats" autoComplete="off" />
+          <datalist id="dl-cats">{categories.map((c) => <option key={c.id} value={c.name} />)}</datalist>
           <button className="btn-add" onClick={add} disabled={busy}>＋</button>
         </div>
       ) : null}

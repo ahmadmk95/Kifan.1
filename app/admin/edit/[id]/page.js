@@ -16,5 +16,10 @@ export default async function EditCommitteePage({ params }) {
     if (!committee) redirect('/admin');
   }
 
-  return <EditorForm committee={committee} />;
+  const names = db
+    .prepare('SELECT DISTINCT name FROM committees WHERE name IS NOT NULL AND name != "" ORDER BY name COLLATE NOCASE')
+    .all()
+    .map((r) => r.name);
+
+  return <EditorForm committee={committee} names={names} />;
 }
