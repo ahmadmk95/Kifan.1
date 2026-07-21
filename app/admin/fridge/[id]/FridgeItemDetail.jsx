@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import FridgeItemModal from '@/components/FridgeItemModal';
+import Autocomplete from '@/components/Autocomplete';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 
-export default function FridgeItemDetail({ item: initial, readOnly = false }) {
+export default function FridgeItemDetail({ item: initial, suggestions = {}, readOnly = false }) {
   const router = useRouter();
   const [item, setItem] = useState(initial);
   const [editing, setEditing] = useState(false);
@@ -95,7 +96,7 @@ export default function FridgeItemDetail({ item: initial, readOnly = false }) {
                 </div>
                 <div className="form-field">
                   <label>سبب / ملاحظة (اختياري)</label>
-                  <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="مثال: استلام من المورّد، صرف للمطبخ" />
+                  <Autocomplete value={reason} onChange={setReason} options={suggestions.reasons || []} placeholder="مثال: استلام من المورّد، صرف للمطبخ" />
                 </div>
               </div>
               <div className="admin-actions">
@@ -145,6 +146,7 @@ export default function FridgeItemDetail({ item: initial, readOnly = false }) {
       {editing ? (
         <FridgeItemModal
           existing={item}
+          suggestions={suggestions}
           onClose={() => setEditing(false)}
           onSaved={async () => { setEditing(false); await reload(); }}
         />

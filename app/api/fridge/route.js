@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import db from '@/lib/db';
 import { getCurrentUser, canFridge, canFridgeView } from '@/lib/auth';
-import { listItems } from '@/lib/fridge';
+import { listItems, listFridgeSuggestions } from '@/lib/fridge';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const user = await getCurrentUser();
   if (!canFridgeView(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
-  return NextResponse.json({ items: listItems() });
+  return NextResponse.json({ items: listItems(), suggestions: listFridgeSuggestions() });
 }
 
 export async function POST(req) {

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import Autocomplete from '@/components/Autocomplete';
 import { CURRENCIES, CUR_LABEL, today } from '@/lib/money';
 
 export default function TransactionModal({ type, existing, categories, suggestions = {}, onClose, onSaved }) {
@@ -78,8 +79,7 @@ export default function TransactionModal({ type, existing, categories, suggestio
           {isPurchase ? (
             <div className="form-field">
               <label>اسم الصنف / المادة <span style={{ color: 'var(--mawkab-red)' }}>*</span></label>
-              <input value={f.item} onChange={(e) => set('item', e.target.value)} placeholder="مثال: أرز، غاز، أكياس" autoFocus list="dl-items" autoComplete="off" />
-              <datalist id="dl-items">{sg.items.map((v) => <option key={v} value={v} />)}</datalist>
+              <Autocomplete value={f.item} onChange={(v) => set('item', v)} options={sg.items} placeholder="مثال: أرز، غاز، أكياس" autoFocus />
             </div>
           ) : null}
           <div className="form-row">
@@ -98,8 +98,7 @@ export default function TransactionModal({ type, existing, categories, suggestio
           <div className="form-row">
             <div className="form-field">
               <label>{isPurchase ? 'المورّد / الجهة (اختياري)' : 'المتبرّع (اختياري)'}</label>
-              <input value={f.party} onChange={(e) => set('party', e.target.value)} list="dl-parties" autoComplete="off" />
-              <datalist id="dl-parties">{sg.parties.map((v) => <option key={v} value={v} />)}</datalist>
+              <Autocomplete value={f.party} onChange={(v) => set('party', v)} options={sg.parties} />
             </div>
             <div className="form-field" style={{ maxWidth: 170 }}>
               <label>التاريخ</label>
@@ -119,8 +118,7 @@ export default function TransactionModal({ type, existing, categories, suggestio
 
           <div className="form-field">
             <label>ملاحظة / بيان (اختياري)</label>
-            <input value={f.description} onChange={(e) => set('description', e.target.value)} list="dl-desc" autoComplete="off" />
-            <datalist id="dl-desc">{sg.descriptions.map((v) => <option key={v} value={v} />)}</datalist>
+            <Autocomplete value={f.description} onChange={(v) => set('description', v)} options={sg.descriptions} />
           </div>
 
           {isPurchase ? (
