@@ -51,10 +51,12 @@ export async function PATCH(req, { params }) {
     minQty = body.min_qty === null || body.min_qty === '' || !Number.isFinite(minRaw) || minRaw < 0 ? null : minRaw;
   }
 
+  const flagged = body.flagged !== undefined ? (body.flagged ? 1 : 0) : existing.flagged;
+
   db.prepare(
-    `UPDATE fridge_items SET name = ?, location = ?, category_id = ?, unit = ?, min_qty = ?, image_url = ?, note = ?, updated_at = datetime('now')
+    `UPDATE fridge_items SET name = ?, location = ?, category_id = ?, unit = ?, min_qty = ?, flagged = ?, image_url = ?, note = ?, updated_at = datetime('now')
      WHERE id = ?`
-  ).run(name, location, categoryId, unit, minQty, imageUrl, note, params.id);
+  ).run(name, location, categoryId, unit, minQty, flagged, imageUrl, note, params.id);
 
   return NextResponse.json({ ok: true });
 }

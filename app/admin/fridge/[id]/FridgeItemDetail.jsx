@@ -49,6 +49,17 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, cate
     router.refresh();
   };
 
+  const toggleFlag = async () => {
+    const next = !item.flagged;
+    try {
+      await api.updateFridgeItem(item.id, { flagged: next });
+      await reload();
+      setMsg({ t: 'ok', x: next ? 'أُضيف إلى قائمة النواقص' : 'أُزيل من قائمة النواقص' });
+    } catch (e) {
+      setMsg({ t: 'err', x: e.message });
+    }
+  };
+
   const low = item.min_qty != null && Number(item.quantity) <= Number(item.min_qty);
   const out = Number(item.quantity) <= 0;
 
@@ -62,6 +73,9 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, cate
             <Link href="/admin/fridge" className="btn-ghost">← رجوع للثلاجة</Link>
             {!readOnly ? (
               <>
+                <button className={'btn-small' + (item.flagged ? ' flag-on' : '')} onClick={toggleFlag}>
+                  {item.flagged ? '✓ ضمن النواقص' : '⚠ إضافة إلى النواقص'}
+                </button>
                 <button className="btn-small" onClick={() => setEditing(true)}>تعديل</button>
                 <button className="btn-danger" onClick={remove}>حذف</button>
               </>
@@ -83,6 +97,9 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, cate
               <div className="fd-qty-label">الكمية المتوفّرة{low ? (out ? ' — نفد المخزون' : ' — منخفض') : ''}</div>
               <div className="fd-min">الفرع: {BRANCH_LABEL[item.location] || 'ثلاجة'}{item.category_name ? ` · الفئة: ${item.category_name}` : ''}</div>
               {item.min_qty != null ? <div className="fd-min">حد التنبيه: {fmtQty(item.min_qty)}{item.unit ? ' ' + item.unit : ''}</div> : null}
+              {(low || item.flagged) ? (
+                <div className="fd-lowtag">⚠ ضمن قائمة النواقص{low && !item.flagged ? ' (تلقائياً — أقل من الحد)' : item.flagged && !low ? ' (يدوياً)' : ''}</div>
+              ) : null}
             </div>
           </div>
 

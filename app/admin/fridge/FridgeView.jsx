@@ -7,8 +7,8 @@ import SiteFooter from '@/components/SiteFooter';
 import FridgeItemModal from '@/components/FridgeItemModal';
 import FridgeCategoriesModal from '@/components/FridgeCategoriesModal';
 import { api } from '@/lib/api';
-import { fmtQty } from '@/lib/qty';
-import { FRIDGE_BRANCHES } from '@/lib/fridgeBranches';
+import { fmtQty, isLowStock } from '@/lib/qty';
+import { FRIDGE_BRANCHES, BRANCH_LABEL } from '@/lib/fridgeBranches';
 
 export default function FridgeView({ readOnly = false }) {
   const [items, setItems] = useState(null);
@@ -32,12 +32,16 @@ export default function FridgeView({ readOnly = false }) {
     return m;
   }, [items]);
 
-  const branchItems = useMemo(
-    () => (items || []).filter((it) => (it.location || 'fridge') === branch),
-    [items, branch]
-  );
-  const lowCount = branchItems.filter((it) => it.min_qty != null && Number(it.quantity) <= Number(it.min_qty)).length;
-  const branchLabel = FRIDGE_BRANCHES.find((b) => b.value === branch)?.label || '';
+  const lowItems = useMemo(() => (items || []).filter(isLowStock), [items]);
+  const isLowView = branch === 'low';
+
+  const shown = useMemo(() => {
+    if (!items) return [];
+    if (isLowView) return lowItems;
+    return items.filter((it) => (it.location || 'fridge') === branch);
+  }, [items, branch, isLowView, lowItems]);
+
+  const branchLabel = isLowView ? 'النواقص' : (FRIDGE_BRANCHES.find((b) => b.value === branch)?.label || '');
 
   return (
     <div className="page">
@@ -51,7 +55,7 @@ export default function FridgeView({ readOnly = false }) {
           </div>
         </div>
 
-        {/* Branch selector — same inventory model per branch */}
+        {/* Branch selector + a cross-branch low-stock (النواقص) list */}
         <div className="branch-tabs">
           {FRIDGE_BRANCHES.map((b) => (
             <button key={b.value} className={'branch-tab' + (branch === b.value ? ' active' : '')} onClick={() => setBranch(b.value)}>
@@ -60,40 +64,51 @@ export default function FridgeView({ readOnly = false }) {
               <span className="bt-count">{countByBranch[b.value] || 0}</span>
             </button>
           ))}
+          <button className={'branch-tab low-tab' + (isLowView ? ' active' : '')} onClick={() => setBranch('low')}>
+            <span className="bt-ico">⚠️</span>
+            <span className="bt-label">النواقص</span>
+            <span className="bt-count">{lowItems.length}</span>
+          </button>
         </div>
 
         {err ? (
           <div className="form-msg err">{err}</div>
         ) : items === null ? (
           <p style={{ color: 'var(--mawkab-muted)' }}>جارٍ التحميل…</p>
-        ) : branchItems.length === 0 ? (
+        ) : shown.length === 0 ? (
           <div className="empty-state">
             <img src="/logo.png" alt="الشعار" />
-            <p>لا توجد أصناف في «{branchLabel}» بعد</p>
-            {!readOnly ? <button className="btn-add" onClick={() => setAdding(true)}>＋ إضافة صنف</button> : null}
+            <p>{isLowView ? 'لا توجد أصناف ناقصة — المخزون بخير 👍' : `لا توجد أصناف في «${branchLabel}» بعد`}</p>
+            {!readOnly && !isLowView ? <button className="btn-add" onClick={() => setAdding(true)}>＋ إضافة صنف</button> : null}
           </div>
         ) : (
           <>
-            {lowCount > 0 ? (
-              <div className="fridge-alert">⚠ {lowCount} صنف بحاجة إلى إعادة تعبئة في «{branchLabel}»</div>
+            {isLowView ? (
+              <div className="fridge-alert">⚠ {lowItems.length} صنف بحاجة إلى إعادة تعبئة</div>
             ) : null}
             <div className="fridge-grid">
-              {branchItems.map((it) => {
+              {shown.map((it) => {
                 const low = it.min_qty != null && Number(it.quantity) <= Number(it.min_qty);
                 const out = Number(it.quantity) <= 0;
+                const flaggedOnly = !low && it.flagged;
                 return (
-                  <Link key={it.id} href={`/admin/fridge/${it.id}`} className={'fridge-tile' + (out ? ' is-out' : low ? ' is-low' : '')}>
+                  <Link key={it.id} href={`/admin/fridge/${it.id}`} className={'fridge-tile' + (out ? ' is-out' : low ? ' is-low' : flaggedOnly ? ' is-flag' : '')}>
                     {it.image_url ? (
                       <span className="ft-img" style={{ backgroundImage: `url(${it.image_url})` }} />
                     ) : (
                       <span className="ft-img ft-img-ph">🧺</span>
                     )}
                     <span className="ft-name">{it.name}</span>
-                    {it.category_name ? <span className="ft-cat">{it.category_name}</span> : null}
+                    {isLowView ? (
+                      <span className="ft-cat">{BRANCH_LABEL[it.location] || 'ثلاجة'}</span>
+                    ) : it.category_name ? (
+                      <span className="ft-cat">{it.category_name}</span>
+                    ) : null}
                     <span className="ft-qty">
                       {fmtQty(it.quantity)}{it.unit ? <span className="ft-unit"> {it.unit}</span> : null}
                     </span>
-                    {low ? <span className="ft-badge">{out ? 'نفد' : 'منخفض'}</span> : null}
+                    {low ? <span className="ft-badge">{out ? 'نفد' : 'منخفض'}</span>
+                      : flaggedOnly ? <span className="ft-badge flag">مطلوب</span> : null}
                   </Link>
                 );
               })}
@@ -107,7 +122,7 @@ export default function FridgeView({ readOnly = false }) {
         <FridgeItemModal
           suggestions={suggestions}
           categories={categories}
-          defaultLocation={branch}
+          defaultLocation={isLowView ? 'fridge' : branch}
           onClose={() => setAdding(false)}
           onSaved={() => { setAdding(false); load(); }}
         />
