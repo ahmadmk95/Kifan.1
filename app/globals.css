@@ -479,7 +479,64 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 }
 
 /* ============ Responsive ============ */
+/* Fridge (ثلاجة) inventory ------------------------------------------------ */
+.fridge-alert {
+  background: #FFF0EE; border: 1px solid #F3C4BE; color: var(--mawkab-red);
+  border-radius: 12px; padding: 12px 16px; font-size: 14.5px; font-weight: 700; margin-bottom: 20px;
+}
+.fridge-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 16px;
+}
+.fridge-tile {
+  position: relative; background: #fff; border: 1px solid var(--mawkab-border); border-radius: 16px;
+  padding: 20px 14px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center; color: var(--mawkab-ink); min-height: 176px; justify-content: flex-start;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.fridge-tile:hover { border-color: var(--mawkab-red); box-shadow: 0 10px 28px rgba(60, 50, 10, 0.10); transform: translateY(-2px); color: var(--mawkab-ink); }
+.fridge-tile .ft-img {
+  width: 66px; height: 66px; border-radius: 16px; background-size: cover; background-position: center;
+  background-color: var(--mawkab-yellow-soft); border: 1px solid var(--mawkab-border);
+  display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0;
+}
+.fridge-tile .ft-name { font-family: var(--font-heading), serif; font-size: 19px; font-weight: 700; line-height: 1.3; }
+.fridge-tile .ft-qty { font-size: 23px; font-weight: 800; color: var(--mawkab-green-dark); margin-top: auto; }
+.fridge-tile .ft-qty .ft-unit { font-size: 14px; font-weight: 600; color: var(--mawkab-muted); }
+.fridge-tile .ft-badge {
+  position: absolute; top: 10px; inset-inline-start: 10px; background: var(--mawkab-red); color: #fff;
+  font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+}
+.fridge-tile.is-low { border-color: #F3C4BE; background: #FFF7F6; }
+.fridge-tile.is-low .ft-qty { color: var(--mawkab-red); }
+.fridge-tile.is-out { border-color: var(--mawkab-red); background: #FFF0EE; }
+
+.fridge-detail .fd-hero {
+  display: flex; align-items: center; gap: 22px; background: #fff; border: 1px solid var(--mawkab-border);
+  border-top: 4px solid var(--mawkab-green); border-radius: 16px; padding: 22px 24px; margin-bottom: 18px;
+}
+.fridge-detail .fd-hero.is-low { border-top-color: var(--mawkab-red); }
+.fridge-detail .fd-hero.is-out { border-top-color: var(--mawkab-red); background: #FFF7F6; }
+.fridge-detail .fd-img {
+  width: 96px; height: 96px; border-radius: 18px; background-size: cover; background-position: center;
+  background-color: var(--mawkab-yellow-soft); border: 1px solid var(--mawkab-border);
+  display: flex; align-items: center; justify-content: center; font-size: 44px; flex-shrink: 0;
+}
+.fridge-detail .fd-qty { font-size: 40px; font-weight: 800; color: var(--mawkab-green-dark); line-height: 1.1; }
+.fridge-detail .fd-hero.is-low .fd-qty, .fridge-detail .fd-hero.is-out .fd-qty { color: var(--mawkab-red); }
+.fridge-detail .fd-qty .fd-unit { font-size: 20px; font-weight: 600; color: var(--mawkab-muted); }
+.fridge-detail .fd-qty-label { font-size: 14px; color: var(--mawkab-muted); font-weight: 600; margin-top: 4px; }
+.fridge-detail .fd-min { font-size: 13px; color: var(--mawkab-muted); margin-top: 2px; }
+.fridge-detail .fd-note {
+  background: var(--mawkab-yellow-soft); border: 1px solid var(--mawkab-border); border-radius: 12px;
+  padding: 12px 16px; font-size: 14.5px; margin-bottom: 18px;
+}
+.fridge-detail .fd-move { margin-bottom: 8px; }
+
 @media (max-width: 720px) {
+  .fridge-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .fridge-tile { min-height: 158px; padding: 16px 10px 14px; }
+  .fridge-tile .ft-name { font-size: 17px; }
+  .fridge-detail .fd-hero { flex-direction: column; text-align: center; gap: 14px; }
   .acc-grid { grid-template-columns: 1fr; }
   .rpt-summary { grid-template-columns: 1fr; }
   .report-page { padding: 24px 20px; }
