@@ -9,6 +9,7 @@ import FridgeItemModal from '@/components/FridgeItemModal';
 import Autocomplete from '@/components/Autocomplete';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
+import { BRANCH_LABEL } from '@/lib/fridgeBranches';
 
 export default function FridgeItemDetail({ item: initial, suggestions = {}, readOnly = false }) {
   const router = useRouter();
@@ -80,6 +81,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, read
             <div className="fd-qtybox">
               <div className="fd-qty">{fmtQty(item.quantity)}<span className="fd-unit">{item.unit ? ' ' + item.unit : ''}</span></div>
               <div className="fd-qty-label">الكمية المتوفّرة{low ? (out ? ' — نفد المخزون' : ' — منخفض') : ''}</div>
+              <div className="fd-min">الفرع: {BRANCH_LABEL[item.location] || 'ثلاجة'}</div>
               {item.min_qty != null ? <div className="fd-min">حد التنبيه: {fmtQty(item.min_qty)}{item.unit ? ' ' + item.unit : ''}</div> : null}
             </div>
           </div>

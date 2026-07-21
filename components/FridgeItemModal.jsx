@@ -3,16 +3,18 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import Autocomplete from '@/components/Autocomplete';
+import { FRIDGE_BRANCHES } from '@/lib/fridgeBranches';
 
 const UNIT_SUGGESTIONS = ['كيلو', 'غرام', 'قطعة', 'حبة', 'علبة', 'كيس', 'كرتون', 'صندوق', 'لتر', 'عبوة'];
 
-export default function FridgeItemModal({ existing, suggestions = {}, onClose, onSaved }) {
+export default function FridgeItemModal({ existing, suggestions = {}, defaultLocation = 'fridge', onClose, onSaved }) {
   const isEdit = !!existing;
   const sg = { names: [], units: [], notes: [], ...suggestions };
   // Offer the user's previously-used units first, then the common defaults.
   const unitOptions = [...sg.units, ...UNIT_SUGGESTIONS.filter((u) => !sg.units.includes(u))];
   const [f, setF] = useState({
     name: existing?.name || '',
+    location: existing?.location || defaultLocation || 'fridge',
     unit: existing?.unit || '',
     quantity: '',
     min_qty: existing?.min_qty != null ? String(existing.min_qty) : '',
@@ -45,6 +47,7 @@ export default function FridgeItemModal({ existing, suggestions = {}, onClose, o
     setBusy(true); setErr(null);
     const payload = {
       name: f.name.trim(),
+      location: f.location,
       unit: f.unit.trim() || null,
       min_qty: f.min_qty === '' ? null : Number(f.min_qty),
       note: f.note.trim() || null,
@@ -74,6 +77,13 @@ export default function FridgeItemModal({ existing, suggestions = {}, onClose, o
           <div className="form-field">
             <label>اسم الصنف <span style={{ color: 'var(--mawkab-red)' }}>*</span></label>
             <Autocomplete value={f.name} onChange={(v) => set('name', v)} options={sg.names} placeholder="مثال: دجاج، أرز، طماطة" autoFocus />
+          </div>
+
+          <div className="form-field">
+            <label>الفرع / الموقع</label>
+            <select value={f.location} onChange={(e) => set('location', e.target.value)}>
+              {FRIDGE_BRANCHES.map((b) => <option key={b.value} value={b.value}>{b.icon} {b.label}</option>)}
+            </select>
           </div>
 
           <div className="form-row">
