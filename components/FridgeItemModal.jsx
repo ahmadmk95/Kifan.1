@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import Autocomplete from '@/components/Autocomplete';
+import UnitPicker from '@/components/UnitPicker';
 import { FRIDGE_BRANCHES } from '@/lib/fridgeBranches';
 
-export default function FridgeItemModal({ existing, suggestions = {}, units = [], defaultLocation = 'fridge', onClose, onSaved }) {
+export default function FridgeItemModal({ existing, suggestions = {}, units = [], defaultLocation = 'fridge', onUnitsChanged, onClose, onSaved }) {
   const isEdit = !!existing;
   const sg = { names: [], units: [], notes: [], ...suggestions };
-  // Offer the curated units first, then any previously-typed ones.
-  const managed = units.map((u) => u.name);
-  const unitOptions = [...managed, ...sg.units.filter((u) => !managed.includes(u))];
+  const [unitList, setUnitList] = useState(units);
   const [f, setF] = useState({
     name: existing?.name || '',
     location: existing?.location || defaultLocation || 'fridge',
@@ -85,18 +84,23 @@ export default function FridgeItemModal({ existing, suggestions = {}, units = []
             </select>
           </div>
 
-          <div className="form-row">
-            <div className="form-field">
-              <label>وحدة القياس</label>
-              <Autocomplete value={f.unit} onChange={(v) => set('unit', v)} options={unitOptions} placeholder="مثال: كيلو، قطعة، كرتون" />
-            </div>
-            {!isEdit ? (
-              <div className="form-field" style={{ maxWidth: 160 }}>
-                <label>الكمية الحالية</label>
-                <input type="number" inputMode="decimal" value={f.quantity} onChange={(e) => set('quantity', e.target.value)} placeholder="0" dir="ltr" />
-              </div>
-            ) : null}
+          <div className="form-field">
+            <label>وحدة القياس</label>
+            <UnitPicker
+              value={f.unit}
+              onChange={(v) => set('unit', v)}
+              units={unitList}
+              setUnits={setUnitList}
+              onChanged={onUnitsChanged}
+            />
           </div>
+
+          {!isEdit ? (
+            <div className="form-field" style={{ maxWidth: 200 }}>
+              <label>الكمية الحالية</label>
+              <input type="number" inputMode="decimal" value={f.quantity} onChange={(e) => set('quantity', e.target.value)} placeholder="0" dir="ltr" />
+            </div>
+          ) : null}
 
           <div className="form-field">
             <label>حد التنبيه (تنبيه عند النقص)</label>
