@@ -5,23 +5,23 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import FridgeItemModal from '@/components/FridgeItemModal';
-import FridgeCategoriesModal from '@/components/FridgeCategoriesModal';
+import FridgeUnitsModal from '@/components/FridgeUnitsModal';
 import { api } from '@/lib/api';
 import { fmtQty, isLowStock } from '@/lib/qty';
 import { FRIDGE_BRANCHES, BRANCH_LABEL } from '@/lib/fridgeBranches';
 
 export default function FridgeView({ readOnly = false }) {
   const [items, setItems] = useState(null);
-  const [categories, setCategories] = useState([]);
+  const [units, setUnits] = useState([]);
   const [suggestions, setSuggestions] = useState({});
   const [err, setErr] = useState(null);
   const [adding, setAdding] = useState(false);
-  const [managingCats, setManagingCats] = useState(false);
+  const [managingUnits, setManagingUnits] = useState(false);
   const [branch, setBranch] = useState('fridge');
 
   const load = () => api.fridge()
-    .then(({ items, categories, suggestions }) => {
-      setItems(items); setCategories(categories || []); setSuggestions(suggestions || {});
+    .then(({ items, units, suggestions }) => {
+      setItems(items); setUnits(units || []); setSuggestions(suggestions || {});
     })
     .catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(); }, []);
@@ -50,7 +50,7 @@ export default function FridgeView({ readOnly = false }) {
         <div className="admin-bar">
           <h1>الثلاجة</h1>
           <div className="admin-actions">
-            {!readOnly ? <button className="btn-ghost" onClick={() => setManagingCats(true)}>الفئات</button> : null}
+            {!readOnly ? <button className="btn-ghost" onClick={() => setManagingUnits(true)}>الوحدات</button> : null}
             {!readOnly ? <button className="btn-add" onClick={() => setAdding(true)}>＋ إضافة صنف</button> : null}
           </div>
         </div>
@@ -99,11 +99,7 @@ export default function FridgeView({ readOnly = false }) {
                       <span className="ft-img ft-img-ph">🧺</span>
                     )}
                     <span className="ft-name">{it.name}</span>
-                    {isLowView ? (
-                      <span className="ft-cat">{BRANCH_LABEL[it.location] || 'ثلاجة'}</span>
-                    ) : it.category_name ? (
-                      <span className="ft-cat">{it.category_name}</span>
-                    ) : null}
+                    {isLowView ? <span className="ft-cat">{BRANCH_LABEL[it.location] || 'ثلاجة'}</span> : null}
                     <span className="ft-qty">
                       {fmtQty(it.quantity)}{it.unit ? <span className="ft-unit"> {it.unit}</span> : null}
                     </span>
@@ -121,17 +117,17 @@ export default function FridgeView({ readOnly = false }) {
       {adding ? (
         <FridgeItemModal
           suggestions={suggestions}
-          categories={categories}
+          units={units}
           defaultLocation={isLowView ? 'fridge' : branch}
           onClose={() => setAdding(false)}
           onSaved={() => { setAdding(false); load(); }}
         />
       ) : null}
 
-      {managingCats ? (
-        <FridgeCategoriesModal
-          categories={categories}
-          onClose={() => setManagingCats(false)}
+      {managingUnits ? (
+        <FridgeUnitsModal
+          units={units}
+          onClose={() => setManagingUnits(false)}
           onChanged={load}
         />
       ) : null}

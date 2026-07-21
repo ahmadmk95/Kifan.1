@@ -5,17 +5,15 @@ import { api } from '@/lib/api';
 import Autocomplete from '@/components/Autocomplete';
 import { FRIDGE_BRANCHES } from '@/lib/fridgeBranches';
 
-const UNIT_SUGGESTIONS = ['كيلو', 'غرام', 'قطعة', 'حبة', 'علبة', 'كيس', 'كرتون', 'صندوق', 'لتر', 'عبوة'];
-
-export default function FridgeItemModal({ existing, suggestions = {}, categories = [], defaultLocation = 'fridge', onClose, onSaved }) {
+export default function FridgeItemModal({ existing, suggestions = {}, units = [], defaultLocation = 'fridge', onClose, onSaved }) {
   const isEdit = !!existing;
   const sg = { names: [], units: [], notes: [], ...suggestions };
-  // Offer the user's previously-used units first, then the common defaults.
-  const unitOptions = [...sg.units, ...UNIT_SUGGESTIONS.filter((u) => !sg.units.includes(u))];
+  // Offer the curated units first, then any previously-typed ones.
+  const managed = units.map((u) => u.name);
+  const unitOptions = [...managed, ...sg.units.filter((u) => !managed.includes(u))];
   const [f, setF] = useState({
     name: existing?.name || '',
     location: existing?.location || defaultLocation || 'fridge',
-    category_id: existing?.category_id || '',
     unit: existing?.unit || '',
     quantity: '',
     min_qty: existing?.min_qty != null ? String(existing.min_qty) : '',
@@ -49,7 +47,6 @@ export default function FridgeItemModal({ existing, suggestions = {}, categories
     const payload = {
       name: f.name.trim(),
       location: f.location,
-      category_id: f.category_id || null,
       unit: f.unit.trim() || null,
       min_qty: f.min_qty === '' ? null : Number(f.min_qty),
       note: f.note.trim() || null,
@@ -81,20 +78,11 @@ export default function FridgeItemModal({ existing, suggestions = {}, categories
             <Autocomplete value={f.name} onChange={(v) => set('name', v)} options={sg.names} placeholder="مثال: دجاج، أرز، طماطة" autoFocus />
           </div>
 
-          <div className="form-row">
-            <div className="form-field">
-              <label>الفرع / الموقع</label>
-              <select value={f.location} onChange={(e) => set('location', e.target.value)}>
-                {FRIDGE_BRANCHES.map((b) => <option key={b.value} value={b.value}>{b.icon} {b.label}</option>)}
-              </select>
-            </div>
-            <div className="form-field">
-              <label>الفئة</label>
-              <select value={f.category_id} onChange={(e) => set('category_id', e.target.value)}>
-                <option value="">— بدون فئة —</option>
-                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
+          <div className="form-field">
+            <label>الفرع / الموقع</label>
+            <select value={f.location} onChange={(e) => set('location', e.target.value)}>
+              {FRIDGE_BRANCHES.map((b) => <option key={b.value} value={b.value}>{b.icon} {b.label}</option>)}
+            </select>
           </div>
 
           <div className="form-row">

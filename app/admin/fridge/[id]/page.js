@@ -1,6 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { getCurrentUser, canFridge, canFridgeView, landingFor } from '@/lib/auth';
-import { getItem, listFridgeSuggestions, listFridgeCategories } from '@/lib/fridge';
+import { getItem, listFridgeSuggestions, listFridgeUnits } from '@/lib/fridge';
 import FridgeItemDetail from './FridgeItemDetail';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +17,7 @@ export default async function FridgeItemPage({ params }) {
     <FridgeItemDetail
       item={item}
       suggestions={listFridgeSuggestions()}
-      categories={listFridgeCategories()}
+      units={listFridgeUnits()}
       readOnly={!canFridge(user)}
     />
   );
