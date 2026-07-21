@@ -537,6 +537,8 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .branch-tab:hover { border-color: var(--mawkab-green); }
 .branch-tab.active { background: var(--mawkab-green); color: #fff; border-color: var(--mawkab-green); }
 .branch-tab.active .bt-count { background: rgba(255, 255, 255, 0.22); border-color: transparent; color: #fff; }
+.branch-tab.low-tab:hover { border-color: var(--mawkab-red); }
+.branch-tab.low-tab.active { background: var(--mawkab-red); border-color: var(--mawkab-red); }
 
 .fridge-alert {
   background: #FFF0EE; border: 1px solid #F3C4BE; color: var(--mawkab-red);
@@ -568,6 +570,8 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .fridge-tile.is-low { border-color: #F3C4BE; background: #FFF7F6; }
 .fridge-tile.is-low .ft-qty { color: var(--mawkab-red); }
 .fridge-tile.is-out { border-color: var(--mawkab-red); background: #FFF0EE; }
+.fridge-tile.is-flag { border-color: var(--mawkab-yellow); background: var(--mawkab-yellow-soft); }
+.fridge-tile .ft-badge.flag { background: var(--mawkab-red-dark); }
 
 .fridge-detail .fd-hero {
   display: flex; align-items: center; gap: 22px; background: #fff; border: 1px solid var(--mawkab-border);
@@ -585,6 +589,8 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .fridge-detail .fd-qty .fd-unit { font-size: 20px; font-weight: 600; color: var(--mawkab-muted); }
 .fridge-detail .fd-qty-label { font-size: 14px; color: var(--mawkab-muted); font-weight: 600; margin-top: 4px; }
 .fridge-detail .fd-min { font-size: 13px; color: var(--mawkab-muted); margin-top: 2px; }
+.fridge-detail .fd-lowtag { display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 700; color: var(--mawkab-red-dark); background: var(--mawkab-yellow-soft); border: 1px solid var(--mawkab-yellow); border-radius: 999px; padding: 3px 12px; }
+.btn-small.flag-on { background: var(--mawkab-yellow-soft); border-color: var(--mawkab-yellow); color: var(--mawkab-red-dark); }
 .fridge-detail .fd-note {
   background: var(--mawkab-yellow-soft); border: 1px solid var(--mawkab-border); border-radius: 12px;
   padding: 12px 16px; font-size: 14.5px; margin-bottom: 18px;
