@@ -5,19 +5,24 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import FridgeItemModal from '@/components/FridgeItemModal';
+import FridgeCategoriesModal from '@/components/FridgeCategoriesModal';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 import { FRIDGE_BRANCHES } from '@/lib/fridgeBranches';
 
 export default function FridgeView({ readOnly = false }) {
   const [items, setItems] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [suggestions, setSuggestions] = useState({});
   const [err, setErr] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [managingCats, setManagingCats] = useState(false);
   const [branch, setBranch] = useState('fridge');
 
   const load = () => api.fridge()
-    .then(({ items, suggestions }) => { setItems(items); setSuggestions(suggestions || {}); })
+    .then(({ items, categories, suggestions }) => {
+      setItems(items); setCategories(categories || []); setSuggestions(suggestions || {});
+    })
     .catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(); }, []);
 
@@ -41,6 +46,7 @@ export default function FridgeView({ readOnly = false }) {
         <div className="admin-bar">
           <h1>الثلاجة</h1>
           <div className="admin-actions">
+            {!readOnly ? <button className="btn-ghost" onClick={() => setManagingCats(true)}>الفئات</button> : null}
             {!readOnly ? <button className="btn-add" onClick={() => setAdding(true)}>＋ إضافة صنف</button> : null}
           </div>
         </div>
@@ -83,6 +89,7 @@ export default function FridgeView({ readOnly = false }) {
                       <span className="ft-img ft-img-ph">🧺</span>
                     )}
                     <span className="ft-name">{it.name}</span>
+                    {it.category_name ? <span className="ft-cat">{it.category_name}</span> : null}
                     <span className="ft-qty">
                       {fmtQty(it.quantity)}{it.unit ? <span className="ft-unit"> {it.unit}</span> : null}
                     </span>
@@ -99,9 +106,18 @@ export default function FridgeView({ readOnly = false }) {
       {adding ? (
         <FridgeItemModal
           suggestions={suggestions}
+          categories={categories}
           defaultLocation={branch}
           onClose={() => setAdding(false)}
           onSaved={() => { setAdding(false); load(); }}
+        />
+      ) : null}
+
+      {managingCats ? (
+        <FridgeCategoriesModal
+          categories={categories}
+          onClose={() => setManagingCats(false)}
+          onChanged={load}
         />
       ) : null}
     </div>

@@ -11,7 +11,7 @@ import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 import { BRANCH_LABEL } from '@/lib/fridgeBranches';
 
-export default function FridgeItemDetail({ item: initial, suggestions = {}, readOnly = false }) {
+export default function FridgeItemDetail({ item: initial, suggestions = {}, categories = [], readOnly = false }) {
   const router = useRouter();
   const [item, setItem] = useState(initial);
   const [editing, setEditing] = useState(false);
@@ -81,7 +81,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, read
             <div className="fd-qtybox">
               <div className="fd-qty">{fmtQty(item.quantity)}<span className="fd-unit">{item.unit ? ' ' + item.unit : ''}</span></div>
               <div className="fd-qty-label">الكمية المتوفّرة{low ? (out ? ' — نفد المخزون' : ' — منخفض') : ''}</div>
-              <div className="fd-min">الفرع: {BRANCH_LABEL[item.location] || 'ثلاجة'}</div>
+              <div className="fd-min">الفرع: {BRANCH_LABEL[item.location] || 'ثلاجة'}{item.category_name ? ` · الفئة: ${item.category_name}` : ''}</div>
               {item.min_qty != null ? <div className="fd-min">حد التنبيه: {fmtQty(item.min_qty)}{item.unit ? ' ' + item.unit : ''}</div> : null}
             </div>
           </div>
@@ -149,6 +149,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, read
         <FridgeItemModal
           existing={item}
           suggestions={suggestions}
+          categories={categories}
           onClose={() => setEditing(false)}
           onSaved={async () => { setEditing(false); await reload(); }}
         />
