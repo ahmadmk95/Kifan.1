@@ -167,6 +167,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, unit
           existing={item}
           suggestions={suggestions}
           units={units}
+          onUnitsChanged={() => router.refresh()}
           onClose={() => setEditing(false)}
           onSaved={async () => { setEditing(false); await reload(); }}
         />
