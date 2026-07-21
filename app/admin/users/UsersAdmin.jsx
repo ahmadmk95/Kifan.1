@@ -38,6 +38,12 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
     };
   }, [users]);
 
+  const nameSuggestions = useMemo(() => {
+    const set = new Set();
+    for (const u of users || []) { const v = (u.name || '').trim(); if (v) set.add(v); }
+    return [...set];
+  }, [users]);
+
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
 
   const approve = async (u) => {
@@ -178,7 +184,8 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
           <div className="form-row">
             <div className="form-field">
               <label>الاسم</label>
-              <input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="الاسم الكامل" />
+              <input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="الاسم الكامل" list="dl-user-names" autoComplete="off" />
+              <datalist id="dl-user-names">{nameSuggestions.map((v) => <option key={v} value={v} />)}</datalist>
             </div>
             <div className="form-field">
               <label>رقم الهاتف</label>

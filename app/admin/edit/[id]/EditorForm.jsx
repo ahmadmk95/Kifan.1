@@ -14,7 +14,7 @@ const Editor = dynamic(() => import('@/components/Editor'), {
   loading: () => <div className="editor-shell" style={{ minHeight: 420 }} />,
 });
 
-export default function EditorForm({ committee }) {
+export default function EditorForm({ committee, names = [] }) {
   const router = useRouter();
   const isNew = !committee;
   const [name, setName] = useState(committee?.name || '');
@@ -56,7 +56,8 @@ export default function EditorForm({ committee }) {
         <div className="editor-page">
           <div className="form-field">
             <label>اسم اللجنة</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثال: اللجنة الدينية" />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثال: اللجنة الدينية" list="dl-committee-names" autoComplete="off" />
+            <datalist id="dl-committee-names">{names.map((v) => <option key={v} value={v} />)}</datalist>
           </div>
           <div className="form-row">
             <div className="form-field">
