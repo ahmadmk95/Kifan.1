@@ -18,6 +18,7 @@ export default function ReportView() {
   const [me, setMe] = useState(null);
   const [cur, setCur] = useState('USD');
   const [err, setErr] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const now = new Date();
   const generatedAt = now.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
   const stmtNo = 'MAW-' + now.toISOString().slice(0, 10).replace(/-/g, '');
@@ -26,6 +27,42 @@ export default function ReportView() {
     api.accounting().then(setData).catch(() => setErr(true));
     api.me().then(({ user }) => setMe(user)).catch(() => {});
   }, []);
+
+  // Build a proper A4 PDF file from the rendered statement (not a browser print).
+  const exportPdf = async () => {
+    if (pdfBusy) return;
+    const el = document.getElementById('statement-doc');
+    if (!el) return;
+    setPdfBusy(true);
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const [{ default: html2canvas }, jspdf] = await Promise.all([import('html2canvas'), import('jspdf')]);
+      const JsPDF = jspdf.jsPDF || jspdf.default;
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const pdf = new JsPDF('p', 'mm', 'a4');
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgW = pageW;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      let heightLeft = imgH;
+      let position = 0;
+      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+      heightLeft -= pageH;
+      while (heightLeft > 0) {
+        position -= pageH;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+        heightLeft -= pageH;
+      }
+      pdf.save(`Mawkab-Statement-${stmtNo}.pdf`);
+    } catch (e) {
+      setErr(false);
+      window.alert('تعذّر إنشاء ملف PDF. حاول مرة أخرى.');
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   return (
     <div className="page">
@@ -40,7 +77,9 @@ export default function ReportView() {
               </button>
             ))}
           </div>
-          <button className="btn-add" onClick={() => window.print()} disabled={!data}>🖶 طباعة / حفظ PDF</button>
+          <button className="btn-add" onClick={exportPdf} disabled={!data || pdfBusy}>
+            {pdfBusy ? 'جارٍ إنشاء PDF…' : '⬇ تنزيل PDF'}
+          </button>
         </div>
 
         {err ? (
@@ -79,7 +118,7 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
   const period = ledger.length ? `${ledger[0].occurred_on}  ←→  ${ledger[ledger.length - 1].occurred_on}` : '—';
 
   return (
-    <div className="report-page statement">
+    <div className="report-page statement" id="statement-doc">
       {/* Letterhead */}
       <div className="stmt-head">
         <div className="stmt-brand">
