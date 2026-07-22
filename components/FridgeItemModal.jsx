@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import Autocomplete from '@/components/Autocomplete';
+import Dropdown from '@/components/Dropdown';
 import UnitPicker from '@/components/UnitPicker';
 import { FRIDGE_BRANCHES } from '@/lib/fridgeBranches';
+
+const BRANCH_OPTIONS = FRIDGE_BRANCHES.map((b) => ({ value: b.value, label: `${b.icon} ${b.label}` }));
 
 export default function FridgeItemModal({ existing, suggestions = {}, units = [], defaultLocation = 'fridge', onUnitsChanged, onClose, onSaved }) {
   const isEdit = !!existing;
@@ -79,9 +82,7 @@ export default function FridgeItemModal({ existing, suggestions = {}, units = []
 
           <div className="form-field">
             <label>الفرع / الموقع</label>
-            <select value={f.location} onChange={(e) => set('location', e.target.value)}>
-              {FRIDGE_BRANCHES.map((b) => <option key={b.value} value={b.value}>{b.icon} {b.label}</option>)}
-            </select>
+            <Dropdown value={f.location} onChange={(v) => set('location', v)} options={BRANCH_OPTIONS} />
           </div>
 
           <div className="form-field">

@@ -230,6 +230,11 @@ input, select, textarea { font-family: inherit; }
   background: var(--mawkab-paper); color: var(--mawkab-ink);
 }
 .ac-input:focus { border-color: var(--mawkab-green); background: #fff; }
+/* Custom select styled like the autocomplete input */
+.ac-select { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; text-align: start; }
+.ac-select .ac-ph { color: var(--mawkab-muted); }
+.ac-select .ac-caret { color: var(--mawkab-muted); font-size: 12px; flex-shrink: 0; }
+.ac-select.open { border-color: var(--mawkab-green); background: #fff; }
 .ac-list {
   position: absolute; top: calc(100% + 4px); inset-inline-start: 0; inset-inline-end: 0; z-index: 60;
   background: #fff; border: 1.5px solid var(--mawkab-border); border-radius: 10px;
