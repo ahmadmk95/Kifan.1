@@ -14,9 +14,9 @@ export default function SiteHeader() {
   const access = user?.access;
   const isAdmin = role === 'admin';
   const isViewer = !isAdmin && access === 'viewer';
-  const canCommittees = isAdmin || isViewer || access === 'committees';
-  const canAccounting = isAdmin || isViewer || access === 'accounting';
   const canFridge = isAdmin || isViewer || access === 'fridge';
+  const canCommittees = isAdmin || isViewer || access === 'committees' || access === 'fridge';
+  const canAccounting = isAdmin || isViewer || access === 'accounting';
   const canAdminArea = isAdmin || isViewer;
   const home = canAdminArea ? '/admin' : canAccounting ? '/admin/accounting' : canFridge ? '/admin/fridge' : canCommittees ? '/private' : '/login';
 
