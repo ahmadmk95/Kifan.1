@@ -42,19 +42,17 @@ export default function ReportView() {
       const pdf = new JsPDF('p', 'mm', 'a4');
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const imgW = pageW;
-      const imgH = (canvas.height * imgW) / canvas.width;
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      let heightLeft = imgH;
-      let position = 0;
-      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
-      heightLeft -= pageH;
-      while (heightLeft > 0) {
-        position -= pageH;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
-        heightLeft -= pageH;
-      }
+      // Fit the whole statement onto a single A4 page (preserve aspect ratio).
+      const margin = 6;
+      const availW = pageW - margin * 2;
+      const availH = pageH - margin * 2;
+      const aspect = canvas.width / canvas.height;
+      let renderW = availW;
+      let renderH = renderW / aspect;
+      if (renderH > availH) { renderH = availH; renderW = renderH * aspect; }
+      const x = (pageW - renderW) / 2;
+      pdf.addImage(imgData, 'JPEG', x, margin, renderW, renderH);
       pdf.save(`Mawkab-Statement-${stmtNo}.pdf`);
     } catch (e) {
       setErr(false);
