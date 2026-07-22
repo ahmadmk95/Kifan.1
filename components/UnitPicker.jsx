@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import Dropdown from '@/components/Dropdown';
 
 // Unit selector: a dropdown to choose from the managed units, with a quick
 // inline "add new unit" (persists to the list). Removal is done in the
@@ -29,14 +30,12 @@ export default function UnitPicker({ value, onChange, units, setUnits, onChanged
   };
 
   const inList = units.some((u) => u.name === value);
+  const options = units.map((u) => ({ value: u.name, label: u.name }));
+  if (value && !inList) options.unshift({ value, label: value });
 
   return (
     <div className="unit-picker">
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">— اختر الوحدة —</option>
-        {units.map((u) => <option key={u.id} value={u.name}>{u.name}</option>)}
-        {value && !inList ? <option value={value}>{value}</option> : null}
-      </select>
+      <Dropdown value={value} onChange={onChange} options={options} placeholder="— اختر الوحدة —" />
 
       {!adding ? (
         <button type="button" className="unit-add-link" onClick={() => setAdding(true)}>＋ إضافة وحدة جديدة</button>
