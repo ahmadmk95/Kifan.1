@@ -5,7 +5,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { api } from '@/lib/api';
-import { fmtCur, amt } from '@/lib/money';
+import { fmtCur, amt, today } from '@/lib/money';
 
 const DISPLAY_CURRENCIES = [
   { value: 'USD', label: 'دولار $' },
@@ -20,8 +20,8 @@ export default function ReportView() {
   const [err, setErr] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   const now = new Date();
-  const generatedAt = now.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
-  const stmtNo = 'MAW-' + now.toISOString().slice(0, 10).replace(/-/g, '');
+  const generatedAt = now.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Baghdad' });
+  const stmtNo = 'MAW-' + today().replace(/-/g, '');
 
   useEffect(() => {
     api.accounting().then(setData).catch(() => setErr(true));

@@ -8,6 +8,7 @@ import FridgeItemModal from '@/components/FridgeItemModal';
 import FridgeUnitsModal from '@/components/FridgeUnitsModal';
 import { api } from '@/lib/api';
 import { fmtQty, isLowStock } from '@/lib/qty';
+import { today } from '@/lib/money';
 import { FRIDGE_BRANCHES, BRANCH_LABEL } from '@/lib/fridgeBranches';
 
 export default function FridgeView({ readOnly = false }) {
@@ -54,11 +55,10 @@ export default function FridgeView({ readOnly = false }) {
       else if (belowMin) status = ` (الحد ${fmtQty(it.min_qty)}${unit})`;
       return `• ${it.name} — ${b} — ${fmtQty(it.quantity)}${unit}${status}`;
     });
-    const today = new Date().toISOString().slice(0, 10);
     const msg = [
       '📋 *قائمة النواقص — ثلاجة الموكب*',
       'موكب أمير المؤمنين (ع)',
-      `التاريخ: ${today}`,
+      `التاريخ: ${today()}`,
       '',
       `⚠ الأصناف الناقصة (${lowItems.length}):`,
       ...lines,
