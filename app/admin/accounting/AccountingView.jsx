@@ -6,8 +6,10 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import TransactionModal from '@/components/TransactionModal';
 import Autocomplete from '@/components/Autocomplete';
+import Dropdown from '@/components/Dropdown';
 import { api } from '@/lib/api';
 import { fmtCur } from '@/lib/money';
+import { getActiveProfile, setActiveProfile } from '@/lib/accProfile';
 
 const DISPLAY_CURRENCIES = [
   { value: 'USD', label: 'دولار $' },
@@ -20,9 +22,21 @@ export default function AccountingView({ readOnly = false }) {
   const [err, setErr] = useState(null);
   const [modal, setModal] = useState(null); // { type, existing? } | null
   const [cur, setCur] = useState('USD');
+  const [profile, setProfile] = useState(null);
 
-  const load = () => api.accounting().then(setData).catch(() => setErr('تعذّر تحميل البيانات'));
-  useEffect(() => { load(); }, []);
+  const load = (pid) => api.accounting(pid).then((d) => {
+    setData(d);
+    if (d.active_profile) { setProfile(d.active_profile); setActiveProfile(d.active_profile); }
+  }).catch(() => setErr('تعذّر تحميل البيانات'));
+  useEffect(() => { load(getActiveProfile()); }, []);
+
+  const changeProfile = (pid) => {
+    if (!pid || pid === profile) return;
+    setActiveProfile(pid);
+    setProfile(pid);
+    setData(null);
+    load(pid);
+  };
 
   if (err) return <Shell><div className="form-msg err">{err}</div></Shell>;
   if (!data) return <Shell><p style={{ color: 'var(--mawkab-muted)' }}>جارٍ التحميل…</p></Shell>;
@@ -43,6 +57,16 @@ export default function AccountingView({ readOnly = false }) {
             </>
           ) : null}
         </div>
+      </div>
+
+      {/* Account book (profile) selector */}
+      <div className="profile-bar">
+        <span className="profile-label">الحساب:</span>
+        <Dropdown
+          value={profile || data.active_profile}
+          onChange={changeProfile}
+          options={(data.profiles || []).map((p) => ({ value: p.id, label: p.name }))}
+        />
       </div>
 
       {/* Currency toggle for the totals (USD by default) */}
@@ -118,8 +142,9 @@ export default function AccountingView({ readOnly = false }) {
           existing={modal.existing}
           categories={data.categories}
           suggestions={data.suggestions}
+          profileId={profile || data.active_profile}
           onClose={() => setModal(null)}
-          onSaved={() => { setModal(null); load(); }}
+          onSaved={() => { setModal(null); load(profile); }}
         />
       ) : null}
     </Shell>
