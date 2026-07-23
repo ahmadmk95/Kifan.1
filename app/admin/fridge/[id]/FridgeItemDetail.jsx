@@ -9,6 +9,7 @@ import FridgeItemModal from '@/components/FridgeItemModal';
 import Autocomplete from '@/components/Autocomplete';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
+import { fmtDateTime } from '@/lib/money';
 import { BRANCH_LABEL } from '@/lib/fridgeBranches';
 
 export default function FridgeItemDetail({ item: initial, suggestions = {}, units = [], readOnly = false }) {
@@ -143,7 +144,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, unit
                 <tbody>
                   {item.movements.map((m) => (
                     <tr key={m.id}>
-                      <td data-label="التاريخ" style={{ direction: 'ltr', textAlign: 'right' }}>{(m.created_at || '').slice(0, 16)}</td>
+                      <td data-label="التاريخ" style={{ direction: 'ltr', textAlign: 'right' }}>{fmtDateTime(m.created_at)}</td>
                       <td data-label="الحركة">
                         <span className={'tx-pill ' + (m.delta >= 0 ? 'tx-in' : 'tx-out')}>
                           {m.delta >= 0 ? '＋' : '－'}{fmtQty(Math.abs(m.delta))}{item.unit ? ' ' + item.unit : ''}
