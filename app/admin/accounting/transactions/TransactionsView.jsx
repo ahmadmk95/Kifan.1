@@ -7,15 +7,22 @@ import SiteFooter from '@/components/SiteFooter';
 import TransactionModal from '@/components/TransactionModal';
 import { api } from '@/lib/api';
 import { usd, amt } from '@/lib/money';
+import { getActiveProfile, setActiveProfile } from '@/lib/accProfile';
 
 export default function TransactionsView({ readOnly = false }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
   const [modal, setModal] = useState(null); // { type, existing? } | null
   const [filter, setFilter] = useState('all');
+  const [profile, setProfile] = useState(null);
 
-  const load = () => api.accounting().then(setData).catch(() => setErr('تعذّر تحميل البيانات'));
+  const load = () => api.accounting(getActiveProfile()).then((d) => {
+    setData(d);
+    if (d.active_profile) { setProfile(d.active_profile); setActiveProfile(d.active_profile); }
+  }).catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(); }, []);
+
+  const profileName = data?.profiles?.find((p) => p.id === (profile || data.active_profile))?.name || '';
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -28,7 +35,7 @@ export default function TransactionsView({ readOnly = false }) {
       <SiteHeader />
       <main className="main-wrap">
         <div className="admin-bar">
-          <h1>الحركات</h1>
+          <h1>الحركات{profileName ? ` — ${profileName}` : ''}</h1>
           <div className="admin-actions">
             <Link href="/admin/accounting" className="btn-ghost">← رجوع للمحاسبة</Link>
             {!readOnly && data ? (
@@ -139,6 +146,7 @@ export default function TransactionsView({ readOnly = false }) {
           existing={modal.existing}
           categories={data.categories}
           suggestions={data.suggestions}
+          profileId={profile || data.active_profile}
           onClose={() => setModal(null)}
           onSaved={() => { setModal(null); load(); }}
         />

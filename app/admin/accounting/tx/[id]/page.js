@@ -13,7 +13,7 @@ export default async function TransactionPage({ params }) {
   const tx = getTransaction(params.id);
   if (!tx) notFound();
   const categories = listCategories();
-  const suggestions = listSuggestions();
+  const suggestions = listSuggestions(tx.profile_id);
 
   return <TxDetail tx={tx} categories={categories} suggestions={suggestions} readOnly={!canAccounting(user)} />;
 }

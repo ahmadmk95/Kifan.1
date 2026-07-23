@@ -6,6 +6,7 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { api } from '@/lib/api';
 import { fmtCur, amt, today } from '@/lib/money';
+import { getActiveProfile } from '@/lib/accProfile';
 
 const DISPLAY_CURRENCIES = [
   { value: 'USD', label: 'دولار $' },
@@ -24,7 +25,7 @@ export default function ReportView() {
   const stmtNo = 'MAW-' + today().replace(/-/g, '');
 
   useEffect(() => {
-    api.accounting().then(setData).catch(() => setErr(true));
+    api.accounting(getActiveProfile()).then(setData).catch(() => setErr(true));
     api.me().then(({ user }) => setMe(user)).catch(() => {});
   }, []);
 
@@ -114,6 +115,7 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
 
   const t = data.totals;
   const period = ledger.length ? `${ledger[0].occurred_on}  ←→  ${ledger[ledger.length - 1].occurred_on}` : '—';
+  const profileName = (data.profiles || []).find((p) => p.id === data.active_profile)?.name || '';
 
   return (
     <div className="report-page statement" id="statement-doc">
@@ -129,6 +131,7 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
         <div className="stmt-title-box">
           <div className="stmt-title">كشف حساب</div>
           <div className="stmt-sub">Account Statement</div>
+          {profileName ? <div className="stmt-account">{profileName}</div> : null}
         </div>
       </div>
 

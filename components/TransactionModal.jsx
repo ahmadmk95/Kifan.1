@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import Autocomplete from '@/components/Autocomplete';
 import { CURRENCIES, CUR_LABEL, today } from '@/lib/money';
 
-export default function TransactionModal({ type, existing, categories, suggestions = {}, onClose, onSaved }) {
+export default function TransactionModal({ type, existing, categories, suggestions = {}, profileId, onClose, onSaved }) {
   const isPurchase = type === 'purchase';
   const isEdit = !!existing;
   const sg = { items: [], parties: [], descriptions: [], ...suggestions };
@@ -48,6 +48,7 @@ export default function TransactionModal({ type, existing, categories, suggestio
     setBusy(true); setErr(null);
     const payload = {
       type,
+      profile_id: profileId,
       amount: Number(f.amount),
       currency: f.currency,
       category_id: isPurchase ? (f.category_id || null) : null,
