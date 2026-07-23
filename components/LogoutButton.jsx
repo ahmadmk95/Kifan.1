@@ -6,6 +6,8 @@ import { api } from '@/lib/api';
 export default function LogoutButton() {
   const router = useRouter();
   const logout = async () => {
+    // Forget the auto sign-in credentials so logout actually stays logged out.
+    try { window.localStorage.removeItem('mwk_autologin'); } catch {}
     try {
       await api.logout();
     } catch {
