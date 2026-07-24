@@ -63,6 +63,11 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
     catch (e) { setMsg({ t: 'err', x: e.message }); }
   };
 
+  const togglePrepare = async (u, can) => {
+    try { await api.updateUser(u.id, { can_prepare: can }); load(); }
+    catch (e) { setMsg({ t: 'err', x: e.message }); }
+  };
+
   const remove = async (u) => {
     if (!window.confirm(`حذف المستخدم «${u.name}»؟`)) return;
     try { await api.removeUser(u.id); load(); }
@@ -158,6 +163,17 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
                           {AUTHORITIES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
                         </select>
                       )}
+                      {/* Order-preparation permission for لجنة التغذية members */}
+                      {authorityOf(u) === 'fridge' ? (
+                        canManage && u.id !== currentUserId ? (
+                          <label className="prep-toggle">
+                            <input type="checkbox" checked={!!u.can_prepare} onChange={(e) => togglePrepare(u, e.target.checked)} />
+                            <span>يمكنه تجهيز الطلبات</span>
+                          </label>
+                        ) : (
+                          <div className="prep-note">{u.can_prepare ? 'يجهّز الطلبات ✔' : 'لا يجهّز الطلبات'}</div>
+                        )
+                      ) : null}
                     </td>
                     <td data-label="">
                       {canManage ? (

@@ -14,7 +14,7 @@ const STATUS = {
   cancelled: { label: 'ملغى', cls: 'st-cancelled' },
 };
 
-export default function OrdersView({ readOnly = false }) {
+export default function OrdersView({ readOnly = false, canPrepare = false }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
   const [creating, setCreating] = useState(false);
@@ -120,11 +120,11 @@ export default function OrdersView({ readOnly = false }) {
                           </svg>
                           مشاركة عبر واتساب
                         </button>
+                        {!readOnly && o.status === 'pending' && canPrepare ? (
+                          <button className="btn-add btn-out" disabled={busyId === o.id} onClick={() => act(o, 'prepared')}>✔ تم التجهيز</button>
+                        ) : null}
                         {!readOnly && o.status === 'pending' ? (
-                          <>
-                            <button className="btn-add btn-out" disabled={busyId === o.id} onClick={() => act(o, 'prepared')}>✔ تم التجهيز</button>
-                            <button className="btn-danger" disabled={busyId === o.id} onClick={() => act(o, 'cancelled')}>إلغاء الطلب</button>
-                          </>
+                          <button className="btn-danger" disabled={busyId === o.id} onClick={() => act(o, 'cancelled')}>إلغاء الطلب</button>
                         ) : null}
                       </div>
                     </div>
