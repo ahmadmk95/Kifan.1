@@ -555,6 +555,59 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .prep-toggle input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--mawkab-green); cursor: pointer; }
 .prep-note { font-size: 12.5px; color: var(--mawkab-muted); margin-top: 6px; }
 
+/* User manual (الدليل) ---------------------------------------------------- */
+.manual { max-width: 860px; margin: 0 auto; }
+.man-hero { border-bottom: 3px solid var(--mawkab-yellow); padding-bottom: 22px; margin-bottom: 8px;
+  background: radial-gradient(120% 140% at 100% 0%, var(--mawkab-yellow-soft) 0%, transparent 55%); border-radius: 14px 14px 0 0; }
+.man-kicker { font-size: 12.5px; font-weight: 700; letter-spacing: 2px; color: var(--mawkab-red-dark); }
+.man-hero h1 { font-family: var(--font-heading), serif; font-weight: 700; color: var(--mawkab-red); font-size: clamp(30px, 6vw, 46px); margin: 6px 0 8px; line-height: 1.15; }
+.man-hero p { color: var(--mawkab-muted); font-size: 16px; max-width: 60ch; margin: 0; }
+
+.man-toc { background: #fff; border: 1px solid var(--mawkab-border); border-radius: 16px; padding: 18px 20px; margin: 24px 0; }
+.man-toc h2 { font-family: var(--font-heading), serif; font-size: 20px; margin: 0 0 10px; }
+.man-toc ol { margin: 0; padding: 0; list-style: none; counter-reset: mtoc; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
+.man-toc li { counter-increment: mtoc; }
+.man-toc a { display: flex; align-items: baseline; gap: 9px; color: var(--mawkab-ink); text-decoration: none; padding: 7px 8px; border-radius: 9px; font-weight: 600; font-size: 15px; }
+.man-toc a:hover { background: var(--mawkab-paper); color: var(--mawkab-red); }
+.man-toc a::before { content: counter(mtoc, decimal-leading-zero); color: var(--mawkab-red); font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; flex: none; }
+
+.man-sec { margin-top: 30px; scroll-margin-top: 14px; }
+.man-sec-head { display: flex; align-items: center; gap: 13px; margin-bottom: 12px; }
+.man-num { font-weight: 800; font-size: 15px; color: var(--mawkab-red); background: var(--mawkab-yellow-soft); border: 1px solid var(--mawkab-yellow); width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex: none; font-variant-numeric: tabular-nums; }
+.man-sec-head h2 { font-family: var(--font-heading), serif; font-weight: 700; font-size: clamp(23px, 5vw, 29px); margin: 0; line-height: 1.25; }
+.man-card { background: #fff; border: 1px solid var(--mawkab-border); border-radius: 16px; padding: 22px 24px; box-shadow: 0 10px 30px rgba(60, 50, 10, 0.07); }
+.man-card h3 { font-family: var(--font-heading), serif; font-weight: 700; font-size: 21px; color: var(--mawkab-green-dark); margin: 22px 0 8px; }
+.man-card h3:first-child { margin-top: 2px; }
+.man-card p { margin: 0 0 12px; line-height: 1.9; }
+.man-lead { font-size: 17px; }
+
+.man-list { margin: 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 7px; }
+.man-list li::marker { color: var(--mawkab-red); }
+ol.man-steps { counter-reset: mstep; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+ol.man-steps > li { counter-increment: mstep; position: relative; padding-inline-start: 44px; line-height: 1.8; }
+ol.man-steps > li::before { content: counter(mstep); position: absolute; inset-inline-start: 0; top: -1px; width: 30px; height: 30px; border-radius: 9px; background: var(--mawkab-green); color: #fff; font-weight: 800; font-size: 15px; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+
+.man-ui { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 700; padding: 2px 11px; border-radius: 8px; border: 1px solid var(--mawkab-border); background: var(--mawkab-paper); color: var(--mawkab-ink); white-space: nowrap; line-height: 1.7; }
+.man-ui.red { background: var(--mawkab-red); color: #fff; border-color: var(--mawkab-red); }
+.man-ui.green { background: var(--mawkab-green); color: #fff; border-color: var(--mawkab-green); }
+.man-ui.wa { background: #25D366; color: #fff; border-color: #25D366; }
+.man-tab { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; padding: 3px 12px; border: 1.5px solid var(--mawkab-border); border-radius: 999px; background: #fff; white-space: nowrap; }
+
+.man-note { border: 1px solid var(--mawkab-border); border-inline-start: 5px solid var(--mawkab-green); background: var(--mawkab-paper); border-radius: 12px; padding: 12px 16px; margin: 14px 0; font-size: 15.5px; }
+.man-note.warn { border-inline-start-color: var(--mawkab-red); }
+.man-note.tip { border-inline-start-color: var(--mawkab-yellow); }
+.man-note .lab { font-family: var(--font-heading), serif; font-weight: 700; margin-inline-end: 6px; color: var(--mawkab-green-dark); }
+.man-note.warn .lab { color: var(--mawkab-red); }
+.man-note.tip .lab { color: var(--mawkab-red-dark); }
+
+.man-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0; }
+.man-legend .muted { color: var(--mawkab-muted); font-size: 13.5px; }
+.man-pill { font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--mawkab-border); }
+.man-pill.low { background: var(--mawkab-yellow-soft); color: var(--mawkab-red-dark); }
+.man-pill.out { background: #FFF0EE; color: var(--mawkab-red); }
+
+@media (max-width: 620px) { .man-toc ol { grid-template-columns: 1fr; } .man-card { padding: 18px 16px; } }
+
 /* Orders (طلبات) ---------------------------------------------------------- */
 .order-picklist { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; border: 1px solid var(--mawkab-border); border-radius: 12px; padding: 8px; -webkit-overflow-scrolling: touch; }
 .order-pick { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; border-radius: 9px; background: var(--mawkab-paper); }

@@ -35,6 +35,7 @@ export default function SiteHeader() {
         {canFridge ? <Link href="/admin/fridge">الثلاجة</Link> : null}
         {canFridge ? <Link href="/admin/dargeel">دار الجيل</Link> : null}
         {canFridge ? <Link href="/admin/orders">الطلبات</Link> : null}
+        {canFridge ? <Link href="/admin/dalil">الدليل</Link> : null}
         {canAdminArea ? <Link href="/admin">الإدارة</Link> : null}
         <LogoutButton />
       </nav>
