@@ -26,22 +26,20 @@ export async function PATCH(req, { params }) {
     return NextResponse.json({ ok: true });
   }
 
-  // Prepare: deduct each line from its الثلاجة item (never below zero) and log it.
+  // Prepare: deduct each line's full ordered quantity from its الثلاجة item and log it.
   const tx = db.transaction(() => {
     const lines = db.prepare('SELECT * FROM fridge_order_lines WHERE order_id = ?').all(params.id);
     for (const ln of lines) {
       if (!ln.item_id) continue;
       const item = db.prepare("SELECT * FROM fridge_items WHERE id = ? AND store = 'fridge'").get(ln.item_id);
       if (!item) continue;
-      const avail = Number(item.quantity);
-      const take = Math.min(Number(ln.quantity), avail);
-      if (take > 0) {
-        const balance = Math.round((avail - take) * 1000) / 1000;
-        db.prepare(
-          'INSERT INTO fridge_movements (id, item_id, delta, balance, reason, user_name) VALUES (?, ?, ?, ?, ?, ?)'
-        ).run(crypto.randomUUID(), ln.item_id, -take, balance, `تجهيز طلب${order.requester ? ' لـ ' + order.requester : ''}`, user.name);
-        db.prepare("UPDATE fridge_items SET quantity = ?, updated_at = datetime('now') WHERE id = ?").run(balance, ln.item_id);
-      }
+      const take = Number(ln.quantity);
+      if (!Number.isFinite(take) || take <= 0) continue;
+      const balance = Math.round((Number(item.quantity) - take) * 1000) / 1000;
+      db.prepare(
+        'INSERT INTO fridge_movements (id, item_id, delta, balance, reason, user_name) VALUES (?, ?, ?, ?, ?, ?)'
+      ).run(crypto.randomUUID(), ln.item_id, -take, balance, `تجهيز طلب${order.requester ? ' لـ ' + order.requester : ''}`, user.name);
+      db.prepare("UPDATE fridge_items SET quantity = ?, updated_at = datetime('now') WHERE id = ?").run(balance, ln.item_id);
     }
     db.prepare("UPDATE fridge_orders SET status = 'prepared', prepared_by = ?, prepared_at = datetime('now') WHERE id = ?").run(user.name, params.id);
   });
