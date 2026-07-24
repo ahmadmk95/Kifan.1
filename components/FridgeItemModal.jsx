@@ -7,11 +7,21 @@ import Dropdown from '@/components/Dropdown';
 import UnitPicker from '@/components/UnitPicker';
 import { FRIDGE_BRANCHES } from '@/lib/fridgeBranches';
 
-const BRANCH_OPTIONS = FRIDGE_BRANCHES.map((b) => ({ value: b.value, label: `${b.icon} ${b.label}` }));
-
-export default function FridgeItemModal({ existing, suggestions = {}, units = [], defaultLocation = 'fridge', onUnitsChanged, onClose, onSaved }) {
+export default function FridgeItemModal({
+  existing,
+  store = 'fridge',
+  showBranches = true,
+  branches = FRIDGE_BRANCHES,
+  suggestions = {},
+  units = [],
+  defaultLocation = 'fridge',
+  onUnitsChanged,
+  onClose,
+  onSaved,
+}) {
   const isEdit = !!existing;
   const sg = { names: [], units: [], notes: [], ...suggestions };
+  const branchOptions = branches.map((b) => ({ value: b.value, label: `${b.icon} ${b.label}` }));
   const [unitList, setUnitList] = useState(units);
   const [f, setF] = useState({
     name: existing?.name || '',
@@ -47,6 +57,7 @@ export default function FridgeItemModal({ existing, suggestions = {}, units = []
     if (!f.name.trim()) { setErr('اسم الصنف مطلوب'); return; }
     setBusy(true); setErr(null);
     const payload = {
+      store,
       name: f.name.trim(),
       location: f.location,
       unit: f.unit.trim() || null,
@@ -69,7 +80,7 @@ export default function FridgeItemModal({ existing, suggestions = {}, units = []
     <div className="overlay" onClick={onClose}>
       <div className="modal2" onClick={(e) => e.stopPropagation()}>
         <div className="modal2-head">
-          <h3>{isEdit ? 'تعديل الصنف' : 'إضافة صنف للثلاجة'}</h3>
+          <h3>{isEdit ? 'تعديل الصنف' : 'إضافة صنف'}</h3>
           <button className="x" onClick={onClose}>×</button>
         </div>
         <div className="modal2-body">
@@ -80,10 +91,12 @@ export default function FridgeItemModal({ existing, suggestions = {}, units = []
             <Autocomplete value={f.name} onChange={(v) => set('name', v)} options={sg.names} placeholder="مثال: دجاج، أرز، طماطة" autoFocus />
           </div>
 
-          <div className="form-field">
-            <label>الفرع / الموقع</label>
-            <Dropdown value={f.location} onChange={(v) => set('location', v)} options={BRANCH_OPTIONS} />
-          </div>
+          {showBranches ? (
+            <div className="form-field">
+              <label>الفرع / الموقع</label>
+              <Dropdown value={f.location} onChange={(v) => set('location', v)} options={branchOptions} />
+            </div>
+          ) : null}
 
           <div className="form-field">
             <label>وحدة القياس</label>
@@ -92,6 +105,7 @@ export default function FridgeItemModal({ existing, suggestions = {}, units = []
               onChange={(v) => set('unit', v)}
               units={unitList}
               setUnits={setUnitList}
+              store={store}
               onChanged={onUnitsChanged}
             />
           </div>

@@ -33,6 +33,7 @@ export default function SiteHeader() {
         {canCommittees ? <Link href="/private">اللجان</Link> : null}
         {canAccounting ? <Link href="/admin/accounting">المحاسبة</Link> : null}
         {canFridge ? <Link href="/admin/fridge">الثلاجة</Link> : null}
+        {canFridge ? <Link href="/admin/dargeel">دار الجيل</Link> : null}
         {canAdminArea ? <Link href="/admin">الإدارة</Link> : null}
         <LogoutButton />
       </nav>

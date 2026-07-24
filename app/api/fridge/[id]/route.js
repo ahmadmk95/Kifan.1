@@ -11,7 +11,7 @@ export async function GET(req, { params }) {
   if (!canFridgeView(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
   const item = getItem(params.id);
   if (!item) return NextResponse.json({ error: 'الصنف غير موجود' }, { status: 404 });
-  return NextResponse.json({ item, suggestions: listFridgeSuggestions() });
+  return NextResponse.json({ item, suggestions: listFridgeSuggestions(item.store) });
 }
 
 export async function PATCH(req, { params }) {
