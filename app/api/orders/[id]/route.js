@@ -33,7 +33,8 @@ export async function PATCH(req, { params }) {
       if (!ln.item_id) continue;
       const item = db.prepare("SELECT * FROM fridge_items WHERE id = ? AND store = 'fridge'").get(ln.item_id);
       if (!item) continue;
-      const take = Number(ln.quantity);
+      // Never deduct more than what is currently available (no negative stock).
+      const take = Math.min(Number(ln.quantity), Number(item.quantity));
       if (!Number.isFinite(take) || take <= 0) continue;
       const balance = Math.round((Number(item.quantity) - take) * 1000) / 1000;
       db.prepare(

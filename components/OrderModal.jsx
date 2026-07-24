@@ -25,6 +25,14 @@ export default function OrderModal({ items = [], onClose, onSaved }) {
       .map(([item_id, v]) => ({ item_id, quantity: Number(v) }))
       .filter((l) => l.quantity > 0);
     if (lines.length === 0) { setErr('اختر صنفاً واحداً على الأقل'); return; }
+    // Reject before sending if any requested quantity exceeds what's available.
+    const overs = lines
+      .map((l) => ({ ...l, item: items.find((i) => i.id === l.item_id) }))
+      .filter((l) => l.item && l.quantity > Number(l.item.quantity));
+    if (overs.length) {
+      setErr('الكمية المطلوبة أكبر من المتوفّر: ' + overs.map((o) => o.item.name).join('، '));
+      return;
+    }
     setBusy(true); setErr(null);
     try {
       await api.addOrder({ note: note.trim() || null, lines });
@@ -59,25 +67,32 @@ export default function OrderModal({ items = [], onClose, onSaved }) {
             <p style={{ color: 'var(--mawkab-muted)' }}>لا توجد أصناف في الثلاجة.</p>
           ) : (
             <div className="order-picklist">
-              {shown.map((it) => (
-                <div className="order-pick" key={it.id}>
-                  <div className="op-info">
-                    <span className="op-name">{it.name}</span>
-                    <span className="op-avail">المتوفّر: {fmtQty(it.quantity)}{it.unit ? ' ' + it.unit : ''}</span>
+              {shown.map((it) => {
+                const over = Number(qty[it.id] || 0) > Number(it.quantity);
+                return (
+                  <div className="order-pick" key={it.id}>
+                    <div className="op-info">
+                      <span className="op-name">{it.name}</span>
+                      <span className={'op-avail' + (over ? ' op-over-txt' : '')}>
+                        المتوفّر: {fmtQty(it.quantity)}{it.unit ? ' ' + it.unit : ''}{over ? ' — أكبر من المتوفّر' : ''}
+                      </span>
+                    </div>
+                    <div className="op-qty">
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        dir="ltr"
+                        max={it.quantity}
+                        placeholder="0"
+                        className={over ? 'op-over' : ''}
+                        value={qty[it.id] || ''}
+                        onChange={(e) => setQty((s) => ({ ...s, [it.id]: e.target.value }))}
+                      />
+                      {it.unit ? <span className="op-unit">{it.unit}</span> : null}
+                    </div>
                   </div>
-                  <div className="op-qty">
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      dir="ltr"
-                      placeholder="0"
-                      value={qty[it.id] || ''}
-                      onChange={(e) => setQty((s) => ({ ...s, [it.id]: e.target.value }))}
-                    />
-                    {it.unit ? <span className="op-unit">{it.unit}</span> : null}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               {shown.length === 0 ? <p style={{ color: 'var(--mawkab-muted)', margin: '6px 2px' }}>لا نتائج.</p> : null}
             </div>
           )}

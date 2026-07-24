@@ -563,7 +563,9 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .order-pick .op-qty { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .order-pick .op-qty input { width: 74px; font-size: 16px; padding: 8px 10px; border: 1.5px solid var(--mawkab-border); border-radius: 9px; background: #fff; text-align: center; outline: none; }
 .order-pick .op-qty input:focus { border-color: var(--mawkab-green); }
+.order-pick .op-qty input.op-over { border-color: var(--mawkab-red); background: #FFF5F4; }
 .order-pick .op-unit { font-size: 13px; color: var(--mawkab-muted); min-width: 32px; }
+.order-pick .op-over-txt { color: var(--mawkab-red); font-weight: 700; }
 
 .order-list { display: flex; flex-direction: column; gap: 14px; }
 .order-card { background: #fff; border: 1px solid var(--mawkab-border); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
