@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import OrderModal from '@/components/OrderModal';
+import PrepareOrderModal from '@/components/PrepareOrderModal';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 import { fmtDateTime } from '@/lib/money';
@@ -20,6 +21,7 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
   const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState('pending');
   const [busyId, setBusyId] = useState(null);
+  const [preparing, setPreparing] = useState(null);
 
   const load = () => api.orders().then(setData).catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(); }, []);
@@ -113,6 +115,11 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
                       {o.status === 'prepared' && o.prepared_by ? (
                         <div className="order-prepared">✔ جُهّز بواسطة {o.prepared_by}{o.prepared_at ? ' — ' + fmtDateTime(o.prepared_at) : ''}</div>
                       ) : null}
+                      {o.photo_url ? (
+                        <a className="order-photo" href={o.photo_url} target="_blank" rel="noopener noreferrer">
+                          <img src={o.photo_url} alt="صورة الطلب بعد التجهيز" />
+                        </a>
+                      ) : null}
                       <div className="admin-actions" style={{ marginTop: 4 }}>
                         <button className="wa-share wa-compact" onClick={() => shareOrder(o)}>
                           <svg viewBox="0 0 32 32" width="17" height="17" aria-hidden="true">
@@ -121,7 +128,7 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
                           مشاركة عبر واتساب
                         </button>
                         {!readOnly && o.status === 'pending' && canPrepare ? (
-                          <button className="btn-add btn-out" disabled={busyId === o.id} onClick={() => act(o, 'prepared')}>✔ تم التجهيز</button>
+                          <button className="btn-add btn-out" disabled={busyId === o.id} onClick={() => setPreparing(o)}>✔ تم التجهيز</button>
                         ) : null}
                         {!readOnly && o.status === 'pending' ? (
                           <button className="btn-danger" disabled={busyId === o.id} onClick={() => act(o, 'cancelled')}>إلغاء الطلب</button>
@@ -142,6 +149,14 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
           items={data.items}
           onClose={() => setCreating(false)}
           onSaved={() => { setCreating(false); load(); }}
+        />
+      ) : null}
+
+      {preparing ? (
+        <PrepareOrderModal
+          order={preparing}
+          onClose={() => setPreparing(null)}
+          onDone={() => { setPreparing(null); load(); }}
         />
       ) : null}
     </div>
