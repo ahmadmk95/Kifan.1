@@ -7,7 +7,7 @@ import Dropdown from '@/components/Dropdown';
 // Unit selector: a dropdown to choose from the managed units, with a quick
 // inline "add new unit" (persists to the list). Removal is done in the
 // الوحدات manager on the fridge dashboard.
-export default function UnitPicker({ value, onChange, units, setUnits, onChanged }) {
+export default function UnitPicker({ value, onChange, units, setUnits, store = 'fridge', onChanged }) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -18,7 +18,7 @@ export default function UnitPicker({ value, onChange, units, setUnits, onChanged
     if (!v || busy) return;
     setBusy(true); setErr(null);
     try {
-      const { unit } = await api.addFridgeUnit(v);
+      const { unit } = await api.addFridgeUnit(v, store);
       setUnits((prev) =>
         prev.some((u) => u.id === unit.id) ? prev : [...prev, unit].sort((a, b) => a.name.localeCompare(b.name, 'ar'))
       );

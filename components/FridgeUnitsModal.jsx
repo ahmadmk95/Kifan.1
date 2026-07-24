@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 
-export default function FridgeUnitsModal({ units = [], onClose, onChanged }) {
+export default function FridgeUnitsModal({ units = [], store = 'fridge', onClose, onChanged }) {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
@@ -12,7 +12,7 @@ export default function FridgeUnitsModal({ units = [], onClose, onChanged }) {
     const v = name.trim();
     if (!v || busy) return;
     setBusy(true); setErr(null);
-    try { await api.addFridgeUnit(v); setName(''); onChanged(); }
+    try { await api.addFridgeUnit(v, store); setName(''); onChanged(); }
     catch (e) { setErr(e.message); }
     finally { setBusy(false); }
   };

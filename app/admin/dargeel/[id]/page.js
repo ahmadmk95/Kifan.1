@@ -1,13 +1,13 @@
 import { redirect, notFound } from 'next/navigation';
 import { getCurrentUser, canFridge, canFridgeView, landingFor } from '@/lib/auth';
 import { getItem, listFridgeSuggestions, listFridgeUnits } from '@/lib/fridge';
-import FridgeItemDetail from './FridgeItemDetail';
+import FridgeItemDetail from '../../fridge/[id]/FridgeItemDetail';
 
 export const dynamic = 'force-dynamic';
 
-export default async function FridgeItemPage({ params }) {
+export default async function DargeelItemPage({ params }) {
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=/admin/fridge/${params.id}`);
+  if (!user) redirect(`/login?next=/admin/dargeel/${params.id}`);
   if (!canFridgeView(user)) redirect(landingFor(user));
 
   const item = getItem(params.id);
@@ -16,9 +16,12 @@ export default async function FridgeItemPage({ params }) {
   return (
     <FridgeItemDetail
       item={item}
-      suggestions={listFridgeSuggestions(item.store)}
-      units={listFridgeUnits(item.store)}
+      suggestions={listFridgeSuggestions('dargeel')}
+      units={listFridgeUnits('dargeel')}
       readOnly={!canFridge(user)}
+      basePath="/admin/dargeel"
+      title="دار الجيل"
+      showBranch={false}
     />
   );
 }

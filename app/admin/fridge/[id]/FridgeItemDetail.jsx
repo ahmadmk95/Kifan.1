@@ -12,7 +12,7 @@ import { fmtQty } from '@/lib/qty';
 import { fmtDateTime } from '@/lib/money';
 import { BRANCH_LABEL } from '@/lib/fridgeBranches';
 
-export default function FridgeItemDetail({ item: initial, suggestions = {}, units = [], readOnly = false }) {
+export default function FridgeItemDetail({ item: initial, suggestions = {}, units = [], readOnly = false, basePath = '/admin/fridge', title = 'الثلاجة', showBranch = true }) {
   const router = useRouter();
   const [item, setItem] = useState(initial);
   const [editing, setEditing] = useState(false);
@@ -46,7 +46,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, unit
   const remove = async () => {
     if (!window.confirm(`حذف الصنف «${item.name}» وكل حركاته؟`)) return;
     await api.removeFridgeItem(item.id);
-    router.push('/admin/fridge');
+    router.push(basePath);
     router.refresh();
   };
 
@@ -71,7 +71,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, unit
         <div className="admin-bar">
           <h1>{item.name}</h1>
           <div className="admin-actions">
-            <Link href="/admin/fridge" className="btn-ghost">← رجوع للثلاجة</Link>
+            <Link href={basePath} className="btn-ghost">← رجوع إلى {title}</Link>
             {!readOnly ? (
               <>
                 <button className={'btn-small' + (item.flagged ? ' flag-on' : '')} onClick={toggleFlag}>
@@ -96,7 +96,7 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, unit
             <div className="fd-qtybox">
               <div className="fd-qty">{fmtQty(item.quantity)}<span className="fd-unit">{item.unit ? ' ' + item.unit : ''}</span></div>
               <div className="fd-qty-label">الكمية المتوفّرة{low ? (out ? ' — نفد المخزون' : ' — منخفض') : ''}</div>
-              <div className="fd-min">الفرع: {BRANCH_LABEL[item.location] || 'ثلاجة'}</div>
+              {showBranch ? <div className="fd-min">الفرع: {BRANCH_LABEL[item.location] || 'ثلاجة'}</div> : null}
               {item.min_qty != null ? <div className="fd-min">حد التنبيه: {fmtQty(item.min_qty)}{item.unit ? ' ' + item.unit : ''}</div> : null}
               {(low || item.flagged) ? (
                 <div className="fd-lowtag">⚠ ضمن قائمة النواقص{low && !item.flagged ? ' (تلقائياً — أقل من الحد)' : item.flagged && !low ? ' (يدوياً)' : ''}</div>
@@ -166,6 +166,8 @@ export default function FridgeItemDetail({ item: initial, suggestions = {}, unit
       {editing ? (
         <FridgeItemModal
           existing={item}
+          store={item.store || 'fridge'}
+          showBranches={showBranch}
           suggestions={suggestions}
           units={units}
           onUnitsChanged={() => router.refresh()}
