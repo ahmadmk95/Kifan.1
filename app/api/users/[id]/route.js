@@ -32,6 +32,9 @@ export async function PATCH(req, { params }) {
   if (body.status === 'active' || body.status === 'pending') {
     db.prepare('UPDATE users SET status = ? WHERE id = ?').run(body.status, params.id);
   }
+  if (body.can_prepare !== undefined && isAdmin(admin)) {
+    db.prepare('UPDATE users SET can_prepare = ? WHERE id = ?').run(body.can_prepare ? 1 : 0, params.id);
+  }
   if (body.name !== undefined && String(body.name).trim()) {
     db.prepare('UPDATE users SET name = ? WHERE id = ?').run(String(body.name).trim(), params.id);
   }

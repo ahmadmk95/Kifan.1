@@ -8,7 +8,7 @@ export async function GET() {
   const user = await getCurrentUser();
   if (!canViewAdmin(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
   const users = db
-    .prepare('SELECT id, name, username, role, access, status, created_at FROM users ORDER BY created_at ASC')
+    .prepare('SELECT id, name, username, role, access, status, can_prepare, created_at FROM users ORDER BY created_at ASC')
     .all();
   return NextResponse.json({ users });
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import db from '@/lib/db';
-import { getCurrentUser, canFridge } from '@/lib/auth';
+import { getCurrentUser, canFridge, canPrepareOrders } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +16,10 @@ export async function PATCH(req, { params }) {
   const status = body.status === 'prepared' ? 'prepared' : body.status === 'cancelled' ? 'cancelled' : null;
   if (!status) return NextResponse.json({ error: 'حالة غير صحيحة' }, { status: 400 });
   if (order.status !== 'pending') return NextResponse.json({ error: 'تمت معالجة هذا الطلب مسبقاً' }, { status: 400 });
+  // Only authorised preparers may mark an order "تم التجهيز".
+  if (status === 'prepared' && !canPrepareOrders(user)) {
+    return NextResponse.json({ error: 'غير مخوّل لتجهيز الطلبات' }, { status: 403 });
+  }
 
   if (status === 'cancelled') {
     db.prepare("UPDATE fridge_orders SET status = 'cancelled' WHERE id = ?").run(params.id);
