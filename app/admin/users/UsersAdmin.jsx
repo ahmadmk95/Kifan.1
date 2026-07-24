@@ -9,11 +9,11 @@ import { api } from '@/lib/api';
 const AUTHORITIES = [
   { value: 'committees', label: 'عرض اللجان فقط' },
   { value: 'accounting', label: 'المحاسبة فقط' },
-  { value: 'fridge', label: 'الثلاجة فقط' },
+  { value: 'fridge', label: 'لجنة التغذية (الثلاجة ودار الجيل)' },
   { value: 'viewer', label: 'مشرف — عرض فقط' },
   { value: 'admin', label: 'مدير كامل' },
 ];
-const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', committees: 'عرض اللجان', accounting: 'المحاسبة', fridge: 'الثلاجة' };
+const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', committees: 'عرض اللجان', accounting: 'المحاسبة', fridge: 'لجنة التغذية' };
 
 function authorityOf(u) {
   if (u.role === 'admin') return 'admin';
