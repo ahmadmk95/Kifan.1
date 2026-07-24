@@ -14,6 +14,8 @@ export async function PATCH(req, { params }) {
 
   const body = await req.json().catch(() => ({}));
   const status = body.status === 'prepared' ? 'prepared' : body.status === 'cancelled' ? 'cancelled' : null;
+  // Optional photo of the prepared order (must be one of our stored uploads).
+  const photoUrl = typeof body.photo_url === 'string' && /^\/api\/uploads\/[\w.-]+$/.test(body.photo_url) ? body.photo_url : null;
   if (!status) return NextResponse.json({ error: 'حالة غير صحيحة' }, { status: 400 });
   if (order.status !== 'pending') return NextResponse.json({ error: 'تمت معالجة هذا الطلب مسبقاً' }, { status: 400 });
   // Only authorised preparers may mark an order "تم التجهيز".
@@ -42,7 +44,7 @@ export async function PATCH(req, { params }) {
       ).run(crypto.randomUUID(), ln.item_id, -take, balance, `تجهيز طلب${order.requester ? ' لـ ' + order.requester : ''}`, user.name);
       db.prepare("UPDATE fridge_items SET quantity = ?, updated_at = datetime('now') WHERE id = ?").run(balance, ln.item_id);
     }
-    db.prepare("UPDATE fridge_orders SET status = 'prepared', prepared_by = ?, prepared_at = datetime('now') WHERE id = ?").run(user.name, params.id);
+    db.prepare("UPDATE fridge_orders SET status = 'prepared', prepared_by = ?, prepared_at = datetime('now'), photo_url = ? WHERE id = ?").run(user.name, photoUrl, params.id);
   });
   tx();
 
