@@ -4,6 +4,7 @@ import db from '@/lib/db';
 import { getCurrentUser, canFridge, canFridgeView } from '@/lib/auth';
 import { listItems } from '@/lib/fridge';
 import { listOrders } from '@/lib/orders';
+import { fmtQty } from '@/lib/qty';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,14 +23,23 @@ export async function POST(req) {
   const note = body.note ? String(body.note).trim().slice(0, 500) : null;
   const rawLines = Array.isArray(body.lines) ? body.lines : [];
 
-  // Snapshot the requested items (name + unit) from الثلاجة.
+  // Snapshot the requested items (name + unit) from الثلاجة, and reject the
+  // order if any requested quantity exceeds what is currently available.
   const lines = [];
+  const shortages = [];
   for (const l of rawLines) {
     const qty = Number(l?.quantity);
     if (!Number.isFinite(qty) || qty <= 0) continue;
     const item = db.prepare("SELECT * FROM fridge_items WHERE id = ? AND store = 'fridge'").get(String(l?.item_id || ''));
     if (!item) continue;
+    if (qty > Number(item.quantity)) {
+      shortages.push(`${item.name} (المتوفّر ${fmtQty(item.quantity)}${item.unit ? ' ' + item.unit : ''})`);
+      continue;
+    }
     lines.push({ item_id: item.id, item_name: item.name, unit: item.unit || null, quantity: qty });
+  }
+  if (shortages.length) {
+    return NextResponse.json({ error: 'الكمية غير متوفّرة لـ: ' + shortages.join('، ') }, { status: 400 });
   }
   if (lines.length === 0) return NextResponse.json({ error: 'أضف صنفاً واحداً على الأقل' }, { status: 400 });
 
