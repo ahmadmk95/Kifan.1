@@ -55,6 +55,40 @@ export default function FridgeView({
   const currentTab = tabs.find((tb) => tb.value === branch);
   const viewLabel = isLowView ? 'النواقص' : (currentTab?.label || 'الأصناف');
 
+  // Share the full inventory (current stock for every item) over WhatsApp.
+  const shareStock = () => {
+    const all = items || [];
+    const fmtLine = (it) => {
+      const unit = it.unit ? ' ' + it.unit : '';
+      const out = Number(it.quantity) <= 0;
+      const belowMin = it.min_qty != null && Number(it.quantity) <= Number(it.min_qty);
+      const status = out ? ' (نفد)' : belowMin ? ' (منخفض)' : '';
+      return `• ${it.name} — ${fmtQty(it.quantity)}${unit}${status}`;
+    };
+    const body = [];
+    if (hasBranches) {
+      for (const b of branches) {
+        const list = all.filter((it) => (it.location || 'fridge') === b.value);
+        if (!list.length) continue;
+        body.push(`${b.icon || ''} *${b.label}* (${list.length}):`);
+        body.push(...list.map(fmtLine));
+        body.push('');
+      }
+    } else {
+      body.push(...all.map(fmtLine));
+      body.push('');
+    }
+    const msg = [
+      `📋 *جرد المخزون — ${title}*`,
+      'موكب أمير المؤمنين (ع)',
+      `التاريخ: ${today()}`,
+      `إجمالي الأصناف: ${all.length}`,
+      '',
+      ...body,
+    ].join('\n').trimEnd();
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  };
+
   const shareWhatsApp = () => {
     const lines = lowItems.map((it) => {
       const b = hasBranches ? ` — ${BRANCH_LABEL[it.location] || 'ثلاجة'}` : '';
@@ -86,6 +120,12 @@ export default function FridgeView({
         <div className="admin-bar">
           <h1>{title}</h1>
           <div className="admin-actions">
+            <button type="button" className="wa-share wa-compact" onClick={shareStock} disabled={!(items && items.length)} title="مشاركة الجرد عبر واتساب">
+              <svg viewBox="0 0 32 32" width="17" height="17" aria-hidden="true">
+                <path fill="currentColor" d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.6 6L4 29l8.2-1.6c1.7.9 3.7 1.4 5.8 1.4h.1c6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.9h-.1c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7.7.7-3.6-.2-.4c-1-1.6-1.5-3.4-1.5-5.3 0-5.5 4.5-9.9 10-9.9 2.7 0 5.2 1 7 2.9 1.9 1.9 2.9 4.4 2.9 7 0 5.5-4.5 9.9-9.9 9.9zm5.5-7.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.2-.6-.4z"/>
+              </svg>
+              مشاركة الجرد
+            </button>
             {!readOnly ? <button className="btn-ghost" onClick={() => setManagingUnits(true)}>الوحدات</button> : null}
             {!readOnly ? <button className="btn-add" onClick={() => setAdding(true)}>＋ إضافة صنف</button> : null}
           </div>
