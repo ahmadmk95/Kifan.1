@@ -410,6 +410,20 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 }
 .cur-toggle .ct.active { background: var(--mawkab-red); color: #fff; }
 
+/* Custody reconciliation (مطابقة العهدة) */
+.recon-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+.recon-verdict {
+  display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 14px;
+  border: 1.5px solid; margin-bottom: 18px;
+}
+.recon-verdict .rv-icon { font-size: 30px; line-height: 1; }
+.recon-verdict .rv-text { display: flex; flex-direction: column; gap: 3px; }
+.recon-verdict .rv-text strong { font-family: 'Amiri', serif; font-size: 21px; }
+.recon-verdict .rv-text span { font-size: 14px; }
+.recon-verdict.ok { background: #EAF6E6; border-color: var(--mawkab-green); color: var(--mawkab-green-dark); }
+.recon-verdict.bad { background: #FDECEA; border-color: var(--mawkab-red); color: #8A1008; }
+@media (max-width: 640px) { .recon-inputs { grid-template-columns: 1fr; } }
+
 /* one-line transaction summaries on the main accounting page */
 .tx-lines { display: flex; flex-direction: column; gap: 8px; }
 .tx-line {

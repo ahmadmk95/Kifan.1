@@ -49,6 +49,7 @@ export default function AccountingView({ readOnly = false }) {
       <div className="admin-bar">
         <h1>المحاسبة</h1>
         <div className="admin-actions">
+          <Link href="/admin/accounting/reconcile" className="btn-ghost">مطابقة العهدة</Link>
           <Link href="/admin/accounting/report" className="btn-ghost">تقرير PDF</Link>
           {!readOnly ? (
             <>

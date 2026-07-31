@@ -1,0 +1,188 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import SiteHeader from '@/components/SiteHeader';
+import SiteFooter from '@/components/SiteFooter';
+import Dropdown from '@/components/Dropdown';
+import { api } from '@/lib/api';
+import { fmtCur } from '@/lib/money';
+import { getActiveProfile, setActiveProfile } from '@/lib/accProfile';
+
+// Convert an amount in `currency` to USD using saved rates ($100 = per_100 units).
+function toUsd(amount, currency, rates) {
+  if (currency === 'USD') return Number(amount) || 0;
+  const per100 = rates?.[currency];
+  if (!per100 || per100 <= 0) return 0;
+  return (Number(amount) * 100) / per100;
+}
+
+const DISPLAY_CURRENCIES = [
+  { value: 'USD', label: 'دولار $' },
+  { value: 'IQD', label: 'دينار عراقي' },
+  { value: 'KWD', label: 'دينار كويتي' },
+];
+
+// Cash counted in custody is entered per physical currency.
+const COUNT_FIELDS = [
+  { key: 'USD', label: 'دولار $', hint: 'المبلغ نقداً بالدولار' },
+  { key: 'IQD', label: 'دينار عراقي', hint: 'المبلغ نقداً بالدينار العراقي' },
+  { key: 'KWD', label: 'دينار كويتي', hint: 'المبلغ نقداً بالدينار الكويتي' },
+];
+
+const TOLERANCE = 0.05; // ±5% is considered a match
+
+export default function ReconcileView() {
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [cur, setCur] = useState('USD');
+  const [counts, setCounts] = useState({ USD: '', IQD: '', KWD: '' });
+  const [checked, setChecked] = useState(false);
+
+  const load = (pid) => api.accounting(pid).then((d) => {
+    setData(d);
+    if (d.active_profile) { setProfile(d.active_profile); setActiveProfile(d.active_profile); }
+  }).catch(() => setErr('تعذّر تحميل البيانات'));
+  useEffect(() => { load(getActiveProfile()); }, []);
+
+  const changeProfile = (pid) => {
+    if (!pid || pid === profile) return;
+    setActiveProfile(pid);
+    setProfile(pid);
+    setData(null);
+    setChecked(false);
+    load(pid);
+  };
+
+  const setCount = (k, v) => { setCounts((s) => ({ ...s, [k]: v })); setChecked(false); };
+
+  // Total counted cash, converted to USD using the saved exchange rates.
+  const countedUsd = useMemo(() => {
+    if (!data) return 0;
+    return COUNT_FIELDS.reduce((sum, f) => {
+      const n = Number(counts[f.key]);
+      if (!Number.isFinite(n) || n <= 0) return sum;
+      return sum + toUsd(n, f.key, data.rates);
+    }, 0);
+  }, [counts, data]);
+
+  const systemUsd = data?.totals?.balance_usd ?? 0;
+  const diffUsd = countedUsd - systemUsd; // + surplus (زيادة) / - shortage (عجز)
+  const base = Math.abs(systemUsd);
+  const pct = base > 0 ? (Math.abs(diffUsd) / base) * 100 : (Math.abs(diffUsd) < 0.01 ? 0 : 100);
+  const withinTolerance = base > 0 ? Math.abs(diffUsd) / base <= TOLERANCE : Math.abs(diffUsd) < 0.01;
+
+  if (err) return <Shell><div className="form-msg err">{err}</div></Shell>;
+  if (!data) return <Shell><p style={{ color: 'var(--mawkab-muted)' }}>جارٍ التحميل…</p></Shell>;
+
+  const show = (v) => fmtCur(v, cur, data.rates);
+  const pctText = pct.toLocaleString('en-US', { maximumFractionDigits: 1 });
+
+  return (
+    <Shell>
+      <div className="admin-bar">
+        <h1>مطابقة العهدة</h1>
+        <div className="admin-actions">
+          <Link href="/admin/accounting" className="btn-ghost">← المحاسبة</Link>
+        </div>
+      </div>
+
+      {/* Account book (profile) selector */}
+      <div className="profile-bar">
+        <span className="profile-label">الحساب:</span>
+        <Dropdown
+          value={profile || data.active_profile}
+          onChange={changeProfile}
+          options={(data.profiles || []).map((p) => ({ value: p.id, label: p.name }))}
+        />
+      </div>
+
+      <p className="acc-note" style={{ marginTop: 0 }}>
+        أدخل المبلغ النقدي الموجود فعلياً في العهدة بكل عملة، وسيقارنه النظام بالرصيد المسجّل.
+        يُعتبر الفرق ضمن ±٥٪ مطابقاً.
+      </p>
+
+      {/* Cash count inputs */}
+      <div className="acc-panel">
+        <h2 className="acc-h">النقد الموجود في العهدة</h2>
+        <div className="recon-inputs">
+          {COUNT_FIELDS.map((f) => (
+            <div className="form-field" key={f.key}>
+              <label>{f.label}</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                dir="ltr"
+                placeholder="0"
+                value={counts[f.key]}
+                onChange={(e) => setCount(f.key, e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
+        <button className="btn-add" onClick={() => setChecked(true)}>تحقّق من المطابقة</button>
+      </div>
+
+      {checked ? (
+        <>
+          {/* Currency toggle for the summary figures */}
+          <div className="cur-toggle">
+            {DISPLAY_CURRENCIES.map((c) => (
+              <button key={c.value} className={'ct' + (cur === c.value ? ' active' : '')} onClick={() => setCur(c.value)}>
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Verdict */}
+          <div className={'recon-verdict ' + (withinTolerance ? 'ok' : 'bad')}>
+            <span className="rv-icon">{withinTolerance ? '✅' : '⚠️'}</span>
+            <div className="rv-text">
+              <strong>
+                {withinTolerance
+                  ? 'مطابق — أنت في المكان الصحيح'
+                  : diffUsd > 0
+                    ? 'زيادة في العهدة'
+                    : 'عجز في العهدة'}
+              </strong>
+              <span>
+                {withinTolerance
+                  ? `الفرق ضمن الحدّ المسموح (${pctText}٪)`
+                  : diffUsd > 0
+                    ? `لديك مبلغ زائد عن المسجّل قدره ${show(Math.abs(diffUsd))} (${pctText}٪)`
+                    : `ينقص عن المسجّل مبلغ قدره ${show(Math.abs(diffUsd))} (${pctText}٪)`}
+              </span>
+            </div>
+          </div>
+
+          {/* Figures */}
+          <div className="stat-cards acc-cards">
+            <div className="stat-card acc-bal">
+              <div className="sc-value">{show(systemUsd)}</div>
+              <div className="sc-label">الرصيد المسجّل في النظام</div>
+            </div>
+            <div className="stat-card acc-in">
+              <div className="sc-value">{show(countedUsd)}</div>
+              <div className="sc-label">المعدود في العهدة</div>
+            </div>
+            <div className={'stat-card ' + (withinTolerance ? 'acc-bal' : 'acc-neg')}>
+              <div className="sc-value">{(diffUsd >= 0 ? '+' : '−') + show(Math.abs(diffUsd)).replace(/^[−-]/, '')}</div>
+              <div className="sc-label">الفرق</div>
+            </div>
+          </div>
+        </>
+      ) : null}
+    </Shell>
+  );
+}
+
+function Shell({ children }) {
+  return (
+    <div className="page">
+      <SiteHeader variant="private" />
+      <main className="main-wrap">{children}</main>
+      <SiteFooter />
+    </div>
+  );
+}
