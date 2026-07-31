@@ -238,6 +238,9 @@ input, select, textarea { font-family: inherit; }
 .profile-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
 .profile-bar .profile-label { font-size: 15px; font-weight: 700; color: var(--mawkab-ink); white-space: nowrap; }
 .profile-bar .ac-wrap { max-width: 300px; }
+.profile-bar { flex-wrap: wrap; }
+.profile-add { display: inline-flex; align-items: center; gap: 8px; }
+.btn-mini { padding: 8px 14px; font-size: 13px; }
 
 /* Custom select styled like the autocomplete input */
 .ac-select { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; text-align: start; }
