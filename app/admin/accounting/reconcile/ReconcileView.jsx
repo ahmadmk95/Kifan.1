@@ -6,7 +6,7 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import Dropdown from '@/components/Dropdown';
 import { api } from '@/lib/api';
-import { fmtCur } from '@/lib/money';
+import { fmtCur, fmtDateTime } from '@/lib/money';
 import { getActiveProfile, setActiveProfile } from '@/lib/accProfile';
 
 // Convert an amount in `currency` to USD using saved rates ($100 = per_100 units).
@@ -32,17 +32,22 @@ const COUNT_FIELDS = [
 
 const TOLERANCE = 0.05; // ±5% is considered a match
 
-export default function ReconcileView() {
+export default function ReconcileView({ readOnly = false }) {
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
   const [profile, setProfile] = useState(null);
   const [cur, setCur] = useState('USD');
   const [counts, setCounts] = useState({ USD: '', IQD: '', KWD: '' });
+  const [note, setNote] = useState('');
   const [checked, setChecked] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState(null);
+  const [history, setHistory] = useState([]);
 
   const load = (pid) => api.accounting(pid).then((d) => {
     setData(d);
     if (d.active_profile) { setProfile(d.active_profile); setActiveProfile(d.active_profile); }
+    api.reconciliations(d.active_profile).then((r) => setHistory(r.reconciliations || [])).catch(() => {});
   }).catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(getActiveProfile()); }, []);
 
@@ -52,10 +57,35 @@ export default function ReconcileView() {
     setProfile(pid);
     setData(null);
     setChecked(false);
+    setSaveMsg(null);
+    setHistory([]);
     load(pid);
   };
 
-  const setCount = (k, v) => { setCounts((s) => ({ ...s, [k]: v })); setChecked(false); };
+  const setCount = (k, v) => { setCounts((s) => ({ ...s, [k]: v })); setChecked(false); setSaveMsg(null); };
+
+  const hasAnyCount = COUNT_FIELDS.some((f) => Number(counts[f.key]) > 0);
+
+  // Run the check and, for users with write access, save it to the history.
+  const checkNow = async () => {
+    setChecked(true);
+    setSaveMsg(null);
+    if (readOnly || saving) return;
+    setSaving(true);
+    try {
+      const pid = profile || data.active_profile;
+      await api.saveReconciliation({ profile: pid, counts: {
+        USD: Number(counts.USD) || 0, IQD: Number(counts.IQD) || 0, KWD: Number(counts.KWD) || 0,
+      }, note: note.trim() || null });
+      setSaveMsg('تم حفظ عملية المطابقة');
+      const r = await api.reconciliations(pid);
+      setHistory(r.reconciliations || []);
+    } catch (e) {
+      setSaveMsg(e.message || 'تعذّر الحفظ');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Total counted cash, converted to USD using the saved exchange rates.
   const countedUsd = useMemo(() => {
@@ -121,7 +151,16 @@ export default function ReconcileView() {
             </div>
           ))}
         </div>
-        <button className="btn-add" onClick={() => setChecked(true)}>تحقّق من المطابقة</button>
+        {!readOnly ? (
+          <div className="form-field" style={{ marginBottom: 12 }}>
+            <label>ملاحظة (اختياري)</label>
+            <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="مثال: جرد نهاية الأسبوع" />
+          </div>
+        ) : null}
+        <button className="btn-add" onClick={checkNow} disabled={saving || !hasAnyCount}>
+          {saving ? 'جارٍ الحفظ…' : readOnly ? 'تحقّق من المطابقة' : 'تحقّق واحفظ'}
+        </button>
+        {saveMsg ? <div className="acc-inline-msg">{saveMsg}</div> : null}
       </div>
 
       {checked ? (
@@ -173,6 +212,43 @@ export default function ReconcileView() {
           </div>
         </>
       ) : null}
+
+      {/* Saved reconciliation history for this book */}
+      <div className="acc-toolbar" style={{ marginTop: 24 }}>
+        <h2 className="acc-h" style={{ margin: 0 }}>سجلّ المطابقات</h2>
+      </div>
+      {history.length === 0 ? (
+        <p style={{ color: 'var(--mawkab-muted)' }}>لا توجد عمليات مطابقة محفوظة لهذا الحساب بعد.</p>
+      ) : (
+        <div className="recon-history">
+          {history.map((h) => {
+            const d = Number(h.counted_usd) - Number(h.system_usd);
+            const ok = !!h.within_tol;
+            const parts = [];
+            if (Number(h.usd_amount) > 0) parts.push(`${fmtCur(Number(h.usd_amount), 'USD', data.rates)}`);
+            if (Number(h.iqd_amount) > 0) parts.push(`${Number(h.iqd_amount).toLocaleString('en-US')} د.ع`);
+            if (Number(h.kwd_amount) > 0) parts.push(`${Number(h.kwd_amount).toLocaleString('en-US')} د.ك`);
+            return (
+              <div className="recon-row" key={h.id}>
+                <span className={'recon-badge ' + (ok ? 'ok' : 'bad')}>{ok ? '✔ مطابق' : (d > 0 ? '▲ زيادة' : '▼ عجز')}</span>
+                <div className="recon-row-main">
+                  <span className="recon-row-date" dir="ltr">{fmtDateTime(h.created_at)}</span>
+                  <span className="recon-row-counts">{parts.join(' + ') || '—'}</span>
+                  {h.note ? <span className="recon-row-note">📝 {h.note}</span> : null}
+                  {h.checked_by ? <span className="recon-row-by">— {h.checked_by}</span> : null}
+                </div>
+                <div className="recon-row-nums">
+                  <span>المعدود {fmtCur(Number(h.counted_usd), cur, data.rates)}</span>
+                  <span>المسجّل {fmtCur(Number(h.system_usd), cur, data.rates)}</span>
+                  <span className={ok ? 'ok' : 'bad'}>
+                    الفرق {(d >= 0 ? '+' : '−') + fmtCur(Math.abs(d), cur, data.rates).replace(/^[−-]/, '')}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </Shell>
   );
 }

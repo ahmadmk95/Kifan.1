@@ -426,6 +426,21 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .recon-verdict.ok { background: #EAF6E6; border-color: var(--mawkab-green); color: var(--mawkab-green-dark); }
 .recon-verdict.bad { background: #FDECEA; border-color: var(--mawkab-red); color: #8A1008; }
 @media (max-width: 640px) { .recon-inputs { grid-template-columns: 1fr; } }
+.recon-history { display: flex; flex-direction: column; gap: 8px; }
+.recon-row {
+  display: flex; align-items: center; gap: 12px; background: #fff;
+  border: 1px solid var(--mawkab-border); border-radius: 12px; padding: 10px 14px; flex-wrap: wrap;
+}
+.recon-badge { font-size: 12.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.recon-badge.ok { background: #EAF6E6; color: var(--mawkab-green-dark); }
+.recon-badge.bad { background: #FDECEA; color: #8A1008; }
+.recon-row-main { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 160px; }
+.recon-row-date { font-size: 13px; color: var(--mawkab-muted); }
+.recon-row-counts { font-size: 14px; font-weight: 600; }
+.recon-row-note, .recon-row-by { font-size: 12.5px; color: var(--mawkab-muted); }
+.recon-row-nums { display: flex; flex-direction: column; gap: 2px; font-size: 13px; text-align: left; }
+.recon-row-nums .ok { color: var(--mawkab-green-dark); font-weight: 700; }
+.recon-row-nums .bad { color: #8A1008; font-weight: 700; }
 
 /* one-line transaction summaries on the main accounting page */
 .tx-lines { display: flex; flex-direction: column; gap: 8px; }
