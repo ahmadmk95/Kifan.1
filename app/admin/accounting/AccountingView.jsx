@@ -23,6 +23,10 @@ export default function AccountingView({ readOnly = false }) {
   const [modal, setModal] = useState(null); // { type, existing? } | null
   const [cur, setCur] = useState('USD');
   const [profile, setProfile] = useState(null);
+  const [addingProfile, setAddingProfile] = useState(false);
+  const [newProfile, setNewProfile] = useState('');
+  const [profileErr, setProfileErr] = useState(null);
+  const [profileBusy, setProfileBusy] = useState(false);
 
   const load = (pid) => api.accounting(pid).then((d) => {
     setData(d);
@@ -36,6 +40,23 @@ export default function AccountingView({ readOnly = false }) {
     setProfile(pid);
     setData(null);
     load(pid);
+  };
+
+  const saveProfile = async () => {
+    const name = newProfile.trim();
+    if (!name || profileBusy) return;
+    setProfileBusy(true); setProfileErr(null);
+    try {
+      const { id } = await api.addProfile(name);
+      setNewProfile(''); setAddingProfile(false);
+      setActiveProfile(id); setProfile(id);
+      setData(null);
+      await load(id); // open the new book straight away
+    } catch (e) {
+      setProfileErr(e.message || 'تعذّر الإضافة');
+    } finally {
+      setProfileBusy(false);
+    }
   };
 
   if (err) return <Shell><div className="form-msg err">{err}</div></Shell>;
@@ -68,7 +89,26 @@ export default function AccountingView({ readOnly = false }) {
           onChange={changeProfile}
           options={(data.profiles || []).map((p) => ({ value: p.id, label: p.name }))}
         />
+        {!readOnly && !addingProfile ? (
+          <button className="btn-ghost btn-mini" onClick={() => { setAddingProfile(true); setProfileErr(null); }}>＋ حساب جديد</button>
+        ) : null}
+        {!readOnly && addingProfile ? (
+          <span className="profile-add">
+            <Autocomplete
+              value={newProfile}
+              onChange={setNewProfile}
+              options={[]}
+              placeholder="اسم الحساب الجديد"
+              onEnter={saveProfile}
+              wrapStyle={{ minWidth: 180 }}
+              autoFocus
+            />
+            <button className="btn-add btn-mini" onClick={saveProfile} disabled={profileBusy}>{profileBusy ? '…' : 'حفظ'}</button>
+            <button className="btn-ghost btn-mini" onClick={() => { setAddingProfile(false); setNewProfile(''); setProfileErr(null); }}>إلغاء</button>
+          </span>
+        ) : null}
       </div>
+      {profileErr ? <div className="acc-inline-msg" style={{ color: 'var(--mawkab-red)' }}>{profileErr}</div> : null}
 
       {/* Currency toggle for the totals (USD by default) */}
       <div className="cur-toggle">
