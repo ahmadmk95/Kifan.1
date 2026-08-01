@@ -12,6 +12,12 @@ import { today } from '@/lib/money';
 import { normalizeText } from '@/lib/normalize';
 import { FRIDGE_BRANCHES, BRANCH_LABEL } from '@/lib/fridgeBranches';
 
+// The two inventory sections, so a search can span both and label each result.
+const STORE_META = {
+  fridge: { title: 'الثلاجة', basePath: '/admin/fridge', branched: true },
+  dargeel: { title: 'دار الجيل', basePath: '/admin/dargeel', branched: false },
+};
+
 export default function FridgeView({
   readOnly = false,
   store = 'fridge',
@@ -28,6 +34,8 @@ export default function FridgeView({
   const [managingUnits, setManagingUnits] = useState(false);
   const [branch, setBranch] = useState(hasBranches ? branches[0].value : 'all');
   const [query, setQuery] = useState('');
+  const otherStore = store === 'fridge' ? 'dargeel' : 'fridge';
+  const [otherItems, setOtherItems] = useState([]);
 
   const load = () => api.fridge(store)
     .then(({ items, units, suggestions }) => {
@@ -35,6 +43,10 @@ export default function FridgeView({
     })
     .catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(); }, []);
+  // Also load the other section's items so a search can find things there too.
+  useEffect(() => {
+    api.fridge(otherStore).then(({ items }) => setOtherItems(items || [])).catch(() => {});
+  }, [otherStore]);
 
   const countByBranch = useMemo(() => {
     const m = {};
@@ -49,15 +61,25 @@ export default function FridgeView({
 
   const shown = useMemo(() => {
     if (!items) return [];
-    // A search matches item names/notes across every branch of this store.
+    // A search spans BOTH sections (الثلاجة + دار الجيل) and all their branches.
     if (searching) {
-      return items.filter((it) =>
-        normalizeText(it.name).includes(q) || normalizeText(it.note || '').includes(q));
+      const pool = [...items, ...otherItems];
+      const match = (it) => normalizeText(it.name).includes(q) || normalizeText(it.note || '').includes(q);
+      return pool.filter(match);
     }
     if (isLowView) return lowItems;
     if (branch === 'all') return items;
     return items.filter((it) => (it.location || 'fridge') === branch);
-  }, [items, branch, isLowView, lowItems, searching, q]);
+  }, [items, branch, isLowView, lowItems, searching, q, otherItems]);
+
+  // Which section (and branch) an item belongs to, and its detail link.
+  const itemStore = (it) => STORE_META[it.store] ? it.store : store;
+  const itemLink = (it) => `${STORE_META[itemStore(it)].basePath}/${it.id}`;
+  const sectionLabel = (it) => {
+    const meta = STORE_META[itemStore(it)];
+    if (meta.branched) return `${meta.title} · ${BRANCH_LABEL[it.location] || 'ثلاجة'}`;
+    return meta.title;
+  };
 
   // Tabs: the fridge's branches, or a single "الأصناف" tab for a one-branch store.
   const tabs = hasBranches ? branches : [{ value: 'all', label: 'الأصناف', icon: '📦' }];
@@ -150,7 +172,7 @@ export default function FridgeView({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`ابحث في ${title}…`}
+              placeholder="ابحث في الثلاجة ودار الجيل…"
               aria-label="بحث عن صنف"
             />
             {query ? <button className="search-clear" onClick={() => setQuery('')} aria-label="مسح">×</button> : null}
@@ -205,14 +227,15 @@ export default function FridgeView({
                 const out = Number(it.quantity) <= 0;
                 const flaggedOnly = !low && it.flagged;
                 return (
-                  <Link key={it.id} href={`${basePath}/${it.id}`} className={'fridge-tile' + (out ? ' is-out' : low ? ' is-low' : flaggedOnly ? ' is-flag' : '')}>
+                  <Link key={it.store + it.id} href={searching ? itemLink(it) : `${basePath}/${it.id}`} className={'fridge-tile' + (out ? ' is-out' : low ? ' is-low' : flaggedOnly ? ' is-flag' : '')}>
                     {it.image_url ? (
                       <span className="ft-img" style={{ backgroundImage: `url(${it.image_url})` }} />
                     ) : (
                       <span className="ft-img ft-img-ph">🧺</span>
                     )}
                     <span className="ft-name">{it.name}</span>
-                    {(isLowView || searching) && hasBranches ? <span className="ft-cat">{BRANCH_LABEL[it.location] || 'ثلاجة'}</span> : null}
+                    {searching ? <span className="ft-cat">{sectionLabel(it)}</span>
+                      : isLowView && hasBranches ? <span className="ft-cat">{BRANCH_LABEL[it.location] || 'ثلاجة'}</span> : null}
                     <span className="ft-qty">
                       {fmtQty(it.quantity)}{it.unit ? <span className="ft-unit"> {it.unit}</span> : null}
                     </span>
