@@ -294,6 +294,9 @@ input, select, textarea { font-family: inherit; }
   color: var(--mawkab-muted); font-size: 22px; line-height: 1; cursor: pointer; border-radius: 50%;
 }
 .search-clear:hover { color: var(--mawkab-red); }
+.fridge-search { max-width: 100%; margin-bottom: 16px; }
+.fridge-search input { padding-block: 12px; font-size: 15px; }
+.fridge-alert.search-count { background: var(--mawkab-yellow-soft); color: var(--mawkab-ink); }
 
 .search-results {
   position: absolute; top: calc(100% + 8px); inset-inline: 0; z-index: 40;
