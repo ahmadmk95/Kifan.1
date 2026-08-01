@@ -33,13 +33,14 @@ export async function POST(req) {
   const party = body.party ? String(body.party).trim().slice(0, 200) : null;
   const description = body.description ? String(body.description).trim().slice(0, 2000) : null;
   const occurredOn = /^\d{4}-\d{2}-\d{2}$/.test(body.occurred_on) ? body.occurred_on : null;
+  const pending = type === 'purchase' && body.pending ? 1 : 0; // unpaid obligation
   const profileId = resolveProfileId(body.profile_id);
 
   const id = crypto.randomUUID();
   db.prepare(
-    `INSERT INTO acc_transactions (id, profile_id, type, amount, currency, category_id, item, party, description, occurred_on)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, date('now')))`
-  ).run(id, profileId, type, amount, currency, categoryId, item, party, description, occurredOn);
+    `INSERT INTO acc_transactions (id, profile_id, type, amount, currency, category_id, item, party, description, pending, occurred_on)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, date('now')))`
+  ).run(id, profileId, type, amount, currency, categoryId, item, party, description, pending, occurredOn);
 
   const images = Array.isArray(body.images) ? body.images.filter((u) => typeof u === 'string' && /^\/api\/uploads\//.test(u)) : [];
   const insImg = db.prepare('INSERT INTO acc_transaction_images (id, transaction_id, url) VALUES (?, ?, ?)');

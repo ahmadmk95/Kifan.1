@@ -27,8 +27,11 @@ export default function TransactionsView({ readOnly = false }) {
   const filtered = useMemo(() => {
     if (!data) return [];
     if (filter === 'all') return data.transactions;
+    if (filter === 'pending') return data.transactions.filter((t) => t.pending);
     return data.transactions.filter((t) => t.type === filter);
   }, [data, filter]);
+
+  const pendingCount = data?.totals?.pending_count || 0;
 
   return (
     <div className="page">
@@ -55,7 +58,7 @@ export default function TransactionsView({ readOnly = false }) {
           <>
             <div className="acc-toolbar">
               <div className="filter-tabs">
-                {[['all', 'الكل'], ['donation', 'تبرعات'], ['purchase', 'مشتريات']].map(([k, l]) => (
+                {[['all', 'الكل'], ['donation', 'تبرعات'], ['purchase', 'مشتريات'], ['pending', `مستحقات${pendingCount ? ` (${pendingCount})` : ''}`]].map(([k, l]) => (
                   <button key={k} className={'ft' + (filter === k ? ' active' : '')} onClick={() => setFilter(k)}>{l}</button>
                 ))}
               </div>
@@ -92,6 +95,7 @@ export default function TransactionsView({ readOnly = false }) {
                           <Link href={`/admin/accounting/tx/${tx.id}`} className="tx-link" style={{ fontWeight: 600 }}>
                             {tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}
                           </Link>
+                          {tx.pending ? <span className="pending-badge">مستحق — لم يُدفع</span> : null}
                           {(() => {
                             const sub = [tx.type === 'purchase' ? tx.party : null, tx.description].filter(Boolean).join(' · ');
                             return sub ? <div style={{ fontSize: 12.5, color: 'var(--mawkab-muted)' }}>{sub}</div> : null;
@@ -118,6 +122,9 @@ export default function TransactionsView({ readOnly = false }) {
                             <Link href={`/admin/accounting/tx/${tx.id}`} className="btn-small">تفاصيل</Link>
                             {!readOnly ? (
                               <>
+                                {tx.pending ? (
+                                  <button className="btn-small btn-pay" onClick={async () => { await api.payTransaction(tx.id); load(); }}>تم الدفع</button>
+                                ) : null}
                                 <button className="btn-small" onClick={() => setModal({ type: tx.type, existing: tx })}>تعديل</button>
                                 <button
                                   className="btn-danger"

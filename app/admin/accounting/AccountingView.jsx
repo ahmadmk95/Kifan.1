@@ -131,9 +131,27 @@ export default function AccountingView({ readOnly = false }) {
         </div>
         <div className={'stat-card ' + (t.balance_usd >= 0 ? 'acc-bal' : 'acc-neg')}>
           <div className="sc-value">{show(t.balance_usd)}</div>
-          <div className="sc-label">الرصيد المتبقّي</div>
+          <div className="sc-label">الرصيد الحالي (المتوفّر)</div>
         </div>
       </div>
+
+      {/* Outstanding obligations — money that still needs to be paid */}
+      {t.pending_usd > 0 ? (
+        <div className="stat-cards acc-cards obligations">
+          <div className="stat-card acc-pending">
+            <div className="sc-value">{show(t.pending_usd)}</div>
+            <div className="sc-label">مستحقات لم تُدفع{t.pending_count ? ` (${t.pending_count})` : ''}</div>
+          </div>
+          <div className={'stat-card ' + (t.projected_usd >= 0 ? 'acc-bal' : 'acc-neg')}>
+            <div className="sc-value">{show(t.projected_usd)}</div>
+            <div className="sc-label">المتبقّي بعد سداد المستحقات</div>
+          </div>
+          <div className={'stat-card ' + (t.projected_usd >= 0 ? 'enough-ok' : 'enough-bad')}>
+            <div className="sc-value">{t.projected_usd >= 0 ? '✅ يكفي' : '⚠️ لا يكفي'}</div>
+            <div className="sc-label">{t.projected_usd >= 0 ? 'لديك ما يكفي لسداد المستحقات' : `ينقصك ${show(Math.abs(t.projected_usd))}`}</div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="acc-grid">
         <RatesPanel rates={data.rates} onSaved={load} readOnly={readOnly} />
@@ -169,7 +187,10 @@ export default function AccountingView({ readOnly = false }) {
               <span className={'tx-pill ' + (tx.type === 'donation' ? 'tx-in' : 'tx-out')}>
                 {tx.type === 'donation' ? 'تبرع' : 'مشترى'}
               </span>
-              <span className="tx-line-name">{tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}</span>
+              <span className="tx-line-name">
+                {tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}
+                {tx.pending ? <span className="pending-badge">مستحق</span> : null}
+              </span>
               <span className="tx-line-date">{tx.occurred_on}</span>
               <span className="tx-line-usd">{show(tx.amount_usd)}</span>
             </Link>
