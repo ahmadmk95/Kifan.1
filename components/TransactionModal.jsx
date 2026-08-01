@@ -17,6 +17,7 @@ export default function TransactionModal({ type, existing, categories, suggestio
     party: existing?.party || '',
     description: existing?.description || '',
     occurred_on: existing?.occurred_on || today(),
+    pending: existing ? !!existing.pending : false,
   });
   const [images, setImages] = useState(existing?.images ? existing.images.map((im) => ({ url: im.url })) : []);
   const [uploading, setUploading] = useState(false);
@@ -56,6 +57,7 @@ export default function TransactionModal({ type, existing, categories, suggestio
       party: f.party.trim(),
       description: f.description.trim(),
       occurred_on: f.occurred_on,
+      pending: isPurchase ? !!f.pending : false,
       images: images.map((i) => i.url),
     };
     try {
@@ -115,6 +117,13 @@ export default function TransactionModal({ type, existing, categories, suggestio
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
+          ) : null}
+
+          {isPurchase ? (
+            <label className="check-row">
+              <input type="checkbox" checked={f.pending} onChange={(e) => set('pending', e.target.checked)} />
+              <span>لم يُدفع بعد (التزام مستحق) — لن يُخصم من الرصيد حتى الدفع</span>
+            </label>
           ) : null}
 
           <div className="form-field">

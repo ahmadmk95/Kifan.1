@@ -21,8 +21,14 @@ export default function TxDetail({ tx, categories, suggestions = {}, readOnly = 
     router.refresh();
   };
 
+  const pay = async () => {
+    await api.payTransaction(tx.id);
+    router.refresh();
+  };
+
   const rows = [
     ['النوع', isPurchase ? 'مشترى' : 'تبرع'],
+    isPurchase ? ['حالة الدفع', tx.pending ? 'مستحق — لم يُدفع بعد' : 'مدفوع'] : null,
     isPurchase ? ['اسم الصنف', tx.item || '—'] : null,
     ['المبلغ', `${amt(tx.amount)} — ${CUR_LABEL[tx.currency] || tx.currency}`],
     ['بالدولار', usd(tx.amount_usd)],
@@ -42,6 +48,7 @@ export default function TxDetail({ tx, categories, suggestions = {}, readOnly = 
             <Link href="/admin/accounting" className="btn-ghost">← رجوع للمحاسبة</Link>
             {!readOnly ? (
               <>
+                {isPurchase && tx.pending ? <button className="btn-small btn-pay" onClick={pay}>تم الدفع</button> : null}
                 <button className="btn-small" onClick={() => setEditing(true)}>تعديل</button>
                 <button className="btn-danger" onClick={remove}>حذف</button>
               </>
@@ -53,7 +60,10 @@ export default function TxDetail({ tx, categories, suggestions = {}, readOnly = 
           <span className={'tx-pill ' + (isPurchase ? 'tx-out' : 'tx-in')} style={{ fontSize: 13 }}>
             {isPurchase ? 'مشترى' : 'تبرع'}
           </span>
-          <div className="tx-detail-title">{isPurchase ? (tx.item || '—') : (tx.party || 'تبرع')}</div>
+          <div className="tx-detail-title">
+            {isPurchase ? (tx.item || '—') : (tx.party || 'تبرع')}
+            {tx.pending ? <span className="pending-badge">مستحق</span> : null}
+          </div>
           <div className="tx-detail-usd">{usd(tx.amount_usd)}</div>
         </div>
 

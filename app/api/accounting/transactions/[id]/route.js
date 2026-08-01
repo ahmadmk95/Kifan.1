@@ -37,12 +37,15 @@ export async function PATCH(req, { params }) {
   const party = body.party !== undefined ? String(body.party || '').trim().slice(0, 200) || null : existing.party;
   const description = body.description !== undefined ? String(body.description || '').trim().slice(0, 2000) || null : existing.description;
   const occurredOn = /^\d{4}-\d{2}-\d{2}$/.test(body.occurred_on) ? body.occurred_on : existing.occurred_on;
+  const pending = existing.type === 'purchase'
+    ? (body.pending !== undefined ? (body.pending ? 1 : 0) : existing.pending)
+    : 0;
 
   db.prepare(
     `UPDATE acc_transactions
-     SET amount = ?, currency = ?, category_id = ?, item = ?, party = ?, description = ?, occurred_on = ?
+     SET amount = ?, currency = ?, category_id = ?, item = ?, party = ?, description = ?, pending = ?, occurred_on = ?
      WHERE id = ?`
-  ).run(amount, currency, categoryId, item || null, party, description, occurredOn, params.id);
+  ).run(amount, currency, categoryId, item || null, party, description, pending, occurredOn, params.id);
 
   // Replace invoice image set if provided.
   if (Array.isArray(body.images)) {
