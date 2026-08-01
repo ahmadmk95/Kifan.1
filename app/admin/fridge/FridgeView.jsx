@@ -9,6 +9,7 @@ import FridgeUnitsModal from '@/components/FridgeUnitsModal';
 import { api } from '@/lib/api';
 import { fmtQty, isLowStock } from '@/lib/qty';
 import { today } from '@/lib/money';
+import { normalizeText } from '@/lib/normalize';
 import { FRIDGE_BRANCHES, BRANCH_LABEL } from '@/lib/fridgeBranches';
 
 export default function FridgeView({
@@ -26,6 +27,7 @@ export default function FridgeView({
   const [adding, setAdding] = useState(false);
   const [managingUnits, setManagingUnits] = useState(false);
   const [branch, setBranch] = useState(hasBranches ? branches[0].value : 'all');
+  const [query, setQuery] = useState('');
 
   const load = () => api.fridge(store)
     .then(({ items, units, suggestions }) => {
@@ -42,13 +44,20 @@ export default function FridgeView({
 
   const lowItems = useMemo(() => (items || []).filter(isLowStock), [items]);
   const isLowView = branch === 'low';
+  const q = normalizeText(query.trim());
+  const searching = q.length > 0;
 
   const shown = useMemo(() => {
     if (!items) return [];
+    // A search matches item names/notes across every branch of this store.
+    if (searching) {
+      return items.filter((it) =>
+        normalizeText(it.name).includes(q) || normalizeText(it.note || '').includes(q));
+    }
     if (isLowView) return lowItems;
     if (branch === 'all') return items;
     return items.filter((it) => (it.location || 'fridge') === branch);
-  }, [items, branch, isLowView, lowItems]);
+  }, [items, branch, isLowView, lowItems, searching, q]);
 
   // Tabs: the fridge's branches, or a single "الأصناف" tab for a one-branch store.
   const tabs = hasBranches ? branches : [{ value: 'all', label: 'الأصناف', icon: '📦' }];
@@ -131,8 +140,25 @@ export default function FridgeView({
           </div>
         </div>
 
+        {/* Search across all items of this store (by name or note) */}
+        <div className="search-box fridge-search">
+          <div className="search-inputwrap">
+            <svg className="search-ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`ابحث في ${title}…`}
+              aria-label="بحث عن صنف"
+            />
+            {query ? <button className="search-clear" onClick={() => setQuery('')} aria-label="مسح">×</button> : null}
+          </div>
+        </div>
+
         {/* Section tabs + the low-stock (النواقص) list */}
-        <div className="branch-tabs">
+        <div className="branch-tabs" style={searching ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
           {tabs.map((b) => (
             <button key={b.value} className={'branch-tab' + (branch === b.value ? ' active' : '')} onClick={() => setBranch(b.value)}>
               <span className="bt-ico">{b.icon}</span>
@@ -154,12 +180,15 @@ export default function FridgeView({
         ) : shown.length === 0 ? (
           <div className="empty-state">
             <img src="/logo.png" alt="الشعار" />
-            <p>{isLowView ? 'لا توجد أصناف ناقصة — المخزون بخير 👍' : `لا توجد أصناف في «${viewLabel}» بعد`}</p>
-            {!readOnly && !isLowView ? <button className="btn-add" onClick={() => setAdding(true)}>＋ إضافة صنف</button> : null}
+            <p>{searching ? `لا نتائج لـ «${query.trim()}»` : isLowView ? 'لا توجد أصناف ناقصة — المخزون بخير 👍' : `لا توجد أصناف في «${viewLabel}» بعد`}</p>
+            {!readOnly && !isLowView && !searching ? <button className="btn-add" onClick={() => setAdding(true)}>＋ إضافة صنف</button> : null}
           </div>
         ) : (
           <>
-            {isLowView ? (
+            {searching ? (
+              <div className="fridge-alert search-count">نتائج البحث: {shown.length}</div>
+            ) : null}
+            {isLowView && !searching ? (
               <>
                 <div className="fridge-alert">⚠ {lowItems.length} صنف بحاجة إلى إعادة تعبئة</div>
                 <button type="button" className="wa-share" onClick={shareWhatsApp}>
@@ -183,7 +212,7 @@ export default function FridgeView({
                       <span className="ft-img ft-img-ph">🧺</span>
                     )}
                     <span className="ft-name">{it.name}</span>
-                    {isLowView && hasBranches ? <span className="ft-cat">{BRANCH_LABEL[it.location] || 'ثلاجة'}</span> : null}
+                    {(isLowView || searching) && hasBranches ? <span className="ft-cat">{BRANCH_LABEL[it.location] || 'ثلاجة'}</span> : null}
                     <span className="ft-qty">
                       {fmtQty(it.quantity)}{it.unit ? <span className="ft-unit"> {it.unit}</span> : null}
                     </span>
