@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser, canAccounting } from '@/lib/auth';
-import { archiveProfile, restoreProfile } from '@/lib/accounting';
+import { archiveProfile, restoreProfile, renameProfile } from '@/lib/accounting';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,12 +20,11 @@ export async function PATCH(req, { params }) {
   const user = await getCurrentUser();
   if (!canAccounting(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
   const body = await req.json().catch(() => ({}));
-  if (body.archived === false || body.restore) {
-    try {
-      return NextResponse.json(restoreProfile(params.id));
-    } catch (e) {
-      return NextResponse.json({ error: e.message || 'تعذّر الاسترجاع' }, { status: e.status || 400 });
-    }
+  try {
+    if (body.archived === false || body.restore) return NextResponse.json(restoreProfile(params.id));
+    if (body.name !== undefined) return NextResponse.json(renameProfile(params.id, body.name));
+  } catch (e) {
+    return NextResponse.json({ error: e.message || 'تعذّر التعديل' }, { status: e.status || 400 });
   }
   return NextResponse.json({ error: 'لا تغيير' }, { status: 400 });
 }
