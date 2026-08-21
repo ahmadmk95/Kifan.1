@@ -379,6 +379,8 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .acc-cards.obligations { margin-top: -8px; margin-bottom: 24px; }
 .acc-pending .sc-value { color: #B8860B; }
 .acc-pending { border-top-color: #E6B800 !important; }
+.acc-pledged .sc-value { color: #1E6FA8; }
+.acc-pledged { border-top-color: #2E86C1 !important; }
 .stat-card.enough-ok { background: #EAF6E6; border-top-color: var(--mawkab-green) !important; }
 .stat-card.enough-ok .sc-value { color: var(--mawkab-green-dark); font-size: 22px; }
 .stat-card.enough-bad { background: #FDECEA; border-top-color: var(--mawkab-red) !important; }

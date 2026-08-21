@@ -33,7 +33,7 @@ export async function POST(req) {
   const party = body.party ? String(body.party).trim().slice(0, 200) : null;
   const description = body.description ? String(body.description).trim().slice(0, 2000) : null;
   const occurredOn = /^\d{4}-\d{2}-\d{2}$/.test(body.occurred_on) ? body.occurred_on : null;
-  const pending = type === 'purchase' && body.pending ? 1 : 0; // unpaid obligation
+  const pending = body.pending ? 1 : 0; // purchase: unpaid; donation: not collected yet
   const profileId = resolveProfileId(body.profile_id);
 
   const id = crypto.randomUUID();
