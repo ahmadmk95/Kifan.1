@@ -17,6 +17,17 @@ const DISPLAY_CURRENCIES = [
   { value: 'KWD', label: 'دينار كويتي' },
 ];
 
+// Dashboard sections the user can show/hide (preference saved per device).
+const SECTIONS = [
+  { key: 'summary', label: 'الملخّص (التبرعات/المشتريات/الرصيد)' },
+  { key: 'native', label: 'الأرصدة بالعملات الأصلية' },
+  { key: 'rates', label: 'أسعار الصرف' },
+  { key: 'categories', label: 'فئات المشتريات' },
+  { key: 'byCategory', label: 'المشتريات حسب الفئة' },
+  { key: 'recent', label: 'آخر الحركات' },
+];
+const HIDDEN_KEY = 'acc_hidden_sections';
+
 // Format an amount in its own currency, no conversion.
 const CUR_SUFFIX = { USD: '$', IQD: 'د.ع', KWD: 'د.ك' };
 const native = (v, c) => (c === 'USD' ? '$' + amt(v) : `${amt(v)} ${CUR_SUFFIX[c] || c}`);
@@ -31,6 +42,19 @@ export default function AccountingView({ readOnly = false }) {
   const [newProfile, setNewProfile] = useState('');
   const [profileErr, setProfileErr] = useState(null);
   const [profileBusy, setProfileBusy] = useState(false);
+  const [hidden, setHidden] = useState(() => new Set());
+  const [customizing, setCustomizing] = useState(false);
+
+  useEffect(() => {
+    try { setHidden(new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]'))); } catch {}
+  }, []);
+  const toggleSection = (k) => setHidden((prev) => {
+    const n = new Set(prev);
+    n.has(k) ? n.delete(k) : n.add(k);
+    try { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...n])); } catch {}
+    return n;
+  });
+  const shownSection = (k) => !hidden.has(k);
 
   const load = (pid) => api.accounting(pid).then((d) => {
     setData(d);
@@ -107,6 +131,7 @@ export default function AccountingView({ readOnly = false }) {
       <div className="admin-bar">
         <h1>المحاسبة</h1>
         <div className="admin-actions">
+          <button className="btn-ghost" onClick={() => setCustomizing((v) => !v)}>⚙ تخصيص العرض</button>
           <Link href="/admin/accounting/reconcile" className="btn-ghost">مطابقة العهدة</Link>
           <Link href="/admin/accounting/report" className="btn-ghost">تقرير PDF</Link>
           {!readOnly ? (
@@ -117,6 +142,21 @@ export default function AccountingView({ readOnly = false }) {
           ) : null}
         </div>
       </div>
+
+      {customizing ? (
+        <div className="acc-panel customize-panel">
+          <h2 className="acc-h">تخصيص العرض</h2>
+          <p className="acc-note">اختر ما يظهر في لوحة المحاسبة. تُحفظ التفضيلات على هذا الجهاز.</p>
+          <div className="customize-grid">
+            {SECTIONS.map((s) => (
+              <label key={s.key} className="check-row">
+                <input type="checkbox" checked={shownSection(s.key)} onChange={() => toggleSection(s.key)} />
+                <span>{s.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {/* Account book (profile) selector */}
       <div className="profile-bar">
@@ -178,20 +218,22 @@ export default function AccountingView({ readOnly = false }) {
       </div>
 
       {/* Summary */}
-      <div className="stat-cards acc-cards">
-        <div className="stat-card acc-in">
-          <div className="sc-value">{show(t.donations_usd)}</div>
-          <div className="sc-label">إجمالي التبرعات</div>
+      {shownSection('summary') && (
+        <div className="stat-cards acc-cards">
+          <div className="stat-card acc-in">
+            <div className="sc-value">{show(t.donations_usd)}</div>
+            <div className="sc-label">إجمالي التبرعات</div>
+          </div>
+          <div className="stat-card acc-out">
+            <div className="sc-value">{show(t.purchases_usd)}</div>
+            <div className="sc-label">إجمالي المشتريات</div>
+          </div>
+          <div className={'stat-card ' + (t.balance_usd >= 0 ? 'acc-bal' : 'acc-neg')}>
+            <div className="sc-value">{show(t.balance_usd)}</div>
+            <div className="sc-label">الرصيد الحالي (المتوفّر)</div>
+          </div>
         </div>
-        <div className="stat-card acc-out">
-          <div className="sc-value">{show(t.purchases_usd)}</div>
-          <div className="sc-label">إجمالي المشتريات</div>
-        </div>
-        <div className={'stat-card ' + (t.balance_usd >= 0 ? 'acc-bal' : 'acc-neg')}>
-          <div className="sc-value">{show(t.balance_usd)}</div>
-          <div className="sc-label">الرصيد الحالي (المتوفّر)</div>
-        </div>
-      </div>
+      )}
 
       {/* Outstanding obligations — money that still needs to be paid */}
       {t.pending_usd > 0 ? (
@@ -226,7 +268,7 @@ export default function AccountingView({ readOnly = false }) {
       ) : null}
 
       {/* Balances in each original currency — no conversion */}
-      {(data.by_currency || []).length > 0 && (
+      {shownSection('native') && (data.by_currency || []).length > 0 && (
         <div className="acc-panel">
           <h2 className="acc-h">الأرصدة بالعملات الأصلية (بدون تحويل)</h2>
           <p className="acc-note">رصيد كل عملة كما هو، دون تحويله إلى الدولار.</p>
@@ -247,12 +289,14 @@ export default function AccountingView({ readOnly = false }) {
         </div>
       )}
 
-      <div className="acc-grid">
-        <RatesPanel rates={data.rates} onSaved={load} readOnly={readOnly} />
-        <CategoriesPanel categories={data.categories} onChanged={load} readOnly={readOnly} />
-      </div>
+      {(shownSection('rates') || shownSection('categories')) && (
+        <div className="acc-grid">
+          {shownSection('rates') ? <RatesPanel rates={data.rates} onSaved={load} readOnly={readOnly} /> : null}
+          {shownSection('categories') ? <CategoriesPanel categories={data.categories} onChanged={load} readOnly={readOnly} /> : null}
+        </div>
+      )}
 
-      {data.by_category.length > 0 && (
+      {shownSection('byCategory') && data.by_category.length > 0 && (
         <div className="acc-panel">
           <h2 className="acc-h">المشتريات حسب الفئة</h2>
           <div className="cat-breakdown">
@@ -267,29 +311,33 @@ export default function AccountingView({ readOnly = false }) {
       )}
 
       {/* Recent transactions — one-line summaries; full details on their own page */}
-      <div className="acc-toolbar">
-        <h2 className="acc-h" style={{ margin: 0 }}>آخر الحركات</h2>
-        <Link href="/admin/accounting/transactions" className="btn-ghost">كل الحركات وتفاصيلها ←</Link>
-      </div>
+      {shownSection('recent') && (
+        <>
+          <div className="acc-toolbar">
+            <h2 className="acc-h" style={{ margin: 0 }}>آخر الحركات</h2>
+            <Link href="/admin/accounting/transactions" className="btn-ghost">كل الحركات وتفاصيلها ←</Link>
+          </div>
 
-      {data.transactions.length === 0 ? (
-        <p style={{ color: 'var(--mawkab-muted)' }}>لا توجد حركات بعد.</p>
-      ) : (
-        <div className="tx-lines">
-          {data.transactions.slice(0, 8).map((tx) => (
-            <Link key={tx.id} href={`/admin/accounting/tx/${tx.id}`} className="tx-line">
-              <span className={'tx-pill ' + (tx.type === 'donation' ? 'tx-in' : 'tx-out')}>
-                {tx.type === 'donation' ? 'تبرع' : 'مشترى'}
-              </span>
-              <span className="tx-line-name">
-                {tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}
-                {tx.pending ? <span className="pending-badge">{tx.type === 'donation' ? 'غير محصّل' : 'مستحق'}</span> : null}
-              </span>
-              <span className="tx-line-date">{tx.occurred_on}</span>
-              <span className="tx-line-usd">{show(tx.amount_usd)}</span>
-            </Link>
-          ))}
-        </div>
+          {data.transactions.length === 0 ? (
+            <p style={{ color: 'var(--mawkab-muted)' }}>لا توجد حركات بعد.</p>
+          ) : (
+            <div className="tx-lines">
+              {data.transactions.slice(0, 8).map((tx) => (
+                <Link key={tx.id} href={`/admin/accounting/tx/${tx.id}`} className="tx-line">
+                  <span className={'tx-pill ' + (tx.type === 'donation' ? 'tx-in' : 'tx-out')}>
+                    {tx.type === 'donation' ? 'تبرع' : 'مشترى'}
+                  </span>
+                  <span className="tx-line-name">
+                    {tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}
+                    {tx.pending ? <span className="pending-badge">{tx.type === 'donation' ? 'غير محصّل' : 'مستحق'}</span> : null}
+                  </span>
+                  <span className="tx-line-date">{tx.occurred_on}</span>
+                  <span className="tx-line-usd">{show(tx.amount_usd)}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {modal ? (
