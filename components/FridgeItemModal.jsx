@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Sheet from './Sheet';
 import { api } from '@/lib/api';
 import Autocomplete from '@/components/Autocomplete';
 import Dropdown from '@/components/Dropdown';
@@ -77,8 +78,7 @@ export default function FridgeItemModal({
   };
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal2" onClick={(e) => e.stopPropagation()}>
+    <Sheet onClose={onClose}>
         <div className="modal2-head">
           <h3>{isEdit ? 'تعديل الصنف' : 'إضافة صنف'}</h3>
           <button className="x" onClick={onClose}>×</button>
@@ -146,7 +146,6 @@ export default function FridgeItemModal({
             <button className="btn-ghost" onClick={onClose}>إلغاء</button>
           </div>
         </div>
-      </div>
-    </div>
+      </Sheet>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Sheet from './Sheet';
 import { api } from '@/lib/api';
 import Autocomplete from '@/components/Autocomplete';
 import { CURRENCIES, CUR_LABEL, today } from '@/lib/money';
@@ -71,8 +72,7 @@ export default function TransactionModal({ type, existing, categories, suggestio
   };
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal2" onClick={(e) => e.stopPropagation()}>
+    <Sheet onClose={onClose}>
         <div className="modal2-head">
           <h3>{isEdit ? (isPurchase ? 'تعديل مشترى' : 'تعديل تبرع') : (isPurchase ? 'إضافة مشترى' : 'إضافة تبرع')}</h3>
           <button className="x" onClick={onClose}>×</button>
@@ -156,7 +156,6 @@ export default function TransactionModal({ type, existing, categories, suggestio
             <button className="btn-ghost" onClick={onClose}>إلغاء</button>
           </div>
         </div>
-      </div>
-    </div>
+      </Sheet>
   );
 }

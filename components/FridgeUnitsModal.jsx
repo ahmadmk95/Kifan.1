@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Sheet from './Sheet';
 import { api } from '@/lib/api';
 
 export default function FridgeUnitsModal({ units = [], store = 'fridge', onClose, onChanged }) {
@@ -24,8 +25,7 @@ export default function FridgeUnitsModal({ units = [], store = 'fridge', onClose
   };
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal2" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
+    <Sheet onClose={onClose} maxWidth={460}>
         <div className="modal2-head">
           <h3>وحدات القياس</h3>
           <button className="x" onClick={onClose}>×</button>
@@ -55,7 +55,6 @@ export default function FridgeUnitsModal({ units = [], store = 'fridge', onClose
             ))}
           </div>
         </div>
-      </div>
-    </div>
+      </Sheet>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Sheet from './Sheet';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 
@@ -44,8 +45,7 @@ export default function OrderModal({ items = [], onClose, onSaved }) {
   };
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal2" onClick={(e) => e.stopPropagation()}>
+    <Sheet onClose={onClose}>
         <div className="modal2-head">
           <h3>طلب من الثلاجة</h3>
           <button className="x" onClick={onClose}>×</button>
@@ -102,7 +102,6 @@ export default function OrderModal({ items = [], onClose, onSaved }) {
             <button className="btn-ghost" onClick={onClose}>إلغاء</button>
           </div>
         </div>
-      </div>
-    </div>
+      </Sheet>
   );
 }
