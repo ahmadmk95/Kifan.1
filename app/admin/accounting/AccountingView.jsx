@@ -8,7 +8,7 @@ import TransactionModal from '@/components/TransactionModal';
 import Autocomplete from '@/components/Autocomplete';
 import Dropdown from '@/components/Dropdown';
 import { api } from '@/lib/api';
-import { fmtCur } from '@/lib/money';
+import { fmtCur, amt, CUR_LABEL } from '@/lib/money';
 import { getActiveProfile, setActiveProfile } from '@/lib/accProfile';
 
 const DISPLAY_CURRENCIES = [
@@ -16,6 +16,10 @@ const DISPLAY_CURRENCIES = [
   { value: 'IQD', label: 'دينار عراقي' },
   { value: 'KWD', label: 'دينار كويتي' },
 ];
+
+// Format an amount in its own currency, no conversion.
+const CUR_SUFFIX = { USD: '$', IQD: 'د.ع', KWD: 'د.ك' };
+const native = (v, c) => (c === 'USD' ? '$' + amt(v) : `${amt(v)} ${CUR_SUFFIX[c] || c}`);
 
 export default function AccountingView({ readOnly = false }) {
   const [data, setData] = useState(null);
@@ -206,6 +210,27 @@ export default function AccountingView({ readOnly = false }) {
           </div>
         </div>
       ) : null}
+
+      {/* Balances in each original currency — no conversion */}
+      {(data.by_currency || []).length > 0 && (
+        <div className="acc-panel">
+          <h2 className="acc-h">الأرصدة بالعملات الأصلية (بدون تحويل)</h2>
+          <p className="acc-note">رصيد كل عملة كما هو، دون تحويله إلى الدولار.</p>
+          <div className="native-cur">
+            {data.by_currency.map((c) => (
+              <div key={c.currency} className="native-row">
+                <span className="native-name">{CUR_LABEL[c.currency] || c.currency}</span>
+                <div className="native-nums">
+                  <span className="nn in">+ {native(c.donations, c.currency)}</span>
+                  <span className="nn out">− {native(c.purchases, c.currency)}</span>
+                  {c.pending > 0 ? <span className="nn pend">مستحق {native(c.pending, c.currency)}</span> : null}
+                  <span className={'nn bal' + (c.balance < 0 ? ' neg' : '')}>= {native(c.balance, c.currency)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="acc-grid">
         <RatesPanel rates={data.rates} onSaved={load} readOnly={readOnly} />

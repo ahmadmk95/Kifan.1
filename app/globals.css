@@ -250,6 +250,18 @@ input, select, textarea { font-family: inherit; }
 .archive-name { font-size: 14.5px; font-weight: 600; }
 .archive-name small { color: var(--mawkab-muted); font-weight: 400; }
 
+/* Native per-currency balances (no conversion) */
+.native-cur { display: flex; flex-direction: column; gap: 10px; }
+.native-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--mawkab-border); padding-top: 10px; }
+.native-row:first-child { border-top: none; padding-top: 0; }
+.native-name { font-family: var(--font-heading), serif; font-weight: 700; font-size: 17px; }
+.native-nums { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 14.5px; direction: ltr; }
+.native-nums .nn.in { color: var(--mawkab-green); }
+.native-nums .nn.out { color: var(--mawkab-red); }
+.native-nums .nn.pend { color: #8A6D00; }
+.native-nums .nn.bal { font-weight: 800; font-size: 16px; color: var(--mawkab-ink); }
+.native-nums .nn.bal.neg { color: var(--mawkab-red); }
+
 /* Custom select styled like the autocomplete input */
 .ac-select { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; text-align: start; }
 .ac-select .ac-ph { color: var(--mawkab-muted); }
