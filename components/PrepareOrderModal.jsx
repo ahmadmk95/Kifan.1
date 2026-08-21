@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Sheet from './Sheet';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 
@@ -39,8 +40,7 @@ export default function PrepareOrderModal({ order, onClose, onDone }) {
   };
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal2" onClick={(e) => e.stopPropagation()}>
+    <Sheet onClose={onClose}>
         <div className="modal2-head">
           <h3>تجهيز الطلب</h3>
           <button className="x" onClick={onClose}>×</button>
@@ -77,7 +77,6 @@ export default function PrepareOrderModal({ order, onClose, onDone }) {
             <button className="btn-ghost" onClick={onClose}>إلغاء</button>
           </div>
         </div>
-      </div>
-    </div>
+      </Sheet>
   );
 }

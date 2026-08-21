@@ -894,21 +894,18 @@ button:active, .btn-add:active, .btn-ghost:active, .btn-small:active, .btn-dange
   transform: scale(.95); transition-duration: .06s;
 }
 
-/* --- Translucent material overlay for modals; fades & blurs in --- */
+/* --- Translucent material overlay for modals (opacity & drag driven by
+   framer-motion in <Sheet>); this only supplies the look. --- */
 .overlay {
   background: rgba(32,28,16,0.42);
   backdrop-filter: blur(6px) saturate(120%);
   -webkit-backdrop-filter: blur(6px) saturate(120%);
-  animation: fx-overlay-in .22s ease-out both;
 }
-/* Sheet springs in from its own scale/offset, then settles --- */
-.modal2 { transform-origin: center; animation: fx-modal-in .36s cubic-bezier(.22,1,.36,1) both; }
-@keyframes fx-overlay-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fx-modal-in {
-  0%   { opacity: 0; transform: translateY(14px) scale(.93); }
-  55%  { opacity: 1; transform: translateY(0) scale(1.015); }
-  100% { transform: none; }
-}
+.modal2 { transform-origin: center; }
+/* Grab handle at the top of a sheet — flick down to dismiss. */
+.sheet-grip { display: flex; justify-content: center; padding: 8px 0 2px; cursor: grab; touch-action: none; }
+.sheet-grip:active { cursor: grabbing; }
+.sheet-grip span { width: 40px; height: 5px; border-radius: 999px; background: var(--mawkab-border); display: block; }
 
 /* --- Cards & tiles rise + fade in on load (staggered) across the site --- */
 .committee-grid .committee-card,
@@ -943,7 +940,6 @@ button:active, .btn-add:active, .btn-ghost:active, .btn-small:active, .btn-dange
    swap travel/overshoot for gentle opacity cross-fades (per the skill). --- */
 @keyframes fx-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .modal2 { animation: fx-fade-in .2s ease both; }
   .committee-grid .committee-card, .fridge-grid .fridge-tile,
   .stat-cards .stat-card, .order-list .order-card, .tx-lines .tx-line,
   .committee-grid .committee-card:nth-child(n), .fridge-grid .fridge-tile:nth-child(n),
