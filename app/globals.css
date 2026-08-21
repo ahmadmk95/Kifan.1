@@ -241,6 +241,14 @@ input, select, textarea { font-family: inherit; }
 .profile-bar { flex-wrap: wrap; }
 .profile-add { display: inline-flex; align-items: center; gap: 8px; }
 .btn-mini { padding: 8px 14px; font-size: 13px; }
+.btn-archive:hover { border-color: var(--mawkab-red); color: var(--mawkab-red); }
+.archive-panel { margin-bottom: 18px; border: 1px solid var(--mawkab-border); border-radius: 12px; background: #fff; padding: 4px 14px; }
+.archive-panel summary { cursor: pointer; font-size: 14px; font-weight: 700; color: var(--mawkab-muted); padding: 8px 0; }
+.archive-list { display: flex; flex-direction: column; gap: 8px; padding: 6px 0 12px; }
+.archive-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--mawkab-border); padding-top: 8px; }
+.archive-row:first-child { border-top: none; }
+.archive-name { font-size: 14.5px; font-weight: 600; }
+.archive-name small { color: var(--mawkab-muted); font-weight: 400; }
 
 /* Custom select styled like the autocomplete input */
 .ac-select { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; text-align: start; }
