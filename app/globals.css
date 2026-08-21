@@ -871,3 +871,66 @@ ol.man-steps > li::before { content: counter(mstep); position: absolute; inset-i
   .acc-table .acts, .users-table .acts { justify-content: flex-start; flex-wrap: wrap; width: 100%; }
   .acc-table .inv-thumbs { justify-content: flex-end; }
 }
+
+/* ============================================================
+   Apple-design demo — scoped to the fridge screen (.fx-fluid).
+   Physics-feeling motion & materials; NO color/logo changes.
+   ============================================================ */
+
+/* Tactile press feedback: content reacts on touch-down, settles smoothly. */
+.fx-fluid .fridge-tile {
+  transition: transform .18s cubic-bezier(.22,1,.36,1), box-shadow .18s ease, border-color .15s, background .15s;
+  will-change: transform;
+}
+.fx-fluid .fridge-tile:active { transform: scale(.97); transition-duration: .08s; }
+
+.fx-fluid .btn-add,
+.fx-fluid .btn-ghost,
+.fx-fluid .btn-small,
+.fx-fluid .wa-share,
+.fx-fluid .branch-tab,
+.fx-fluid .search-clear {
+  transition: transform .12s cubic-bezier(.22,1,.36,1), background .15s, border-color .15s, color .15s, box-shadow .15s;
+}
+.fx-fluid .btn-add:active,
+.fx-fluid .btn-ghost:active,
+.fx-fluid .btn-small:active,
+.fx-fluid .wa-share:active,
+.fx-fluid .branch-tab:active,
+.fx-fluid .search-clear:active { transform: scale(.95); transition-duration: .06s; }
+
+/* Search field: soft focus lift (material). */
+.fx-fluid .search-box input { transition: border-color .15s, box-shadow .2s ease; }
+
+/* Overlay as a real translucent material that fades/blurs in. */
+.fx-fluid .overlay {
+  background: rgba(32,28,16,0.42);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  animation: fx-overlay-in .22s ease-out both;
+}
+/* Sheet enters from its own scale/offset and settles (critically damped). */
+.fx-fluid .modal2 {
+  transform-origin: center;
+  animation: fx-modal-in .34s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes fx-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fx-modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(.965); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Accessibility: honor reduced-motion and reduced-transparency. */
+@media (prefers-reduced-motion: reduce) {
+  .fx-fluid .fridge-tile,
+  .fx-fluid .btn-add, .fx-fluid .btn-ghost, .fx-fluid .btn-small,
+  .fx-fluid .wa-share, .fx-fluid .branch-tab, .fx-fluid .search-clear { transition: none; }
+  .fx-fluid .fridge-tile:active,
+  .fx-fluid .btn-add:active, .fx-fluid .btn-ghost:active, .fx-fluid .btn-small:active,
+  .fx-fluid .wa-share:active, .fx-fluid .branch-tab:active { transform: none; }
+  .fx-fluid .overlay { animation: fx-overlay-in .15s ease both; }
+  .fx-fluid .modal2 { animation: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .fx-fluid .overlay { background: rgba(32,28,16,0.62); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
