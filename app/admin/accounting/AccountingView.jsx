@@ -42,6 +42,28 @@ export default function AccountingView({ readOnly = false }) {
     load(pid);
   };
 
+  const archiveCurrent = async () => {
+    const pid = profile || data.active_profile;
+    const name = (data.profiles || []).find((p) => p.id === pid)?.name || '';
+    if (!window.confirm(`أرشفة الحساب «${name}»؟ ستبقى كل بياناته محفوظة في الأرشيف ويمكن استرجاعه لاحقاً.`)) return;
+    setProfileErr(null);
+    try {
+      await api.archiveProfile(pid);
+      setActiveProfile('');
+      setProfile(null);
+      setData(null);
+      load(null); // server falls back to the first remaining book
+    } catch (e) {
+      setProfileErr(e.message || 'تعذّر الأرشفة');
+    }
+  };
+
+  const restoreProfile = async (id) => {
+    setProfileErr(null);
+    try { await api.restoreProfile(id); load(profile); }
+    catch (e) { setProfileErr(e.message || 'تعذّر الاسترجاع'); }
+  };
+
   const saveProfile = async () => {
     const name = newProfile.trim();
     if (!name || profileBusy) return;
@@ -92,6 +114,9 @@ export default function AccountingView({ readOnly = false }) {
         {!readOnly && !addingProfile ? (
           <button className="btn-ghost btn-mini" onClick={() => { setAddingProfile(true); setProfileErr(null); }}>＋ حساب جديد</button>
         ) : null}
+        {!readOnly && !addingProfile && (data.profiles || []).length > 1 ? (
+          <button className="btn-ghost btn-mini btn-archive" onClick={archiveCurrent}>🗄 أرشفة الحساب</button>
+        ) : null}
         {!readOnly && addingProfile ? (
           <span className="profile-add">
             <Autocomplete
@@ -109,6 +134,21 @@ export default function AccountingView({ readOnly = false }) {
         ) : null}
       </div>
       {profileErr ? <div className="acc-inline-msg" style={{ color: 'var(--mawkab-red)' }}>{profileErr}</div> : null}
+
+      {/* Archived (removed) account books — data kept, restorable */}
+      {(data.archived_profiles || []).length ? (
+        <details className="archive-panel">
+          <summary>🗄 الأرشيف ({data.archived_profiles.length})</summary>
+          <div className="archive-list">
+            {data.archived_profiles.map((a) => (
+              <div className="archive-row" key={a.id}>
+                <span className="archive-name">{a.name} <small>({a.tx_count} حركة)</small></span>
+                {!readOnly ? <button className="btn-small" onClick={() => restoreProfile(a.id)}>استرجاع</button> : null}
+              </div>
+            ))}
+          </div>
+        </details>
+      ) : null}
 
       {/* Currency toggle for the totals (USD by default) */}
       <div className="cur-toggle">
