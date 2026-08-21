@@ -394,6 +394,9 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .btn-small.btn-pay:hover { background: var(--mawkab-green-dark); color: #fff; }
 .check-row { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; margin-bottom: 14px; cursor: pointer; line-height: 1.6; }
 .check-row input { margin-top: 3px; width: 17px; height: 17px; flex: none; accent-color: var(--mawkab-green); }
+.customize-panel .customize-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+.customize-panel .check-row { margin-bottom: 0; }
+@media (max-width: 640px) { .customize-panel .customize-grid { grid-template-columns: 1fr; } }
 
 .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
 .acc-panel {
