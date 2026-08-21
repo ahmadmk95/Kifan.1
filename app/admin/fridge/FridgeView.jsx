@@ -145,7 +145,7 @@ export default function FridgeView({
   };
 
   return (
-    <div className="page fx-fluid">
+    <div className="page">
       <SiteHeader />
       <main className="main-wrap">
         <div className="admin-bar">
