@@ -57,7 +57,7 @@ export default function TransactionModal({ type, existing, categories, suggestio
       party: f.party.trim(),
       description: f.description.trim(),
       occurred_on: f.occurred_on,
-      pending: isPurchase ? !!f.pending : false,
+      pending: !!f.pending,
       images: images.map((i) => i.url),
     };
     try {
@@ -119,12 +119,14 @@ export default function TransactionModal({ type, existing, categories, suggestio
             </div>
           ) : null}
 
-          {isPurchase ? (
-            <label className="check-row">
-              <input type="checkbox" checked={f.pending} onChange={(e) => set('pending', e.target.checked)} />
-              <span>لم يُدفع بعد (التزام مستحق) — لن يُخصم من الرصيد حتى الدفع</span>
-            </label>
-          ) : null}
+          <label className="check-row">
+            <input type="checkbox" checked={f.pending} onChange={(e) => set('pending', e.target.checked)} />
+            <span>
+              {isPurchase
+                ? 'لم يُدفع بعد (التزام مستحق) — لن يُخصم من الرصيد حتى الدفع'
+                : 'لم يُحصَّل بعد (تبرع موعود) — لن يُضاف إلى الرصيد حتى التحصيل'}
+            </span>
+          </label>
 
           <div className="form-field">
             <label>ملاحظة / بيان (اختياري)</label>

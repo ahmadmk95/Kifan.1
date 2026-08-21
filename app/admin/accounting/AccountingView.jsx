@@ -211,6 +211,20 @@ export default function AccountingView({ readOnly = false }) {
         </div>
       ) : null}
 
+      {/* Pledged donations — promised but not collected yet */}
+      {t.pledged_usd > 0 ? (
+        <div className="stat-cards acc-cards obligations">
+          <div className="stat-card acc-pledged">
+            <div className="sc-value">{show(t.pledged_usd)}</div>
+            <div className="sc-label">تبرعات لم تُحصّل{t.pledged_count ? ` (${t.pledged_count})` : ''}</div>
+          </div>
+          <div className="stat-card acc-in">
+            <div className="sc-value">{show(t.balance_usd + t.pledged_usd)}</div>
+            <div className="sc-label">الرصيد المتوقّع بعد التحصيل</div>
+          </div>
+        </div>
+      ) : null}
+
       {/* Balances in each original currency — no conversion */}
       {(data.by_currency || []).length > 0 && (
         <div className="acc-panel">
@@ -223,6 +237,7 @@ export default function AccountingView({ readOnly = false }) {
                 <div className="native-nums">
                   <span className="nn in">+ {native(c.donations, c.currency)}</span>
                   <span className="nn out">− {native(c.purchases, c.currency)}</span>
+                  {c.pledged > 0 ? <span className="nn pend">غير محصّل {native(c.pledged, c.currency)}</span> : null}
                   {c.pending > 0 ? <span className="nn pend">مستحق {native(c.pending, c.currency)}</span> : null}
                   <span className={'nn bal' + (c.balance < 0 ? ' neg' : '')}>= {native(c.balance, c.currency)}</span>
                 </div>
@@ -268,7 +283,7 @@ export default function AccountingView({ readOnly = false }) {
               </span>
               <span className="tx-line-name">
                 {tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}
-                {tx.pending ? <span className="pending-badge">مستحق</span> : null}
+                {tx.pending ? <span className="pending-badge">{tx.type === 'donation' ? 'غير محصّل' : 'مستحق'}</span> : null}
               </span>
               <span className="tx-line-date">{tx.occurred_on}</span>
               <span className="tx-line-usd">{show(tx.amount_usd)}</span>

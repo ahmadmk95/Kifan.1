@@ -28,7 +28,9 @@ export default function TxDetail({ tx, categories, suggestions = {}, readOnly = 
 
   const rows = [
     ['النوع', isPurchase ? 'مشترى' : 'تبرع'],
-    isPurchase ? ['حالة الدفع', tx.pending ? 'مستحق — لم يُدفع بعد' : 'مدفوع'] : null,
+    ['الحالة', isPurchase
+      ? (tx.pending ? 'مستحق — لم يُدفع بعد' : 'مدفوع')
+      : (tx.pending ? 'موعود — لم يُحصَّل بعد' : 'محصَّل')],
     isPurchase ? ['اسم الصنف', tx.item || '—'] : null,
     ['المبلغ', `${amt(tx.amount)} — ${CUR_LABEL[tx.currency] || tx.currency}`],
     ['بالدولار', usd(tx.amount_usd)],
@@ -48,7 +50,7 @@ export default function TxDetail({ tx, categories, suggestions = {}, readOnly = 
             <Link href="/admin/accounting" className="btn-ghost">← رجوع للمحاسبة</Link>
             {!readOnly ? (
               <>
-                {isPurchase && tx.pending ? <button className="btn-small btn-pay" onClick={pay}>تم الدفع</button> : null}
+                {tx.pending ? <button className="btn-small btn-pay" onClick={pay}>{isPurchase ? 'تم الدفع' : 'تم التحصيل'}</button> : null}
                 <button className="btn-small" onClick={() => setEditing(true)}>تعديل</button>
                 <button className="btn-danger" onClick={remove}>حذف</button>
               </>
@@ -62,7 +64,7 @@ export default function TxDetail({ tx, categories, suggestions = {}, readOnly = 
           </span>
           <div className="tx-detail-title">
             {isPurchase ? (tx.item || '—') : (tx.party || 'تبرع')}
-            {tx.pending ? <span className="pending-badge">مستحق</span> : null}
+            {tx.pending ? <span className="pending-badge">{isPurchase ? 'مستحق' : 'غير محصّل'}</span> : null}
           </div>
           <div className="tx-detail-usd">{usd(tx.amount_usd)}</div>
         </div>

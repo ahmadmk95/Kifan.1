@@ -37,9 +37,7 @@ export async function PATCH(req, { params }) {
   const party = body.party !== undefined ? String(body.party || '').trim().slice(0, 200) || null : existing.party;
   const description = body.description !== undefined ? String(body.description || '').trim().slice(0, 2000) || null : existing.description;
   const occurredOn = /^\d{4}-\d{2}-\d{2}$/.test(body.occurred_on) ? body.occurred_on : existing.occurred_on;
-  const pending = existing.type === 'purchase'
-    ? (body.pending !== undefined ? (body.pending ? 1 : 0) : existing.pending)
-    : 0;
+  const pending = body.pending !== undefined ? (body.pending ? 1 : 0) : existing.pending;
 
   db.prepare(
     `UPDATE acc_transactions
