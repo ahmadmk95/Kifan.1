@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import FridgeItemModal from '@/components/FridgeItemModal';
@@ -9,6 +10,7 @@ import FridgeUnitsModal from '@/components/FridgeUnitsModal';
 import { api } from '@/lib/api';
 import { fmtQty, isLowStock } from '@/lib/qty';
 import { today } from '@/lib/money';
+import { tap } from '@/lib/haptics';
 import { normalizeText } from '@/lib/normalize';
 import { FRIDGE_BRANCHES, BRANCH_LABEL } from '@/lib/fridgeBranches';
 
@@ -86,6 +88,14 @@ export default function FridgeView({
   const currentTab = tabs.find((tb) => tb.value === branch);
   const viewLabel = isLowView ? 'النواقص' : (currentTab?.label || 'الأصناف');
 
+  // Swipe left/right on the grid to move between tabs (النواقص included).
+  const tabOrder = [...tabs.map((tb) => tb.value), 'low'];
+  const goRelTab = (dir) => {
+    const i = tabOrder.indexOf(branch);
+    const ni = Math.min(Math.max(i + dir, 0), tabOrder.length - 1);
+    if (ni !== i) { setBranch(tabOrder[ni]); tap(); }
+  };
+
   // Share the full inventory (current stock for every item) over WhatsApp.
   const shareStock = () => {
     const all = items || [];
@@ -117,6 +127,7 @@ export default function FridgeView({
       '',
       ...body,
     ].join('\n').trimEnd();
+    tap();
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
   };
 
@@ -141,6 +152,7 @@ export default function FridgeView({
       '',
       'يرجى إعادة التعبئة. 🙏',
     ].join('\n');
+    tap();
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
   };
 
@@ -194,6 +206,7 @@ export default function FridgeView({
             <span className="bt-count">{lowItems.length}</span>
           </button>
         </div>
+        {!searching ? <div className="swipe-hint">↔ اسحب القائمة للتنقّل بين الأقسام</div> : null}
 
         {err ? (
           <div className="form-msg err">{err}</div>
@@ -221,7 +234,18 @@ export default function FridgeView({
                 </button>
               </>
             ) : null}
-            <div className="fridge-grid">
+            <motion.div
+              className="fridge-grid"
+              key={isLowView ? 'low' : branch}
+              drag={searching ? false : 'x'}
+              dragDirectionLock
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.14}
+              onDragEnd={(e, info) => {
+                if (info.offset.x < -64 || info.velocity.x < -450) goRelTab(1);
+                else if (info.offset.x > 64 || info.velocity.x > 450) goRelTab(-1);
+              }}
+            >
               {shown.map((it) => {
                 const low = it.min_qty != null && Number(it.quantity) <= Number(it.min_qty);
                 const out = Number(it.quantity) <= 0;
@@ -244,7 +268,7 @@ export default function FridgeView({
                   </Link>
                 );
               })}
-            </div>
+            </motion.div>
           </>
         )}
       </main>

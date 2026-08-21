@@ -700,6 +700,16 @@ ol.man-steps > li::before { content: counter(mstep); position: absolute; inset-i
 
 .order-list { display: flex; flex-direction: column; gap: 14px; }
 .order-card { background: #fff; border: 1px solid var(--mawkab-border); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+/* Swipe-to-act wrapper: colored hints sit behind the draggable card. */
+.order-swipe { position: relative; touch-action: pan-y; }
+.order-swipe > .order-card { position: relative; z-index: 1; }
+.order-swipe-hint {
+  position: absolute; top: 0; bottom: 0; display: flex; align-items: center;
+  font-weight: 800; font-size: 15px; padding: 0 22px; border-radius: 14px; z-index: 0;
+}
+.order-swipe-hint.prep   { right: 0; justify-content: flex-end;   color: var(--mawkab-green-dark); background: #EAF6E6; }
+.order-swipe-hint.cancel { left: 0;  justify-content: flex-start; color: #8A1008; background: #FDECEA; }
+.swipe-hint { font-size: 12.5px; color: var(--mawkab-muted); text-align: center; margin: -4px 0 10px; }
 .order-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .order-status { font-size: 12.5px; font-weight: 700; padding: 4px 12px; border-radius: 999px; }
 .order-status.st-pending { background: var(--mawkab-yellow-soft); color: var(--mawkab-red-dark); }

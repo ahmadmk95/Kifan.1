@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import OrderModal from '@/components/OrderModal';
@@ -8,6 +9,7 @@ import PrepareOrderModal from '@/components/PrepareOrderModal';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 import { fmtDateTime } from '@/lib/money';
+import { tap, success, warn } from '@/lib/haptics';
 
 const STATUS = {
   pending: { label: 'بانتظار التجهيز', cls: 'st-pending' },
@@ -37,7 +39,7 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
   const act = async (o, status) => {
     if (status === 'cancelled' && !window.confirm('إلغاء هذا الطلب؟')) return;
     setBusyId(o.id);
-    try { await api.updateOrder(o.id, { status }); await load(); }
+    try { await api.updateOrder(o.id, { status }); status === 'cancelled' ? warn() : success(); await load(); }
     catch (e) { setErr(e.message); }
     finally { setBusyId(null); }
   };
@@ -57,6 +59,7 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
     ];
     if (o.note) parts.push('', `ملاحظة: ${o.note}`);
     if (o.status === 'prepared' && o.prepared_by) parts.push('', `✔ جُهّز بواسطة ${o.prepared_by}`);
+    tap();
     window.open('https://wa.me/?text=' + encodeURIComponent(parts.join('\n')), '_blank');
   };
 
@@ -93,10 +96,31 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
               </div>
             ) : (
               <div className="order-list">
+                {!readOnly && filtered.some((o) => o.status === 'pending') ? (
+                  <div className="swipe-hint">↔ اسحب الطلب: يميناً للإلغاء{canPrepare ? '، يساراً للتجهيز' : ''}</div>
+                ) : null}
                 {filtered.map((o) => {
                   const st = STATUS[o.status] || STATUS.pending;
+                  const swipeable = !readOnly && o.status === 'pending';
                   return (
-                    <div className="order-card" key={o.id}>
+                    <div className={'order-swipe' + (swipeable ? '' : ' static')} key={o.id}>
+                      {swipeable ? (
+                        <>
+                          {canPrepare ? <div className="order-swipe-hint prep">✔ تجهيز</div> : null}
+                          <div className="order-swipe-hint cancel">✕ إلغاء</div>
+                        </>
+                      ) : null}
+                      <motion.div
+                        className="order-card"
+                        drag={swipeable ? 'x' : false}
+                        dragDirectionLock
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.2}
+                        onDragEnd={swipeable ? (e, info) => {
+                          if (info.offset.x < -80 || info.velocity.x < -500) { if (canPrepare) { tap(); setPreparing(o); } }
+                          else if (info.offset.x > 80 || info.velocity.x > 500) { act(o, 'cancelled'); }
+                        } : undefined}
+                      >
                       <div className="order-top">
                         <span className={'order-status ' + st.cls}>{st.label}</span>
                         <div className="order-meta">
@@ -134,6 +158,7 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
                           <button className="btn-danger" disabled={busyId === o.id} onClick={() => act(o, 'cancelled')}>إلغاء الطلب</button>
                         ) : null}
                       </div>
+                      </motion.div>
                     </div>
                   );
                 })}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, useDragControls, useReducedMotion } from 'framer-motion';
+import { tap } from '@/lib/haptics';
 
 // A modal "sheet" with Apple-style fluid behaviour:
 // - springs in from a small offset and settles (no jarring pop)
@@ -44,7 +45,7 @@ export default function Sheet({ onClose, children, maxWidth }) {
         dragElastic={{ top: 0.04, bottom: 0.6 }}
         onDragEnd={(e, info) => {
           // Flick down or drag far enough → dismiss; otherwise spring back.
-          if (info.offset.y > 110 || info.velocity.y > 600) close();
+          if (info.offset.y > 110 || info.velocity.y > 600) { tap(); close(); }
         }}
       >
         {!reduce ? (

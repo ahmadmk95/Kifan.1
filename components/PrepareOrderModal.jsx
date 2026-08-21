@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Sheet from './Sheet';
 import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
+import { success } from '@/lib/haptics';
 
 // Confirm preparing an order, with an OPTIONAL photo the team can take/attach.
 export default function PrepareOrderModal({ order, onClose, onDone }) {
@@ -32,6 +33,7 @@ export default function PrepareOrderModal({ order, onClose, onDone }) {
     setBusy(true); setErr(null);
     try {
       await api.updateOrder(order.id, { status: 'prepared', photo_url: photoUrl || null });
+      success();
       onDone();
     } catch (ex) {
       setErr(ex.message || 'تعذّر الحفظ');
