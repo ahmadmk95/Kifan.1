@@ -42,6 +42,17 @@ export default function AccountingView({ readOnly = false }) {
     load(pid);
   };
 
+  const renameCurrent = async () => {
+    const pid = profile || data.active_profile;
+    const cur = (data.profiles || []).find((p) => p.id === pid)?.name || '';
+    const name = window.prompt('الاسم الجديد للحساب:', cur);
+    if (name === null) return;
+    if (!name.trim() || name.trim() === cur) return;
+    setProfileErr(null);
+    try { await api.renameProfile(pid, name.trim()); load(pid); }
+    catch (e) { setProfileErr(e.message || 'تعذّر التعديل'); }
+  };
+
   const archiveCurrent = async () => {
     const pid = profile || data.active_profile;
     const name = (data.profiles || []).find((p) => p.id === pid)?.name || '';
@@ -113,6 +124,9 @@ export default function AccountingView({ readOnly = false }) {
         />
         {!readOnly && !addingProfile ? (
           <button className="btn-ghost btn-mini" onClick={() => { setAddingProfile(true); setProfileErr(null); }}>＋ حساب جديد</button>
+        ) : null}
+        {!readOnly && !addingProfile ? (
+          <button className="btn-ghost btn-mini" onClick={renameCurrent}>✎ إعادة تسمية</button>
         ) : null}
         {!readOnly && !addingProfile && (data.profiles || []).length > 1 ? (
           <button className="btn-ghost btn-mini btn-archive" onClick={archiveCurrent}>🗄 أرشفة الحساب</button>
