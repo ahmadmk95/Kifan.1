@@ -597,6 +597,15 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 /* Income / outgoing sections get their own accent so the two sides read apart. */
 .stmt-h2.side-in { border-inline-start-color: var(--mawkab-green); color: var(--mawkab-green-dark); }
 .stmt-h2.side-out { border-inline-start-color: var(--mawkab-red); }
+/* Outgoings grouped per category: a tinted header row and a subtotal row. */
+.stmt-table tbody.stmt-group + tbody.stmt-group .stmt-group-head td { border-top-width: 2px; }
+.stmt-table .stmt-group-head td {
+  background: var(--mawkab-yellow-soft); font-family: var(--font-heading), serif;
+  font-weight: 700; font-size: 14.5px; color: var(--mawkab-red-dark);
+}
+.stmt-table .stmt-group-head td.num { font-family: var(--font-body), sans-serif; font-size: 12px; font-weight: 600; color: var(--mawkab-muted); }
+.stmt-table .stmt-subtotal td { background: #FBF8EC; font-weight: 800; font-size: 13.5px; }
+
 /* Net result table: no header, wider label column. */
 .stmt-net td:first-child { font-weight: 700; }
 .stmt-net tr.stmt-totals td { background: var(--mawkab-ink); color: #fff; font-weight: 800; border-color: var(--mawkab-ink); }
