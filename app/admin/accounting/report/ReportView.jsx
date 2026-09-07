@@ -44,16 +44,25 @@ export default function ReportView() {
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      // Fit the whole statement onto a single A4 page (preserve aspect ratio).
       const margin = 6;
       const availW = pageW - margin * 2;
       const availH = pageH - margin * 2;
       const aspect = canvas.width / canvas.height;
-      let renderW = availW;
-      let renderH = renderW / aspect;
-      if (renderH > availH) { renderH = availH; renderW = renderH * aspect; }
-      const x = (pageW - renderW) / 2;
-      pdf.addImage(imgData, 'JPEG', x, margin, renderW, renderH);
+      // Scale to the page width; keep it on ONE page when it fits, and only
+      // split across pages when the statement is genuinely taller than A4
+      // (otherwise the text would be shrunk past readability).
+      const renderW = availW;
+      const renderH = renderW / aspect;
+      if (renderH <= availH) {
+        pdf.addImage(imgData, 'JPEG', margin, margin, renderW, renderH);
+      } else {
+        const pages = Math.ceil(renderH / availH);
+        for (let i = 0; i < pages; i += 1) {
+          if (i > 0) pdf.addPage();
+          // Shift the image up by one page each time; jsPDF clips to the page.
+          pdf.addImage(imgData, 'JPEG', margin, margin - i * availH, renderW, renderH);
+        }
+      }
       pdf.save(`Mawkab-Statement-${stmtNo}.pdf`);
     } catch (e) {
       setErr(false);
@@ -126,6 +135,46 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
   })();
 
   const t = data.totals;
+
+  // ── Analysis ────────────────────────────────────────────────────────────
+  const totalIn = Number(t.donations_usd) || 0;
+  const totalOut = Number(t.purchases_usd) || 0;
+  const spendRatio = totalIn > 0 ? (totalOut / totalIn) * 100 : 0;
+  const keepRatio = totalIn > 0 ? (t.balance_usd / totalIn) * 100 : 0;
+  const avgIn = income.length ? totalIn / income.length : 0;
+  const avgOut = outgoing.length ? totalOut / outgoing.length : 0;
+  const topCat = outByCategory[0] || null;
+  const pctOf = (v, whole) => (whole > 0 ? (v / whole) * 100 : 0);
+  const pctTxt = (v) => v.toLocaleString('en-US', { maximumFractionDigits: 1 }) + '٪';
+
+  // Month-by-month movement (collected income vs paid outgoings).
+  const monthly = (() => {
+    const map = new Map();
+    const bump = (d, key, v) => {
+      const m = String(d || '').slice(0, 7);
+      if (!/^\d{4}-\d{2}$/.test(m)) return;
+      if (!map.has(m)) map.set(m, { key: m, in: 0, out: 0 });
+      map.get(m)[key] += Number(v) || 0;
+    };
+    for (const tx of income) bump(tx.occurred_on, 'in', tx.amount_usd);
+    for (const tx of outgoing) bump(tx.occurred_on, 'out', tx.amount_usd);
+    return [...map.values()].sort((a, b) => (a.key < b.key ? -1 : 1));
+  })();
+  const monthlyMax = monthly.reduce((m, x) => Math.max(m, x.in, x.out), 0);
+
+  // Biggest counterparties on each side.
+  const topBy = (list, field) => {
+    const map = new Map();
+    for (const tx of list) {
+      const name = (tx[field] || '').trim() || 'غير محدّد';
+      map.set(name, (map.get(name) || 0) + (Number(tx.amount_usd) || 0));
+    }
+    return [...map.entries()].map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total).slice(0, 5);
+  };
+  const topDonors = topBy(income, 'party');
+  const topVendors = topBy(outgoing, 'party');
+
   const period = ledger.length ? `${ledger[0].occurred_on}  ←→  ${ledger[ledger.length - 1].occurred_on}` : '—';
   const profileName = (data.profiles || []).find((p) => p.id === data.active_profile)?.name || '';
 
@@ -278,6 +327,108 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
             </tr>
           </tbody>
         </table>
+      </section>
+
+      {/* ── تحليل ومؤشرات ── */}
+      <section className="rpt-section an-block">
+        <h2 className="stmt-h2">تحليل الكشف والمؤشرات</h2>
+
+        <div className="an-kpis">
+          <div className="an-kpi">
+            <div className="an-kpi-val out">{pctTxt(spendRatio)}</div>
+            <div className="an-kpi-lbl">نسبة الإنفاق من الوارد</div>
+          </div>
+          <div className="an-kpi">
+            <div className={'an-kpi-val ' + (t.balance_usd < 0 ? 'out' : 'in')}>{pctTxt(keepRatio)}</div>
+            <div className="an-kpi-lbl">المتبقّي من الوارد</div>
+          </div>
+          <div className="an-kpi">
+            <div className="an-kpi-val">{show(avgIn)}</div>
+            <div className="an-kpi-lbl">متوسط التبرع ({income.length} تبرع)</div>
+          </div>
+          <div className="an-kpi">
+            <div className="an-kpi-val">{show(avgOut)}</div>
+            <div className="an-kpi-lbl">متوسط المشترى ({outgoing.length} مشترى)</div>
+          </div>
+          <div className="an-kpi">
+            <div className="an-kpi-val">{topCat ? topCat.name : '—'}</div>
+            <div className="an-kpi-lbl">أعلى فئة إنفاق{topCat ? ` — ${pctTxt(pctOf(topCat.total, totalOut))}` : ''}</div>
+          </div>
+        </div>
+
+        {/* Income vs outgoing — one proportional bar */}
+        <div className="an-chart">
+          <div className="an-chart-h">الوارد مقابل الصادر</div>
+          <div className="an-split">
+            <span className="an-split-in" style={{ width: pctOf(totalIn, Math.max(totalIn, totalOut) || 1) + '%' }}>
+              <b>وارد</b> {show(totalIn)}
+            </span>
+            <span className="an-split-out" style={{ width: pctOf(totalOut, Math.max(totalIn, totalOut) || 1) + '%' }}>
+              <b>صادر</b> {show(totalOut)}
+            </span>
+          </div>
+        </div>
+
+        {/* Spending by category — horizontal bars */}
+        {outByCategory.length > 0 && (
+          <div className="an-chart">
+            <div className="an-chart-h">توزيع الإنفاق حسب الفئة</div>
+            <div className="an-bars">
+              {outByCategory.map((g) => (
+                <div className="an-bar-row" key={g.name}>
+                  <span className="an-bar-label">{g.name}</span>
+                  <span className="an-bar-track">
+                    <span className="an-bar-fill" style={{ width: pctOf(g.total, totalOut) + '%' }} />
+                  </span>
+                  <span className="an-bar-val">{show(g.total)} <i>{pctTxt(pctOf(g.total, totalOut))}</i></span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Monthly movement — grouped columns */}
+        {monthly.length > 0 && (
+          <div className="an-chart">
+            <div className="an-chart-h">
+              الحركة الشهرية
+              <span className="an-legend">
+                <i className="lg in" /> وارد <i className="lg out" /> صادر
+              </span>
+            </div>
+            <div className="an-cols">
+              {monthly.map((m) => (
+                <div className="an-col-group" key={m.key}>
+                  <div className="an-col-bars">
+                    <span className="an-col in" style={{ height: pctOf(m.in, monthlyMax) + '%' }} />
+                    <span className="an-col out" style={{ height: pctOf(m.out, monthlyMax) + '%' }} />
+                  </div>
+                  <span className="an-col-label" dir="ltr">{m.key}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Biggest counterparties */}
+        <div className="an-tops">
+          <div className="an-top">
+            <div className="an-chart-h">أعلى المتبرّعين</div>
+            {topDonors.length === 0 ? <div className="an-empty">—</div> : topDonors.map((r) => (
+              <div className="an-top-row" key={r.name}>
+                <span>{r.name}</span><b className="in">{show(r.total)}</b>
+              </div>
+            ))}
+          </div>
+          <div className="an-top">
+            <div className="an-chart-h">أعلى المورّدين</div>
+            {topVendors.length === 0 ? <div className="an-empty">—</div> : topVendors.map((r) => (
+              <div className="an-top-row" key={r.name}>
+                <span>{r.name}</span><b className="out">{show(r.total)}</b>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── Not yet collected / not yet paid (outside the balance) ── */}

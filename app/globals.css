@@ -992,3 +992,68 @@ button:active, .btn-add:active, .btn-ghost:active, .btn-small:active, .btn-dange
 @media (prefers-reduced-transparency: reduce) {
   .overlay { background: rgba(32,28,16,0.62); backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
+
+/* ================= Statement analysis & charts =================
+   Built from plain divs (no canvas/SVG) so html2canvas captures them
+   faithfully into the exported PDF. */
+.an-block { display: flex; flex-direction: column; gap: 14px; }
+
+/* KPI strip */
+.an-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.an-kpi { border: 1px solid var(--mawkab-border); border-radius: 10px; padding: 10px 8px; text-align: center; background: #fff; }
+.an-kpi-val { font-family: var(--font-heading), serif; font-size: 17px; font-weight: 800; color: var(--mawkab-ink); line-height: 1.3; }
+.an-kpi-val.in { color: var(--mawkab-green-dark); }
+.an-kpi-val.out { color: var(--mawkab-red); }
+.an-kpi-lbl { font-size: 10.5px; color: var(--mawkab-muted); margin-top: 4px; line-height: 1.4; }
+
+.an-chart { border: 1px solid var(--mawkab-border); border-radius: 10px; padding: 12px 14px; background: #fff; }
+.an-chart-h {
+  font-family: var(--font-heading), serif; font-size: 14px; font-weight: 700;
+  color: var(--mawkab-red-dark); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+}
+.an-legend { font-family: var(--font-body), sans-serif; font-size: 10.5px; font-weight: 600; color: var(--mawkab-muted); }
+.an-legend .lg { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin: 0 4px 0 8px; }
+.an-legend .lg.in { background: var(--mawkab-green); }
+.an-legend .lg.out { background: var(--mawkab-red); }
+
+/* Income vs outgoing split */
+.an-split { display: flex; flex-direction: column; gap: 6px; }
+.an-split span {
+  display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 10px;
+  border-radius: 6px; color: #fff; font-size: 11.5px; font-weight: 700; white-space: nowrap; min-width: 92px;
+}
+.an-split-in { background: var(--mawkab-green); }
+.an-split-out { background: var(--mawkab-red); }
+
+/* Horizontal category bars */
+.an-bars { display: flex; flex-direction: column; gap: 7px; }
+.an-bar-row { display: flex; align-items: center; gap: 10px; font-size: 11.5px; }
+.an-bar-label { width: 110px; font-weight: 700; text-align: start; }
+.an-bar-track { flex: 1; height: 14px; background: #F2EEDF; border-radius: 999px; overflow: hidden; }
+.an-bar-fill { display: block; height: 100%; background: var(--mawkab-red); border-radius: 999px; }
+.an-bar-val { width: 120px; text-align: end; font-variant-numeric: tabular-nums; direction: ltr; font-weight: 700; }
+.an-bar-val i { font-style: normal; color: var(--mawkab-muted); font-weight: 600; font-size: 10.5px; }
+
+/* Monthly grouped columns */
+.an-cols { display: flex; align-items: flex-end; gap: 12px; padding-top: 4px; overflow-x: auto; }
+.an-col-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.an-col-bars { height: 84px; display: flex; align-items: flex-end; gap: 3px; }
+.an-col { display: block; width: 13px; min-height: 2px; border-radius: 3px 3px 0 0; }
+.an-col.in { background: var(--mawkab-green); }
+.an-col.out { background: var(--mawkab-red); }
+.an-col-label { font-size: 9.5px; color: var(--mawkab-muted); font-variant-numeric: tabular-nums; }
+
+/* Top donors / vendors */
+.an-tops { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.an-top { border: 1px solid var(--mawkab-border); border-radius: 10px; padding: 12px 14px; background: #fff; }
+.an-top-row { display: flex; justify-content: space-between; gap: 10px; font-size: 11.5px; padding: 4px 0; border-bottom: 1px solid #F3EFE1; }
+.an-top-row:last-child { border-bottom: none; }
+.an-top-row b { font-variant-numeric: tabular-nums; direction: ltr; }
+.an-top-row b.in { color: var(--mawkab-green-dark); }
+.an-top-row b.out { color: var(--mawkab-red); }
+.an-empty { font-size: 11.5px; color: var(--mawkab-muted); }
+
+@media (max-width: 720px) {
+  .an-kpis { grid-template-columns: repeat(2, 1fr); }
+  .an-tops { grid-template-columns: 1fr; }
+}
