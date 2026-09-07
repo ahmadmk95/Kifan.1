@@ -112,6 +112,19 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
   const due = ledger.filter((tx) => tx.type === 'purchase' && tx.pending);
   const origOf = (tx) => (tx.currency !== 'USD' ? ` (${amt(tx.amount)} ${tx.currency})` : '');
 
+  // Outgoings are grouped so each category stands on its own with a subtotal.
+  const outByCategory = (() => {
+    const map = new Map();
+    for (const tx of outgoing) {
+      const name = tx.category_name || 'غير مصنّف';
+      if (!map.has(name)) map.set(name, { name, rows: [], total: 0 });
+      const g = map.get(name);
+      g.rows.push(tx);
+      g.total += Number(tx.amount_usd) || 0;
+    }
+    return [...map.values()].sort((a, b) => b.total - a.total);
+  })();
+
   const t = data.totals;
   const period = ledger.length ? `${ledger[0].occurred_on}  ←→  ${ledger[ledger.length - 1].occurred_on}` : '—';
   const profileName = (data.profiles || []).find((p) => p.id === data.active_profile)?.name || '';
@@ -202,7 +215,7 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
 
       {/* ── الصادر (outgoings) ── */}
       <section className="rpt-section">
-        <h2 className="stmt-h2 side-out">ثانياً: الصادر — المشتريات</h2>
+        <h2 className="stmt-h2 side-out">ثانياً: الصادر — المشتريات (مفصّلة حسب الفئة)</h2>
         <table className="stmt-table">
           <thead>
             <tr>
@@ -210,33 +223,43 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
               <th style={{ width: 82 }}>التاريخ</th>
               <th>الصنف / المادة</th>
               <th>المورّد / البيان</th>
-              <th style={{ width: 96 }}>الفئة</th>
               <th style={{ width: 110 }}>المبلغ</th>
             </tr>
           </thead>
-          <tbody>
-            {outgoing.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--mawkab-muted)' }}>لا توجد مشتريات.</td></tr>
-            ) : outgoing.map((tx, i) => {
-              const sub = [tx.party, tx.description].filter(Boolean).join(' · ');
-              return (
-                <tr key={tx.id}>
-                  <td className="num">{i + 1}</td>
-                  <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
-                  <td><span className="stmt-desc">{tx.item || '—'}</span></td>
-                  <td>
-                    <span className="stmt-desc-sub">{sub || '—'}</span>
-                    {origOf(tx) ? <span className="stmt-orig">{origOf(tx)}</span> : null}
-                  </td>
-                  <td>{tx.category_name || 'غير مصنّف'}</td>
-                  <td className="num out">{show(tx.amount_usd)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
+          {outByCategory.length === 0 ? (
+            <tbody>
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mawkab-muted)' }}>لا توجد مشتريات.</td></tr>
+            </tbody>
+          ) : outByCategory.map((g) => (
+            <tbody key={g.name} className="stmt-group">
+              <tr className="stmt-group-head">
+                <td colSpan={4}>{g.name}</td>
+                <td className="num">{g.rows.length} حركة</td>
+              </tr>
+              {g.rows.map((tx, i) => {
+                const sub = [tx.party, tx.description].filter(Boolean).join(' · ');
+                return (
+                  <tr key={tx.id}>
+                    <td className="num">{i + 1}</td>
+                    <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
+                    <td><span className="stmt-desc">{tx.item || '—'}</span></td>
+                    <td>
+                      <span className="stmt-desc-sub">{sub || '—'}</span>
+                      {origOf(tx) ? <span className="stmt-orig">{origOf(tx)}</span> : null}
+                    </td>
+                    <td className="num out">{show(tx.amount_usd)}</td>
+                  </tr>
+                );
+              })}
+              <tr className="stmt-subtotal">
+                <td colSpan={4}>مجموع «{g.name}»</td>
+                <td className="num out">{show(g.total)}</td>
+              </tr>
+            </tbody>
+          ))}
           <tfoot>
             <tr className="stmt-totals">
-              <td colSpan={5}>إجمالي الصادر</td>
+              <td colSpan={4}>إجمالي الصادر</td>
               <td className="num out">{show(t.purchases_usd)}</td>
             </tr>
           </tfoot>
