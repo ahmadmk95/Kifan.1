@@ -100,18 +100,17 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
   const showSigned = (v) => (v < 0 ? '−' + fmtCur(Math.abs(v), cur, data.rates) : fmtCur(v, cur, data.rates));
   const curLabel = DISPLAY_CURRENCIES.find((c) => c.value === cur)?.label || cur;
 
-  // Chronological ledger (oldest first) with a running balance — statement style.
+  // Chronological (oldest first), then split into income and outgoings so each
+  // side of the statement is read on its own.
   const ledger = [...data.transactions].sort((a, b) => {
     if (a.occurred_on !== b.occurred_on) return a.occurred_on < b.occurred_on ? -1 : 1;
     return (a.created_at || '') < (b.created_at || '') ? -1 : 1;
   });
-  let bal = 0;
-  const rows = ledger.map((tx) => {
-    const inc = tx.type === 'donation' ? tx.amount_usd : 0;
-    const out = tx.type === 'purchase' ? tx.amount_usd : 0;
-    bal += inc - out;
-    return { tx, inc, out, bal };
-  });
+  const income = ledger.filter((tx) => tx.type === 'donation' && !tx.pending);
+  const outgoing = ledger.filter((tx) => tx.type === 'purchase' && !tx.pending);
+  const pledged = ledger.filter((tx) => tx.type === 'donation' && tx.pending);
+  const due = ledger.filter((tx) => tx.type === 'purchase' && tx.pending);
+  const origOf = (tx) => (tx.currency !== 'USD' ? ` (${amt(tx.amount)} ${tx.currency})` : '');
 
   const t = data.totals;
   const period = ledger.length ? `${ledger[0].occurred_on}  ←→  ${ledger[ledger.length - 1].occurred_on}` : '—';
@@ -163,61 +162,141 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
         </div>
       </div>
 
-      {/* Ledger */}
+      {/* ── الوارد (income) ── */}
       <section className="rpt-section">
-        <h2 className="stmt-h2">تفاصيل الحركات</h2>
+        <h2 className="stmt-h2 side-in">أولاً: الوارد — التبرعات</h2>
         <table className="stmt-table">
           <thead>
             <tr>
               <th style={{ width: 34 }}>#</th>
               <th style={{ width: 82 }}>التاريخ</th>
+              <th>المتبرّع</th>
               <th>البيان</th>
-              <th style={{ width: 96 }}>الفئة</th>
-              <th style={{ width: 92 }}>وارد</th>
-              <th style={{ width: 92 }}>صادر</th>
-              <th style={{ width: 100 }}>الرصيد</th>
+              <th style={{ width: 110 }}>المبلغ</th>
             </tr>
           </thead>
           <tbody>
-            <tr className="stmt-opening">
-              <td></td>
-              <td dir="ltr" style={{ textAlign: 'right' }}>{ledger.length ? ledger[0].occurred_on : ''}</td>
-              <td colSpan={3}>الرصيد الافتتاحي</td>
-              <td></td>
-              <td className="num strong">{show(0)}</td>
+            {income.length === 0 ? (
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mawkab-muted)' }}>لا توجد تبرعات.</td></tr>
+            ) : income.map((tx, i) => (
+              <tr key={tx.id}>
+                <td className="num">{i + 1}</td>
+                <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
+                <td><span className="stmt-desc">{tx.party || 'تبرع'}</span></td>
+                <td>
+                  <span className="stmt-desc-sub">{tx.description || '—'}</span>
+                  {origOf(tx) ? <span className="stmt-orig">{origOf(tx)}</span> : null}
+                </td>
+                <td className="num in">{show(tx.amount_usd)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="stmt-totals">
+              <td colSpan={4}>إجمالي الوارد</td>
+              <td className="num in">{show(t.donations_usd)}</td>
             </tr>
-            {rows.length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--mawkab-muted)' }}>لا توجد حركات.</td></tr>
-            ) : rows.map((r, i) => {
-              const sub = [r.tx.type === 'purchase' ? r.tx.party : null, r.tx.description].filter(Boolean).join(' · ');
-              const orig = `${amt(r.tx.amount)} ${r.tx.currency}`;
+          </tfoot>
+        </table>
+      </section>
+
+      {/* ── الصادر (outgoings) ── */}
+      <section className="rpt-section">
+        <h2 className="stmt-h2 side-out">ثانياً: الصادر — المشتريات</h2>
+        <table className="stmt-table">
+          <thead>
+            <tr>
+              <th style={{ width: 34 }}>#</th>
+              <th style={{ width: 82 }}>التاريخ</th>
+              <th>الصنف / المادة</th>
+              <th>المورّد / البيان</th>
+              <th style={{ width: 96 }}>الفئة</th>
+              <th style={{ width: 110 }}>المبلغ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {outgoing.length === 0 ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--mawkab-muted)' }}>لا توجد مشتريات.</td></tr>
+            ) : outgoing.map((tx, i) => {
+              const sub = [tx.party, tx.description].filter(Boolean).join(' · ');
               return (
-                <tr key={r.tx.id}>
+                <tr key={tx.id}>
                   <td className="num">{i + 1}</td>
-                  <td dir="ltr" style={{ textAlign: 'right' }}>{r.tx.occurred_on}</td>
+                  <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
+                  <td><span className="stmt-desc">{tx.item || '—'}</span></td>
                   <td>
-                    <span className="stmt-desc">{r.tx.type === 'purchase' ? (r.tx.item || '—') : (r.tx.party || 'تبرع')}</span>
-                    {sub ? <span className="stmt-desc-sub"> — {sub}</span> : null}
-                    {r.tx.currency !== 'USD' ? <span className="stmt-orig"> ({orig})</span> : null}
+                    <span className="stmt-desc-sub">{sub || '—'}</span>
+                    {origOf(tx) ? <span className="stmt-orig">{origOf(tx)}</span> : null}
                   </td>
-                  <td>{r.tx.type === 'purchase' ? (r.tx.category_name || 'غير مصنّف') : '—'}</td>
-                  <td className="num in">{r.inc ? show(r.inc) : '—'}</td>
-                  <td className="num out">{r.out ? show(r.out) : '—'}</td>
-                  <td className={'num strong' + (r.bal < 0 ? ' out' : '')}>{showSigned(r.bal)}</td>
+                  <td>{tx.category_name || 'غير مصنّف'}</td>
+                  <td className="num out">{show(tx.amount_usd)}</td>
                 </tr>
               );
             })}
           </tbody>
           <tfoot>
             <tr className="stmt-totals">
-              <td colSpan={4}>الإجماليات</td>
-              <td className="num in">{show(t.donations_usd)}</td>
+              <td colSpan={5}>إجمالي الصادر</td>
               <td className="num out">{show(t.purchases_usd)}</td>
-              <td className="num strong">{showSigned(t.balance_usd)}</td>
             </tr>
           </tfoot>
         </table>
       </section>
+
+      {/* ── Net result ── */}
+      <section className="rpt-section">
+        <table className="stmt-table stmt-net">
+          <tbody>
+            <tr><td>إجمالي الوارد (تبرعات محصّلة)</td><td className="num in">{show(t.donations_usd)}</td></tr>
+            <tr><td>إجمالي الصادر (مشتريات مدفوعة)</td><td className="num out">− {show(t.purchases_usd)}</td></tr>
+            <tr className="stmt-totals">
+              <td>الرصيد المتبقّي (الوارد − الصادر)</td>
+              <td className={'num strong' + (t.balance_usd < 0 ? ' out' : '')}>{showSigned(t.balance_usd)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      {/* ── Not yet collected / not yet paid (outside the balance) ── */}
+      {(pledged.length > 0 || due.length > 0) && (
+        <section className="rpt-section">
+          <h2 className="stmt-h2">بنود خارج الرصيد</h2>
+          <table className="stmt-table">
+            <thead>
+              <tr>
+                <th style={{ width: 82 }}>التاريخ</th>
+                <th style={{ width: 110 }}>النوع</th>
+                <th>البيان</th>
+                <th style={{ width: 110 }}>المبلغ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pledged.map((tx) => (
+                <tr key={tx.id}>
+                  <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
+                  <td>تبرع لم يُحصّل</td>
+                  <td>{tx.party || '—'}{tx.description ? ` · ${tx.description}` : ''}</td>
+                  <td className="num in">{show(tx.amount_usd)}</td>
+                </tr>
+              ))}
+              {due.map((tx) => (
+                <tr key={tx.id}>
+                  <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
+                  <td>مستحق لم يُدفع</td>
+                  <td>{tx.item || '—'}{tx.party ? ` · ${tx.party}` : ''}</td>
+                  <td className="num out">{show(tx.amount_usd)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="stmt-totals">
+                <td colSpan={3}>صافي البنود المعلّقة (وارد متوقّع − مستحقات)</td>
+                <td className="num strong">{showSigned((t.pledged_usd || 0) - (t.pending_usd || 0))}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </section>
+      )}
 
       {/* Category breakdown */}
       {data.by_category.length > 0 && (

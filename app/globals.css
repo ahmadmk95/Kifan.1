@@ -577,6 +577,12 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .ssc-val.out { color: var(--mawkab-red); }
 
 .stmt-h2 { font-family: var(--font-heading), serif; font-size: 19px; font-weight: 700; color: var(--mawkab-red); margin: 0 0 10px; border-inline-start: 4px solid var(--mawkab-yellow); padding-inline-start: 10px; }
+/* Income / outgoing sections get their own accent so the two sides read apart. */
+.stmt-h2.side-in { border-inline-start-color: var(--mawkab-green); color: var(--mawkab-green-dark); }
+.stmt-h2.side-out { border-inline-start-color: var(--mawkab-red); }
+/* Net result table: no header, wider label column. */
+.stmt-net td:first-child { font-weight: 700; }
+.stmt-net tr.stmt-totals td { background: var(--mawkab-ink); color: #fff; font-weight: 800; border-color: var(--mawkab-ink); }
 
 /* Ledger table */
 .stmt-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
