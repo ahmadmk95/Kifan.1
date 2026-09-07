@@ -15,6 +15,7 @@ export default function TransactionsView({ readOnly = false }) {
   const [modal, setModal] = useState(null); // { type, existing? } | null
   const [filter, setFilter] = useState('all');
   const [profile, setProfile] = useState(null);
+  const [category, setCategory] = useState(null); // set from ?category= when arriving from a category
 
   const load = () => api.accounting(getActiveProfile()).then((d) => {
     setData(d);
@@ -22,14 +23,35 @@ export default function TransactionsView({ readOnly = false }) {
   }).catch(() => setErr('تعذّر تحميل البيانات'));
   useEffect(() => { load(); }, []);
 
+  // Arriving from a category in المحاسبة pre-filters this list to that category.
+  useEffect(() => {
+    try {
+      const c = new URLSearchParams(window.location.search).get('category');
+      if (c) setCategory(c);
+    } catch {}
+  }, []);
+
+  const clearCategory = () => {
+    setCategory(null);
+    try { window.history.replaceState(null, '', '/admin/accounting/transactions'); } catch {}
+  };
+
   const profileName = data?.profiles?.find((p) => p.id === (profile || data.active_profile))?.name || '';
 
   const filtered = useMemo(() => {
     if (!data) return [];
-    if (filter === 'all') return data.transactions;
-    if (filter === 'pending') return data.transactions.filter((t) => t.pending);
-    return data.transactions.filter((t) => t.type === filter);
-  }, [data, filter]);
+    let list = data.transactions;
+    if (category) list = list.filter((t) => (t.category_name || 'غير مصنّف') === category);
+    if (filter === 'pending') return list.filter((t) => t.pending);
+    if (filter !== 'all') return list.filter((t) => t.type === filter);
+    return list;
+  }, [data, filter, category]);
+
+  // Total of what's currently shown, so a category view reads like a subtotal.
+  const shownTotalUsd = useMemo(
+    () => filtered.reduce((s, t) => s + (t.type === 'donation' ? 0 : Number(t.amount_usd) || 0), 0),
+    [filtered]
+  );
 
   const pendingCount = (data?.totals?.pending_count || 0) + (data?.totals?.pledged_count || 0);
 
@@ -56,6 +78,18 @@ export default function TransactionsView({ readOnly = false }) {
           <p style={{ color: 'var(--mawkab-muted)' }}>جارٍ التحميل…</p>
         ) : (
           <>
+            {category ? (
+              <div className="cat-filter-bar">
+                <span className="cat-filter-chip">
+                  الفئة: <b>{category}</b>
+                  <button onClick={clearCategory} aria-label="إزالة تصفية الفئة">×</button>
+                </span>
+                <span className="cat-filter-total">
+                  إجمالي هذه الفئة: <b>{usd(shownTotalUsd)}</b>
+                </span>
+              </div>
+            ) : null}
+
             <div className="acc-toolbar">
               <div className="filter-tabs">
                 {[['all', 'الكل'], ['donation', 'تبرعات'], ['purchase', 'مشتريات'], ['pending', `غير محصّل/مستحق${pendingCount ? ` (${pendingCount})` : ''}`]].map(([k, l]) => (
