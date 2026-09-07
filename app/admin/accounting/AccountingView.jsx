@@ -299,12 +299,17 @@ export default function AccountingView({ readOnly = false }) {
       {shownSection('byCategory') && data.by_category.length > 0 && (
         <div className="acc-panel">
           <h2 className="acc-h">المشتريات حسب الفئة</h2>
+          <p className="acc-note">اضغط على أي فئة لعرض حركاتها.</p>
           <div className="cat-breakdown">
             {data.by_category.map((c) => (
-              <div key={c.name} className="cbd-row">
+              <Link
+                key={c.name}
+                href={`/admin/accounting/transactions?category=${encodeURIComponent(c.name)}`}
+                className="cbd-row cbd-link"
+              >
                 <span className="cbd-name">{c.name}</span>
                 <span className="cbd-val">{show(c.usd)}</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
