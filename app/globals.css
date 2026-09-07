@@ -1011,11 +1011,6 @@ button:active, .btn-add:active, .btn-ghost:active, .btn-small:active, .btn-dange
   font-family: var(--font-heading), serif; font-size: 14px; font-weight: 700;
   color: var(--mawkab-red-dark); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
 }
-.an-legend { font-family: var(--font-body), sans-serif; font-size: 10.5px; font-weight: 600; color: var(--mawkab-muted); }
-.an-legend .lg { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin: 0 4px 0 8px; }
-.an-legend .lg.in { background: var(--mawkab-green); }
-.an-legend .lg.out { background: var(--mawkab-red); }
-
 /* Income vs outgoing split */
 .an-split { display: flex; flex-direction: column; gap: 6px; }
 .an-split span {
@@ -1033,15 +1028,6 @@ button:active, .btn-add:active, .btn-ghost:active, .btn-small:active, .btn-dange
 .an-bar-fill { display: block; height: 100%; background: var(--mawkab-red); border-radius: 999px; }
 .an-bar-val { width: 120px; text-align: end; font-variant-numeric: tabular-nums; direction: ltr; font-weight: 700; }
 .an-bar-val i { font-style: normal; color: var(--mawkab-muted); font-weight: 600; font-size: 10.5px; }
-
-/* Monthly grouped columns */
-.an-cols { display: flex; align-items: flex-end; gap: 12px; padding-top: 4px; overflow-x: auto; }
-.an-col-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.an-col-bars { height: 84px; display: flex; align-items: flex-end; gap: 3px; }
-.an-col { display: block; width: 13px; min-height: 2px; border-radius: 3px 3px 0 0; }
-.an-col.in { background: var(--mawkab-green); }
-.an-col.out { background: var(--mawkab-red); }
-.an-col-label { font-size: 9.5px; color: var(--mawkab-muted); font-variant-numeric: tabular-nums; }
 
 /* Top donors / vendors */
 .an-tops { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

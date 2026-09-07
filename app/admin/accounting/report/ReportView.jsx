@@ -147,21 +147,6 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
   const pctOf = (v, whole) => (whole > 0 ? (v / whole) * 100 : 0);
   const pctTxt = (v) => v.toLocaleString('en-US', { maximumFractionDigits: 1 }) + '٪';
 
-  // Month-by-month movement (collected income vs paid outgoings).
-  const monthly = (() => {
-    const map = new Map();
-    const bump = (d, key, v) => {
-      const m = String(d || '').slice(0, 7);
-      if (!/^\d{4}-\d{2}$/.test(m)) return;
-      if (!map.has(m)) map.set(m, { key: m, in: 0, out: 0 });
-      map.get(m)[key] += Number(v) || 0;
-    };
-    for (const tx of income) bump(tx.occurred_on, 'in', tx.amount_usd);
-    for (const tx of outgoing) bump(tx.occurred_on, 'out', tx.amount_usd);
-    return [...map.values()].sort((a, b) => (a.key < b.key ? -1 : 1));
-  })();
-  const monthlyMax = monthly.reduce((m, x) => Math.max(m, x.in, x.out), 0);
-
   // Biggest counterparties on each side.
   const topBy = (list, field) => {
     const map = new Map();
@@ -381,29 +366,6 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
                     <span className="an-bar-fill" style={{ width: pctOf(g.total, totalOut) + '%' }} />
                   </span>
                   <span className="an-bar-val">{show(g.total)} <i>{pctTxt(pctOf(g.total, totalOut))}</i></span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Monthly movement — grouped columns */}
-        {monthly.length > 0 && (
-          <div className="an-chart">
-            <div className="an-chart-h">
-              الحركة الشهرية
-              <span className="an-legend">
-                <i className="lg in" /> وارد <i className="lg out" /> صادر
-              </span>
-            </div>
-            <div className="an-cols">
-              {monthly.map((m) => (
-                <div className="an-col-group" key={m.key}>
-                  <div className="an-col-bars">
-                    <span className="an-col in" style={{ height: pctOf(m.in, monthlyMax) + '%' }} />
-                    <span className="an-col out" style={{ height: pctOf(m.out, monthlyMax) + '%' }} />
-                  </div>
-                  <span className="an-col-label" dir="ltr">{m.key}</span>
                 </div>
               ))}
             </div>
