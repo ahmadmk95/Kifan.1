@@ -621,6 +621,7 @@ mark.search-hit-focus { box-shadow: 0 0 0 3px rgba(215,12,0,0.35); }
 .stmt-table .strong { font-weight: 800; }
 .stmt-table .stmt-opening td { background: var(--mawkab-yellow-soft); font-weight: 600; color: var(--mawkab-muted); }
 .stmt-desc { font-weight: 600; }
+.stmt-vendor { font-weight: 600; color: var(--mawkab-ink); }
 .stmt-desc-sub, .stmt-orig { color: var(--mawkab-muted); font-weight: 400; }
 .stmt-orig { font-size: 12px; }
 .stmt-table tfoot .stmt-totals td { background: var(--mawkab-ink); color: #fff; font-weight: 800; font-size: 14px; border-color: var(--mawkab-ink); }
