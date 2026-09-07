@@ -109,6 +109,7 @@ export default function TransactionsView({ readOnly = false }) {
                       <th style={{ width: 96 }}>التاريخ</th>
                       <th style={{ width: 70 }}>النوع</th>
                       <th>البيان</th>
+                      <th style={{ width: 130 }}>المورّد</th>
                       <th style={{ width: 120 }}>الفئة</th>
                       <th style={{ width: 130 }}>المبلغ</th>
                       <th style={{ width: 100 }}>بالدولار</th>
@@ -130,11 +131,10 @@ export default function TransactionsView({ readOnly = false }) {
                             {tx.type === 'purchase' ? (tx.item || '—') : (tx.party || '—')}
                           </Link>
                           {tx.pending ? <span className="pending-badge">{tx.type === 'donation' ? 'موعود — لم يُحصّل' : 'مستحق — لم يُدفع'}</span> : null}
-                          {(() => {
-                            const sub = [tx.type === 'purchase' ? tx.party : null, tx.description].filter(Boolean).join(' · ');
-                            return sub ? <div style={{ fontSize: 12.5, color: 'var(--mawkab-muted)' }}>{sub}</div> : null;
-                          })()}
+                          {/* المورّد now has its own column, so only the note goes here. */}
+                          {tx.description ? <div style={{ fontSize: 12.5, color: 'var(--mawkab-muted)' }}>{tx.description}</div> : null}
                         </td>
+                        <td data-label="المورّد">{tx.type === 'purchase' ? (tx.party || '—') : '—'}</td>
                         <td data-label="الفئة">{tx.category_name || (tx.type === 'purchase' ? 'غير مصنّف' : '—')}</td>
                         <td data-label="المبلغ">{amt(tx.amount)} <span style={{ color: 'var(--mawkab-muted)', fontSize: 12 }}>{tx.currency}</span></td>
                         <td data-label="بالدولار" style={{ fontWeight: 700 }}>{usd(tx.amount_usd)}</td>
