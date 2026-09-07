@@ -147,21 +147,6 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
   const pctOf = (v, whole) => (whole > 0 ? (v / whole) * 100 : 0);
   const pctTxt = (v) => v.toLocaleString('en-US', { maximumFractionDigits: 1 }) + '٪';
 
-  // Month-by-month movement (collected income vs paid outgoings).
-  const monthly = (() => {
-    const map = new Map();
-    const bump = (d, key, v) => {
-      const m = String(d || '').slice(0, 7);
-      if (!/^\d{4}-\d{2}$/.test(m)) return;
-      if (!map.has(m)) map.set(m, { key: m, in: 0, out: 0 });
-      map.get(m)[key] += Number(v) || 0;
-    };
-    for (const tx of income) bump(tx.occurred_on, 'in', tx.amount_usd);
-    for (const tx of outgoing) bump(tx.occurred_on, 'out', tx.amount_usd);
-    return [...map.values()].sort((a, b) => (a.key < b.key ? -1 : 1));
-  })();
-  const monthlyMax = monthly.reduce((m, x) => Math.max(m, x.in, x.out), 0);
-
   // Biggest counterparties on each side.
   const topBy = (list, field) => {
     const map = new Map();
@@ -271,44 +256,43 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
               <th style={{ width: 34 }}>#</th>
               <th style={{ width: 82 }}>التاريخ</th>
               <th>الصنف / المادة</th>
-              <th>المورّد / البيان</th>
+              <th style={{ width: 130 }}>المورّد</th>
+              <th>البيان</th>
               <th style={{ width: 110 }}>المبلغ</th>
             </tr>
           </thead>
           {outByCategory.length === 0 ? (
             <tbody>
-              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mawkab-muted)' }}>لا توجد مشتريات.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--mawkab-muted)' }}>لا توجد مشتريات.</td></tr>
             </tbody>
           ) : outByCategory.map((g) => (
             <tbody key={g.name} className="stmt-group">
               <tr className="stmt-group-head">
-                <td colSpan={4}>{g.name}</td>
+                <td colSpan={5}>{g.name}</td>
                 <td className="num">{g.rows.length} حركة</td>
               </tr>
-              {g.rows.map((tx, i) => {
-                const sub = [tx.party, tx.description].filter(Boolean).join(' · ');
-                return (
-                  <tr key={tx.id}>
-                    <td className="num">{i + 1}</td>
-                    <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
-                    <td><span className="stmt-desc">{tx.item || '—'}</span></td>
-                    <td>
-                      <span className="stmt-desc-sub">{sub || '—'}</span>
-                      {origOf(tx) ? <span className="stmt-orig">{origOf(tx)}</span> : null}
-                    </td>
-                    <td className="num out">{show(tx.amount_usd)}</td>
-                  </tr>
-                );
-              })}
+              {g.rows.map((tx, i) => (
+                <tr key={tx.id}>
+                  <td className="num">{i + 1}</td>
+                  <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
+                  <td><span className="stmt-desc">{tx.item || '—'}</span></td>
+                  <td><span className="stmt-vendor">{tx.party || '—'}</span></td>
+                  <td>
+                    <span className="stmt-desc-sub">{tx.description || '—'}</span>
+                    {origOf(tx) ? <span className="stmt-orig">{origOf(tx)}</span> : null}
+                  </td>
+                  <td className="num out">{show(tx.amount_usd)}</td>
+                </tr>
+              ))}
               <tr className="stmt-subtotal">
-                <td colSpan={4}>مجموع «{g.name}»</td>
+                <td colSpan={5}>مجموع «{g.name}»</td>
                 <td className="num out">{show(g.total)}</td>
               </tr>
             </tbody>
           ))}
           <tfoot>
             <tr className="stmt-totals">
-              <td colSpan={4}>إجمالي الصادر</td>
+              <td colSpan={5}>إجمالي الصادر</td>
               <td className="num out">{show(t.purchases_usd)}</td>
             </tr>
           </tfoot>
@@ -387,29 +371,6 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
           </div>
         )}
 
-        {/* Monthly movement — grouped columns */}
-        {monthly.length > 0 && (
-          <div className="an-chart">
-            <div className="an-chart-h">
-              الحركة الشهرية
-              <span className="an-legend">
-                <i className="lg in" /> وارد <i className="lg out" /> صادر
-              </span>
-            </div>
-            <div className="an-cols">
-              {monthly.map((m) => (
-                <div className="an-col-group" key={m.key}>
-                  <div className="an-col-bars">
-                    <span className="an-col in" style={{ height: pctOf(m.in, monthlyMax) + '%' }} />
-                    <span className="an-col out" style={{ height: pctOf(m.out, monthlyMax) + '%' }} />
-                  </div>
-                  <span className="an-col-label" dir="ltr">{m.key}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Biggest counterparties */}
         <div className="an-tops">
           <div className="an-top">
@@ -440,6 +401,7 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
               <tr>
                 <th style={{ width: 82 }}>التاريخ</th>
                 <th style={{ width: 110 }}>النوع</th>
+                <th style={{ width: 130 }}>المورّد / الجهة</th>
                 <th>البيان</th>
                 <th style={{ width: 110 }}>المبلغ</th>
               </tr>
@@ -449,7 +411,8 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
                 <tr key={tx.id}>
                   <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
                   <td>تبرع لم يُحصّل</td>
-                  <td>{tx.party || '—'}{tx.description ? ` · ${tx.description}` : ''}</td>
+                  <td><span className="stmt-vendor">{tx.party || '—'}</span></td>
+                  <td>{tx.description || '—'}</td>
                   <td className="num in">{show(tx.amount_usd)}</td>
                 </tr>
               ))}
@@ -457,14 +420,15 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
                 <tr key={tx.id}>
                   <td dir="ltr" style={{ textAlign: 'right' }}>{tx.occurred_on}</td>
                   <td>مستحق لم يُدفع</td>
-                  <td>{tx.item || '—'}{tx.party ? ` · ${tx.party}` : ''}</td>
+                  <td><span className="stmt-vendor">{tx.party || '—'}</span></td>
+                  <td>{tx.item || '—'}{tx.description ? ` · ${tx.description}` : ''}</td>
                   <td className="num out">{show(tx.amount_usd)}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr className="stmt-totals">
-                <td colSpan={3}>صافي البنود المعلّقة (وارد متوقّع − مستحقات)</td>
+                <td colSpan={4}>صافي البنود المعلّقة (وارد متوقّع − مستحقات)</td>
                 <td className="num strong">{showSigned((t.pledged_usd || 0) - (t.pending_usd || 0))}</td>
               </tr>
             </tfoot>
