@@ -16,7 +16,6 @@ const DISPLAY_CURRENCIES = [
 
 export default function ReportView() {
   const [data, setData] = useState(null);
-  const [me, setMe] = useState(null);
   const [cur, setCur] = useState('USD');
   const [err, setErr] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
@@ -26,7 +25,6 @@ export default function ReportView() {
 
   useEffect(() => {
     api.accounting(getActiveProfile()).then(setData).catch(() => setErr(true));
-    api.me().then(({ user }) => setMe(user)).catch(() => {});
   }, []);
 
   // Build a proper A4 PDF file from the rendered statement (not a browser print).
@@ -62,7 +60,7 @@ export default function ReportView() {
       const scale = canvas.width / el.offsetWidth;
       const elTop = el.getBoundingClientRect().top;
       const atoms = el.querySelectorAll(
-        'tr, .an-kpi, .an-chart, .an-top-row, .an-top, .stmt-sum-cell, .stmt-meta-cell, .stmt-sign, .stmt-rates, .stmt-foot, .stmt-head, .stmt-h2'
+        'tr, .an-kpi, .an-chart, .an-top-row, .an-top, .stmt-sum-cell, .stmt-meta-cell, .stmt-rates, .stmt-foot, .stmt-head, .stmt-h2'
       );
       const breaks = [];
       atoms.forEach((a) => {
@@ -138,7 +136,7 @@ export default function ReportView() {
         ) : !data ? (
           <p style={{ color: 'var(--mawkab-muted)' }}>جارٍ التحميل…</p>
         ) : (
-          <ReportDoc data={data} cur={cur} generatedAt={generatedAt} stmtNo={stmtNo} me={me} />
+          <ReportDoc data={data} cur={cur} generatedAt={generatedAt} stmtNo={stmtNo} />
         )}
       </main>
       <div className="no-print"><SiteFooter /></div>
@@ -146,7 +144,7 @@ export default function ReportView() {
   );
 }
 
-function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
+function ReportDoc({ data, cur, generatedAt, stmtNo }) {
   const show = (v) => fmtCur(v, cur, data.rates);
   // Signed format for balances that can go negative — cleaner than "$-3.82".
   const showSigned = (v) => (v < 0 ? '−' + fmtCur(Math.abs(v), cur, data.rates) : fmtCur(v, cur, data.rates));
@@ -500,18 +498,6 @@ function ReportDoc({ data, cur, generatedAt, stmtNo, me }) {
       <div className="stmt-rates">
         أسعار الصرف المعتمدة: <b>$100 = {amt(data.rates.IQD)}</b> دينار عراقي ·
         <b> $100 = {amt(data.rates.KWD)}</b> دينار كويتي.
-      </div>
-
-      {/* Signatures */}
-      <div className="stmt-signs">
-        <div className="stmt-sign">
-          <div className="stmt-sign-line" />
-          <div>أمين الصندوق{me?.name ? `: ${me.name}` : ''}</div>
-        </div>
-        <div className="stmt-sign">
-          <div className="stmt-sign-line" />
-          <div>المدقّق / المسؤول</div>
-        </div>
       </div>
 
       <div className="stmt-foot">
