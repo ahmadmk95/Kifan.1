@@ -43,25 +43,68 @@ export default function ReportView() {
       const pdf = new JsPDF('p', 'mm', 'a4');
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const margin = 6;
       const availW = pageW - margin * 2;
       const availH = pageH - margin * 2;
-      const aspect = canvas.width / canvas.height;
-      // Scale to the page width; keep it on ONE page when it fits, and only
-      // split across pages when the statement is genuinely taller than A4
-      // (otherwise the text would be shrunk past readability).
-      const renderW = availW;
-      const renderH = renderW / aspect;
-      if (renderH <= availH) {
-        pdf.addImage(imgData, 'JPEG', margin, margin, renderW, renderH);
-      } else {
-        const pages = Math.ceil(renderH / availH);
-        for (let i = 0; i < pages; i += 1) {
-          if (i > 0) pdf.addPage();
-          // Shift the image up by one page each time; jsPDF clips to the page.
-          pdf.addImage(imgData, 'JPEG', margin, margin - i * availH, renderW, renderH);
+      const mmPerPx = availW / canvas.width;          // canvas px → mm
+      const pageHpx = availH / mmPerPx;               // one A4 page, in canvas px
+
+      // Fits on one page → nothing to split.
+      if (canvas.height <= pageHpx) {
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, availW, canvas.height * mmPerPx);
+        pdf.save(`Mawkab-Statement-${stmtNo}.pdf`);
+        return;
+      }
+
+      // Otherwise collect safe places to break: the bottom edge of every
+      // indivisible block (table rows, cards, chart panels...). Cutting only
+      // at these keeps a page break from slicing through text.
+      const scale = canvas.width / el.offsetWidth;
+      const elTop = el.getBoundingClientRect().top;
+      const atoms = el.querySelectorAll(
+        'tr, .an-kpi, .an-chart, .an-top-row, .an-top, .stmt-sum-cell, .stmt-meta-cell, .stmt-sign, .stmt-rates, .stmt-foot, .stmt-head, .stmt-h2'
+      );
+      const breaks = [];
+      atoms.forEach((a) => {
+        // Never break straight after a table header or a category header —
+        // that would strand it alone at the foot of a page.
+        if (a.closest('thead') || a.classList.contains('stmt-group-head')) return;
+        const bottom = (a.getBoundingClientRect().bottom - elTop) * scale;
+        if (bottom > 0 && bottom < canvas.height) breaks.push(bottom);
+      });
+      breaks.push(canvas.height);
+      breaks.sort((a, b) => a - b);
+
+      const slice = document.createElement('canvas');
+      const sctx = slice.getContext('2d');
+      let y = 0;
+      let firstPage = true;
+      // Guard the loop: every iteration must advance y.
+      while (y < canvas.height - 1) {
+        const limit = y + pageHpx;
+        let cut;
+        if (limit >= canvas.height) {
+          cut = canvas.height;
+        } else {
+          // The last safe break that still fits on this page.
+          let best = 0;
+          for (const b of breaks) {
+            if (b > y + 1 && b <= limit) best = b;
+            else if (b > limit) break;
+          }
+          // No break fits (a single block taller than a page) → hard cut.
+          cut = best > y + 1 ? best : limit;
         }
+        const h = Math.max(1, Math.round(cut - y));
+        slice.width = canvas.width;
+        slice.height = h;
+        sctx.fillStyle = '#ffffff';
+        sctx.fillRect(0, 0, slice.width, slice.height);
+        sctx.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+        if (!firstPage) pdf.addPage();
+        pdf.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, availW, h * mmPerPx);
+        firstPage = false;
+        y = cut;
       }
       pdf.save(`Mawkab-Statement-${stmtNo}.pdf`);
     } catch (e) {
