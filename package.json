@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "@ckeditor/ckeditor5-react": "^11.2.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.3.0",
