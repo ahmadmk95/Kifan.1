@@ -35,7 +35,7 @@ export default function RecipeModal({ existing, onClose, onSaved }) {
     if (!file) return;
     setReading(true); setErr(null); setReadMsg(null);
     try {
-      const small = await downscaleImage(file);
+      const small = await downscaleImage(file, 1280, 0.8);
       const { dish_name, items } = await api.extractRecipe(small);
       if (items?.length) {
         setRows(items.map((i) => ({ name: i.name, qty: String(i.qty), unit: i.unit || '', whole: !!i.whole })));

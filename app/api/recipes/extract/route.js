@@ -88,7 +88,11 @@ export async function POST(req) {
     const client = new Anthropic();
     const response = await client.messages.create({
       model: 'claude-opus-5',
-      max_tokens: 8000,
+      max_tokens: 4000,
+      // Reading a table is a simple, well-specified task — low effort keeps it
+      // fast. Thinking stays on: disabling it on Opus 5 can make the model
+      // write the tool call into visible text instead of a tool_use block.
+      output_config: { effort: 'low' },
       tools: [TOOL],
       messages: [
         {
@@ -99,7 +103,7 @@ export async function POST(req) {
           ],
         },
       ],
-    });
+    }, { timeout: 55_000 }); // fail with a readable message instead of hanging
 
     if (response.stop_reason === 'refusal') {
       return NextResponse.json({ error: 'تعذّرت قراءة هذه الصورة.' }, { status: 422 });
@@ -131,6 +135,9 @@ export async function POST(req) {
     }
     if (e instanceof Anthropic.RateLimitError) {
       return NextResponse.json({ error: 'الخدمة مشغولة حالياً. حاول بعد قليل.' }, { status: 429 });
+    }
+    if (e instanceof Anthropic.APIConnectionTimeoutError) {
+      return NextResponse.json({ error: 'استغرقت القراءة وقتاً طويلاً. جرّب صورة أوضح أو أصغر.' }, { status: 504 });
     }
     if (e instanceof Anthropic.APIError) {
       return NextResponse.json({ error: 'تعذّرت قراءة الصورة. حاول مرة أخرى.' }, { status: 502 });
