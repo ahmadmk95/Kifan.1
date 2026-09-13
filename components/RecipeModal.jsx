@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Sheet from './Sheet';
 import { api } from '@/lib/api';
+import { downscaleImage } from '@/lib/downscale';
+import { success } from '@/lib/haptics';
 
 const BLANK = { name: '', qty: '', unit: '', whole: false };
 
@@ -23,6 +25,31 @@ export default function RecipeModal({ existing, onClose, onSaved }) {
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
+  const [reading, setReading] = useState(false);
+  const [readMsg, setReadMsg] = useState(null);
+
+  // Read a photo of a written table and fill the rows in for review.
+  const onPhoto = async (e) => {
+    const file = (e.target.files || [])[0];
+    e.target.value = '';
+    if (!file) return;
+    setReading(true); setErr(null); setReadMsg(null);
+    try {
+      const small = await downscaleImage(file);
+      const { dish_name, items } = await api.extractRecipe(small);
+      if (items?.length) {
+        setRows(items.map((i) => ({ name: i.name, qty: String(i.qty), unit: i.unit || '', whole: !!i.whole })));
+        setBaseIndex(0);
+        if (!name.trim() && dish_name) setName(dish_name);
+        success();
+        setReadMsg(`تمت قراءة ${items.length} مكوّن من الصورة. راجعها وحدّد الثابت قبل الحفظ.`);
+      }
+    } catch (ex) {
+      setErr(ex.message || 'تعذّرت قراءة الصورة');
+    } finally {
+      setReading(false);
+    }
+  };
 
   const setRow = (i, k, v) => setRows((s) => s.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
   const addRow = () => setRows((s) => [...s, { ...BLANK }]);
@@ -76,6 +103,16 @@ export default function RecipeModal({ existing, onClose, onSaved }) {
           <label>ملاحظة (اختياري)</label>
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="أي تفاصيل عن الطبخة" />
         </div>
+
+        {/* Fill the rows from a photo of a written table */}
+        <div className="photo-fill">
+          <label className={'btn-add btn-out photo-btn' + (reading ? ' is-busy' : '')}>
+            {reading ? 'جارٍ قراءة الصورة…' : '📷 تعبئة من صورة'}
+            <input type="file" accept="image/*" capture="environment" onChange={onPhoto} disabled={reading} hidden />
+          </label>
+          <span className="photo-hint">صوّر جدول المقادير وسيملأ المكوّنات تلقائياً — راجعها قبل الحفظ.</span>
+        </div>
+        {readMsg ? <div className="acc-inline-msg">{readMsg}</div> : null}
 
         <div className="form-field">
           <label>المكوّنات بالكميات الأساسية</label>
