@@ -988,3 +988,68 @@ button:active, .btn-add:active, .btn-ghost:active, .btn-small:active, .btn-dange
   .an-kpis { grid-template-columns: repeat(2, 1fr); }
   .an-tops { grid-template-columns: 1fr; }
 }
+
+/* ============ Cooking equations (معادلات ووصفات الطبخ) ============ */
+/* Editor rows */
+.rc-rows { display: flex; flex-direction: column; gap: 6px; }
+.rc-row {
+  display: grid; grid-template-columns: 42px 1.6fr 90px 90px 74px 34px;
+  gap: 8px; align-items: center;
+}
+.rc-row input[type="text"], .rc-row input:not([type]), .rc-row input[type="number"] {
+  width: 100%; padding: 9px 10px; border: 1px solid var(--mawkab-border);
+  border-radius: 9px; font-family: inherit; font-size: 14px; background: #fff;
+}
+.rc-row.is-base input { border-color: var(--mawkab-green); background: #F6FBF4; }
+.rc-head { font-size: 11.5px; font-weight: 700; color: var(--mawkab-muted); text-align: center; }
+.rc-radio, .rc-check { display: flex; justify-content: center; }
+.rc-radio input, .rc-check input { width: 17px; height: 17px; accent-color: var(--mawkab-green); }
+.rc-del {
+  border: none; background: none; color: var(--mawkab-muted); font-size: 20px;
+  line-height: 1; cursor: pointer; border-radius: 8px;
+}
+.rc-del:hover { color: var(--mawkab-red); }
+
+/* "How much do you want to cook?" */
+.calc-panel { background: var(--mawkab-yellow-soft); }
+.calc-ask { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 16px; font-weight: 600; }
+.calc-ask input {
+  width: 130px; padding: 10px 12px; border: 1.5px solid var(--mawkab-green); border-radius: 10px;
+  font-family: inherit; font-size: 20px; font-weight: 800; text-align: center; background: #fff;
+}
+.calc-ask b { font-family: var(--font-heading), serif; color: var(--mawkab-red); }
+
+/* Result list */
+.rec-list { display: flex; flex-direction: column; gap: 8px; }
+.rec-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  background: #fff; border: 1px solid var(--mawkab-border); border-radius: 12px; padding: 12px 16px;
+}
+.rec-row.is-base { border-color: var(--mawkab-green); background: #F6FBF4; }
+.rec-name { font-family: var(--font-heading), serif; font-size: 18px; font-weight: 700; }
+.rec-base-tag {
+  margin-inline-start: 8px; font-family: var(--font-body), sans-serif; font-size: 11px; font-weight: 700;
+  background: var(--mawkab-green); color: #fff; border-radius: 999px; padding: 2px 9px; vertical-align: middle;
+}
+.rec-qty { font-size: 21px; font-weight: 800; color: var(--mawkab-green-dark); white-space: nowrap; }
+.rec-unit { font-size: 14px; font-weight: 600; color: var(--mawkab-muted); }
+.rec-exact { display: block; font-size: 11.5px; font-weight: 500; color: var(--mawkab-muted); text-align: end; }
+
+@media (max-width: 700px) {
+  /* Stack each ingredient into its own bordered block instead of a grid row. */
+  .rc-head { display: none; }
+  .rc-row {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    border: 1px solid var(--mawkab-border); border-radius: 10px; padding: 10px; background: #FCFAF2;
+  }
+  .rc-row.is-base { border-color: var(--mawkab-green); }
+  .rc-row > input:nth-of-type(1) { flex: 1 1 100%; }   /* name */
+  .rc-row > input:nth-of-type(2) { flex: 1 1 90px; }   /* qty */
+  .rc-row > input:nth-of-type(3) { flex: 1 1 90px; }   /* unit */
+  .rc-radio::after { content: 'ثابت'; font-size: 11px; font-weight: 700; color: var(--mawkab-muted); margin-inline-start: 5px; }
+  .rc-check::after { content: 'وحدة كاملة'; font-size: 11px; font-weight: 700; color: var(--mawkab-muted); margin-inline-start: 5px; }
+  .rc-radio, .rc-check { justify-content: flex-start; align-items: center; }
+  .rc-del { margin-inline-start: auto; }
+  .rec-name { font-size: 16px; }
+  .rec-qty { font-size: 19px; }
+}
