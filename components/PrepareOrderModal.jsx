@@ -60,7 +60,9 @@ export default function PrepareOrderModal({ order, onClose, onDone }) {
 
           <div className="form-field">
             <label>صورة الطلب بعد التجهيز (اختياري)</label>
-            <input type="file" accept="image/*" capture="environment" onChange={onFile} />
+            {/* No `capture`: forcing the camera would block picking an
+                existing photo. Both options stay available without it. */}
+            <input type="file" accept="image/*" onChange={onFile} />
             {uploading ? <div className="acc-inline-msg">جارٍ الرفع…</div> : null}
             {photoUrl ? (
               <div className="inv-thumbs" style={{ marginTop: 8 }}>

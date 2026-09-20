@@ -108,7 +108,9 @@ export default function RecipeModal({ existing, onClose, onSaved }) {
         <div className="photo-fill">
           <label className={'btn-add btn-out photo-btn' + (reading ? ' is-busy' : '')}>
             {reading ? 'جارٍ قراءة الصورة…' : '📷 تعبئة من صورة'}
-            <input type="file" accept="image/*" capture="environment" onChange={onPhoto} disabled={reading} hidden />
+            {/* No `capture` attribute: it would force the camera and hide the
+                gallery. Without it the phone offers both. */}
+            <input type="file" accept="image/*" onChange={onPhoto} disabled={reading} hidden />
           </label>
           <span className="photo-hint">صوّر جدول المقادير وسيملأ المكوّنات تلقائياً — راجعها قبل الحفظ.</span>
         </div>
