@@ -11,6 +11,7 @@ import { api } from '@/lib/api';
 import { fmtQty, isLowStock } from '@/lib/qty';
 import { today } from '@/lib/money';
 import { tap } from '@/lib/haptics';
+import { SITE_NAME } from '@/lib/brand';
 import { normalizeText } from '@/lib/normalize';
 import { FRIDGE_BRANCHES, BRANCH_LABEL } from '@/lib/fridgeBranches';
 
@@ -121,7 +122,7 @@ export default function FridgeView({
     }
     const msg = [
       `📋 *جرد المخزون — ${title}*`,
-      'موكب أمير المؤمنين (ع)',
+      SITE_NAME,
       `التاريخ: ${today()}`,
       `إجمالي الأصناف: ${all.length}`,
       '',
@@ -144,7 +145,7 @@ export default function FridgeView({
     });
     const msg = [
       `📋 *قائمة النواقص — ${title}*`,
-      'موكب أمير المؤمنين (ع)',
+      SITE_NAME,
       `التاريخ: ${today()}`,
       '',
       `⚠ الأصناف الناقصة (${lowItems.length}):`,
@@ -214,7 +215,6 @@ export default function FridgeView({
           <p style={{ color: 'var(--mawkab-muted)' }}>جارٍ التحميل…</p>
         ) : shown.length === 0 ? (
           <div className="empty-state">
-            <img src="/logo.png" alt="الشعار" />
             <p>{searching ? `لا نتائج لـ «${query.trim()}»` : isLowView ? 'لا توجد أصناف ناقصة — المخزون بخير 👍' : `لا توجد أصناف في «${viewLabel}» بعد`}</p>
             {!readOnly && !isLowView && !searching ? <button className="btn-add" onClick={() => setAdding(true)}>＋ إضافة صنف</button> : null}
           </div>

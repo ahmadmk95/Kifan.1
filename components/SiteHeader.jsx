@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import LogoutButton from './LogoutButton';
 import { api } from '@/lib/api';
+import { SITE_NAME, SITE_TAGLINE } from '@/lib/brand';
 
 // Header for logged-in areas. Links shown depend on the user's authority.
 export default function SiteHeader() {
@@ -22,10 +23,9 @@ export default function SiteHeader() {
   return (
     <header className="site-header">
       <Link href={home} className="brand">
-        <img src="/logo.png" alt="شعار موكب أمير المؤمنين (ع)" />
         <span>
-          <span className="t1">موكب أمير المؤمنين (ع)</span>
-          <span className="t2 private">دليل تعليمات العمل — زيارة الأربعين 2026 · نسخة خاصة</span>
+          <span className="t1">{SITE_NAME}</span>
+          <span className="t2 private">{SITE_TAGLINE}</span>
         </span>
       </Link>
       <nav>

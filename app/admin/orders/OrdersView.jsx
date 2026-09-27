@@ -10,6 +10,7 @@ import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 import { fmtDateTime } from '@/lib/money';
 import { tap, success, warn } from '@/lib/haptics';
+import { SITE_NAME } from '@/lib/brand';
 
 const STATUS = {
   pending: { label: 'بانتظار التجهيز', cls: 'st-pending' },
@@ -49,7 +50,7 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
     const lines = o.lines.map((l) => `• ${l.item_name} × ${fmtQty(l.quantity)}${l.unit ? ' ' + l.unit : ''}`);
     const parts = [
       '📋 *طلب من الثلاجة*',
-      'موكب أمير المؤمنين (ع)',
+      SITE_NAME,
       `مقدّم الطلب: ${o.requester || '—'}`,
       `التاريخ: ${fmtDateTime(o.created_at)}`,
       `الحالة: ${st}`,
@@ -90,7 +91,6 @@ export default function OrdersView({ readOnly = false, canPrepare = false }) {
 
             {filtered.length === 0 ? (
               <div className="empty-state">
-                <img src="/logo.png" alt="الشعار" />
                 <p>لا توجد طلبات</p>
                 {!readOnly ? <button className="btn-add" onClick={() => setCreating(true)}>＋ طلب جديد</button> : null}
               </div>
