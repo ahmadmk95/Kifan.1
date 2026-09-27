@@ -7,27 +7,29 @@ import SiteFooter from '@/components/SiteFooter';
 import { api } from '@/lib/api';
 
 const AUTHORITIES = [
-  { value: 'committees', label: 'عرض اللجان فقط' },
-  { value: 'accounting', label: 'المحاسبة فقط' },
-  { value: 'fridge', label: 'لجنة التغذية (الثلاجة ودار الجيل)' },
+  { value: 'fridge', label: 'لجنة التغذية (الثلاجة، دار الجيل، الطلبات، الطبخ)' },
   { value: 'viewer', label: 'مشرف — عرض فقط' },
   { value: 'admin', label: 'مدير كامل' },
 ];
-const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', committees: 'عرض اللجان', accounting: 'المحاسبة', fridge: 'لجنة التغذية' };
+// Authorities of sections that were removed. Accounts still holding one have
+// no access until they are given a current authority, so they are flagged.
+const LEGACY = { committees: 'اللجان — قسم محذوف', accounting: 'المحاسبة — قسم محذوف' };
+const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', fridge: 'لجنة التغذية', ...LEGACY };
+const DEFAULT_AUTH = 'fridge';
 
 function authorityOf(u) {
   if (u.role === 'admin') return 'admin';
   if (u.access === 'viewer') return 'viewer';
-  if (u.access === 'accounting') return 'accounting';
   if (u.access === 'fridge') return 'fridge';
-  return 'committees';
+  return u.access || 'committees'; // legacy value, shown as-is
 }
+const isLegacy = (u) => !!LEGACY[authorityOf(u)];
 
 export default function UsersAdmin({ currentUserId, canManage = true }) {
   const [users, setUsers] = useState(null);
   const [msg, setMsg] = useState(null);
   const [pendingAuth, setPendingAuth] = useState({}); // id -> chosen authority
-  const [f, setF] = useState({ name: '', username: '', password: '', authority: 'committees' });
+  const [f, setF] = useState({ name: '', username: '', password: '', authority: DEFAULT_AUTH });
   const [busy, setBusy] = useState(false);
 
   const load = () => api.users().then(({ users }) => setUsers(users)).catch(() => setUsers([]));
@@ -44,7 +46,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
 
   const approve = async (u) => {
-    const authority = pendingAuth[u.id] || 'committees';
+    const authority = pendingAuth[u.id] || DEFAULT_AUTH;
     try {
       await api.updateUser(u.id, { status: 'active', authority });
       setMsg({ t: 'ok', x: `تم قبول ${u.name}` });
@@ -87,7 +89,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
     setBusy(true); setMsg(null);
     try {
       await api.addUser({ name: f.name.trim(), username: f.username.trim(), password: f.password, authority: f.authority });
-      setF({ name: '', username: '', password: '', authority: 'committees' });
+      setF({ name: '', username: '', password: '', authority: DEFAULT_AUTH });
       setMsg({ t: 'ok', x: 'تمت إضافة المستخدم' });
       load();
     } catch (e) {
@@ -122,7 +124,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
                 </div>
                 <div className="req-controls">
                   <select
-                    value={pendingAuth[u.id] || 'committees'}
+                    value={pendingAuth[u.id] || DEFAULT_AUTH}
                     onChange={(e) => setPendingAuth((s) => ({ ...s, [u.id]: e.target.value }))}
                   >
                     {AUTHORITIES.filter((a) => canManage || a.value !== 'admin').map((a) => (
@@ -157,12 +159,23 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
                     <td data-label="رقم الهاتف" dir="ltr" style={{ textAlign: 'right' }}>{u.username}</td>
                     <td data-label="الصلاحية">
                       {!canManage || u.id === currentUserId ? (
-                        AUTH_LABEL[authorityOf(u)]
+                        <span className={isLegacy(u) ? 'legacy-auth' : undefined}>{AUTH_LABEL[authorityOf(u)] || authorityOf(u)}</span>
                       ) : (
-                        <select value={authorityOf(u)} onChange={(e) => changeAuthority(u, e.target.value)}>
+                        <select
+                          value={authorityOf(u)}
+                          onChange={(e) => changeAuthority(u, e.target.value)}
+                          className={isLegacy(u) ? 'legacy-auth' : undefined}
+                        >
+                          {/* A removed authority isn't a choice, but must be shown
+                              as the current value rather than silently displaying
+                              the first option. */}
+                          {isLegacy(u) ? (
+                            <option value={authorityOf(u)} disabled>⚠ {AUTH_LABEL[authorityOf(u)]} — اختر صلاحية</option>
+                          ) : null}
                           {AUTHORITIES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
                         </select>
                       )}
+                      {isLegacy(u) ? <div className="legacy-note">لا يستطيع الدخول لأي قسم حتى تُحدَّد له صلاحية جديدة.</div> : null}
                       {/* Order-preparation permission for لجنة التغذية members */}
                       {authorityOf(u) === 'fridge' ? (
                         canManage && u.id !== currentUserId ? (

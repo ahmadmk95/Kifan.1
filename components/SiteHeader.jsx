@@ -15,10 +15,9 @@ export default function SiteHeader() {
   const isAdmin = role === 'admin';
   const isViewer = !isAdmin && access === 'viewer';
   const canFridge = isAdmin || isViewer || access === 'fridge';
-  const canCommittees = isAdmin || isViewer || access === 'committees' || access === 'fridge';
-  const canAccounting = isAdmin || isViewer || access === 'accounting';
   const canAdminArea = isAdmin || isViewer;
-  const home = canAdminArea ? '/admin' : canAccounting ? '/admin/accounting' : canFridge ? '/admin/fridge' : canCommittees ? '/private' : '/login';
+  // Before /api/me answers, link home to the root rather than to /no-access.
+  const home = !user ? '/' : canAdminArea ? '/admin' : canFridge ? '/admin/fridge' : '/no-access';
 
   return (
     <header className="site-header">
@@ -30,8 +29,6 @@ export default function SiteHeader() {
         </span>
       </Link>
       <nav>
-        {canCommittees ? <Link href="/private">اللجان</Link> : null}
-        {canAccounting ? <Link href="/admin/accounting">المحاسبة</Link> : null}
         {canFridge ? <Link href="/admin/fridge">الثلاجة</Link> : null}
         {canFridge ? <Link href="/admin/dargeel">دار الجيل</Link> : null}
         {canFridge ? <Link href="/admin/orders">الطلبات</Link> : null}

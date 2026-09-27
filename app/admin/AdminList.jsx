@@ -1,78 +1,35 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
-import { api } from '@/lib/api';
 
-const VIS_LABEL = { public: 'عام', private: 'خاص', both: 'كلاهما' };
-const VIS_CLASS = { public: 'vis-public', private: 'vis-private', both: 'vis-both' };
+// Admin landing: a hub of the sections that remain on the site.
+const SECTIONS = [
+  { href: '/admin/fridge', icon: '🧊', title: 'الثلاجة', desc: 'مخزون الثلاجة والفريزر والخارجي' },
+  { href: '/admin/dargeel', icon: '📦', title: 'دار الجيل', desc: 'مخزون دار الجيل' },
+  { href: '/admin/orders', icon: '📋', title: 'الطلبات', desc: 'طلبات الأصناف وتجهيزها' },
+  { href: '/admin/recipes', icon: '🍲', title: 'معادلات ووصفات الطبخ', desc: 'حساب المقادير حسب الثابت' },
+  { href: '/admin/users', icon: '👥', title: 'المستخدمون', desc: 'الحسابات والصلاحيات والموافقات' },
+];
 
-export default function AdminList({ readOnly = false }) {
-  const [committees, setCommittees] = useState(null);
-
-  const load = () => api.committees().then(({ committees }) => setCommittees(committees)).catch(() => setCommittees([]));
-  useEffect(() => { load(); }, []);
-
-  const remove = async (c) => {
-    if (!window.confirm(`حذف لجنة «${c.name}»؟ لا يمكن التراجع.`)) return;
-    await api.removeCommittee(c.id);
-    load();
-  };
-
+export default function AdminList() {
   return (
     <div className="page">
       <SiteHeader />
       <main className="main-wrap">
         <div className="admin-bar">
-          <h1>إدارة اللجان</h1>
-          <div className="admin-actions">
-            <Link href="/admin/accounting" className="btn-ghost">المحاسبة</Link>
-            <Link href="/admin/fridge" className="btn-ghost">الثلاجة</Link>
-            <Link href="/admin/dargeel" className="btn-ghost">دار الجيل</Link>
-            <Link href="/admin/orders" className="btn-ghost">الطلبات</Link>
-            <Link href="/admin/stats" className="btn-ghost">الزيارات</Link>
-            <Link href="/admin/users" className="btn-ghost">المستخدمون</Link>
-            {!readOnly ? <Link href="/admin/edit/new" className="btn-add">+ إضافة لجنة</Link> : null}
-          </div>
+          <h1>الإدارة</h1>
         </div>
-
-        {committees === null ? null : committees.length === 0 ? (
-          <div className="empty-state">
-            <img src="/logo.png" alt="الشعار" />
-            <p>لا توجد لجان بعد</p>
-            {!readOnly ? <Link href="/admin/edit/new" className="btn-add">+ إضافة لجنة</Link> : null}
-          </div>
-        ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th style={{ width: 60 }}>الترتيب</th>
-                <th>اللجنة</th>
-                <th style={{ width: 110 }}>الظهور</th>
-                <th style={{ width: 180 }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {committees.map((c) => (
-                <tr key={c.id}>
-                  <td className="ar-num">{c.sort}</td>
-                  <td style={{ fontWeight: 600 }}>{c.name}</td>
-                  <td><span className={'vis-pill ' + VIS_CLASS[c.visibility]}>{VIS_LABEL[c.visibility]}</span></td>
-                  <td>
-                    {!readOnly ? (
-                      <div className="acts">
-                        <Link href={`/admin/edit/${c.id}`} className="btn-small">تعديل</Link>
-                        <button className="btn-danger" onClick={() => remove(c)}>حذف</button>
-                      </div>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <div className="hub-grid">
+          {SECTIONS.map((s) => (
+            <Link key={s.href} href={s.href} className="hub-card">
+              <span className="hub-ico">{s.icon}</span>
+              <span className="hub-title">{s.title}</span>
+              <span className="hub-desc">{s.desc}</span>
+            </Link>
+          ))}
+        </div>
       </main>
       <SiteFooter />
     </div>
