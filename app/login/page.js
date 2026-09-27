@@ -13,7 +13,7 @@ const AUTO_KEY = 'mwk_autologin';
 function landingFor(user) {
   if (user?.role === 'admin' || user?.access === 'viewer') return '/admin';
   if (user?.access === 'fridge') return '/admin/fridge';
-  if (user?.plan_edit) return '/plan';
+  if (user && user.status !== 'pending') return '/plan';
   return '/no-access';
 }
 

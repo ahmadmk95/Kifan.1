@@ -1,6 +1,6 @@
 # خطة الأربعين 2027 — Feeding & Purchasing Plan
 
-A section of this site at **`/plan`** that replaces the Excel workbook
+A section of this site at **`/plan`** (signed-in users only) that replaces the Excel workbook
 «خطة التغذية والمشتريات». There is **one master dataset** in the database. Every
 branch page is generated from it on each request, and open pages refresh
 themselves within ~8 seconds of any change, so an edit in the master shows up
@@ -8,17 +8,20 @@ everywhere.
 
 ## Pages
 
+All pages need a signed-in, approved account. Visitors who aren't signed in
+are sent to the login and brought back to the same page afterwards.
+
 | URL | Page | Who |
 |---|---|---|
-| `/plan` | Home: stats, today's day, links, day chips, export | everyone |
-| `/plan/master` | **الجدول الكامل**: everything, inline editing | everyone views · editors edit |
-| `/plan/tasks` | الخطة: tasks / notes log | everyone (read-only) |
-| `/plan/internal` | الجدول الداخلي: daily feeding plan | everyone (read-only) |
-| `/plan/external` | الخارجي: external procession, all days in one table | everyone (read-only) |
-| `/plan/appetizers` | المقبلات: meal items categorised as appetizer/salad/soup or dessert/fruit | everyone (read-only) |
-| `/plan/produce` | الفواكه والخضروات: fruit & vegetables in 3 batches | everyone (read-only) |
-| `/plan/supplies` | المستلزمات والمشتريات: buffet, kitchen tools, cleaning, food (grouped by supplier) | everyone (read-only) |
-| `/plan/day/<id>` | Cook's day sheet: print or open on a phone | everyone |
+| `/plan` | Home: stats, today's day, links, day chips, export | all users |
+| `/plan/master` | **الجدول الكامل**: everything, inline editing | all users view · editors edit |
+| `/plan/tasks` | الخطة: tasks / notes log | all users (read-only) |
+| `/plan/internal` | الجدول الداخلي: daily feeding plan | all users (read-only) |
+| `/plan/external` | الخارجي: external procession, all days in one table | all users (read-only) |
+| `/plan/appetizers` | المقبلات: meal items categorised as appetizer/salad/soup or dessert/fruit | all users (read-only) |
+| `/plan/produce` | الفواكه والخضروات: fruit & vegetables in 3 batches | all users (read-only) |
+| `/plan/supplies` | المستلزمات والمشتريات: buffet, kitchen tools, cleaning, food (grouped by supplier) | all users (read-only) |
+| `/plan/day/<id>` | Cook's day sheet: print or open on a phone | all users |
 | `/plan/history` | Audit log | editors |
 | `/plan/trash` | Trash (soft-deleted records) | editors |
 | `/plan/backups` | Snapshots, import, export | editors · restore/import = admin |
@@ -47,7 +50,8 @@ in the Trash.
 
 ## Editing & security
 
-- Viewing needs no login. Editing needs a signed-in account with permission:
+- Viewing needs a signed-in, approved account (any user). The data API and the
+  Excel/CSV export also refuse anonymous requests. Editing needs permission:
   **admins always**, and any other user an admin ticks as «يعدّل خطة الأربعين»
   in **الإدارة → المستخدمون**. Each editor has their own name, so the history
   shows who changed what.

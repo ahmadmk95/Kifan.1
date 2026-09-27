@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { getPlan } from '@/lib/plan/store';
 import { PLAN_TITLE, ENTITIES, ENTITY_KEYS, APPETIZER_CATEGORIES, dayLabel, formatDate } from '@/lib/plan/model';
-import { getCurrentUser, canEditPlan } from '@/lib/auth';
+import { canEditPlan } from '@/lib/auth';
+import { requirePlanViewer } from '@/lib/plan/guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,8 +17,8 @@ const CARDS = [
 ];
 
 export default async function PlanHome() {
+  const user = await requirePlanViewer('/plan');
   const plan = getPlan();
-  const user = await getCurrentUser();
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(new Date());
   const todayDay = plan.days.find((d) => d.gregorian === today);
   const items = plan.days.reduce((n, d) => n + d.items.length, 0);

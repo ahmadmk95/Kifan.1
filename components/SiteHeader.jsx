@@ -21,7 +21,7 @@ export default function SiteHeader() {
   const canFridge = isAdmin || isViewer || access === 'fridge';
   const canAdminArea = isAdmin || isViewer;
   // Before /api/me answers, link home to the root rather than to /no-access.
-  const home = !user ? '/' : canAdminArea ? '/admin' : canFridge ? '/admin/fridge' : user.plan_edit ? '/plan' : '/no-access';
+  const home = !user ? '/' : canAdminArea ? '/admin' : canFridge ? '/admin/fridge' : '/plan';
 
   const tabs = [
     canAdminArea && { href: '/admin', label: 'الرئيسية', exact: true },

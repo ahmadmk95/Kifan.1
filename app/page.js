@@ -15,7 +15,6 @@ export default function HomePage() {
       <div className="splash-actions">
         <Link href="/register" className="splash-btn primary">إنشاء حساب جديد</Link>
         <Link href="/login" className="splash-btn">دخول المخوّلين</Link>
-        <Link href="/plan" className="splash-btn">خطة التغذية والمشتريات — الأربعين</Link>
       </div>
     </div>
   );

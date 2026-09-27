@@ -47,7 +47,7 @@ export function MasterView({ plan }) {
 
   return (
     <>
-      <PageHead title="الجدول الكامل" sub={canEdit ? 'كل البيانات في مكان واحد — اضغط على أي خانة لتعديلها. كل تعديل يظهر فوراً في جميع الصفحات.' : 'كل بيانات الخطة. التعديل متاح للمخوّلين بعد تسجيل الدخول.'}>
+      <PageHead title="الجدول الكامل" sub={canEdit ? 'كل البيانات في مكان واحد — اضغط على أي خانة لتعديلها. كل تعديل يظهر فوراً في جميع الصفحات.' : 'كل بيانات الخطة. التعديل متاح للمخوّلين بتعديل الخطة فقط.'}>
         {!user ? <Link href="/login?next=/plan/master" className="pl-btn">دخول للتعديل</Link> : null}
       </PageHead>
       {empty ? <EmptyPlan /> : null}
