@@ -7,11 +7,12 @@ import { api } from '@/lib/api';
 
 const AUTO_KEY = 'mwk_autologin';
 
+// Mirrors lib/auth landingFor. Members with no remaining section go to
+// /no-access — a page that never bounces back here, so auto sign-in can't loop.
 function landingFor(user) {
   if (user?.role === 'admin' || user?.access === 'viewer') return '/admin';
-  if (user?.access === 'accounting') return '/admin/accounting';
   if (user?.access === 'fridge') return '/admin/fridge';
-  return '/private';
+  return '/no-access';
 }
 
 function LoginForm() {

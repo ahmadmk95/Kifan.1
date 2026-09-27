@@ -9,17 +9,12 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
-    "@ckeditor/ckeditor5-react": "^11.2.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.3.0",
-    "ckeditor5": "^48.3.1",
     "framer-motion": "^13.1.1",
-    "html2canvas": "^1.4.1",
     "jose": "^5.9.6",
-    "jspdf": "^4.2.1",
     "next": "14.2.35",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "sanitize-html": "^2.17.6"
+    "react-dom": "^18.3.1"
   }
 }

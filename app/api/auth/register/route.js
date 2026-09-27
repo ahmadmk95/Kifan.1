@@ -24,8 +24,11 @@ export async function POST(req) {
     return NextResponse.json({ error: 'رقم الهاتف مسجّل مسبقاً' }, { status: 409 });
   }
 
+  // New accounts start pending; an admin must approve them before they can sign
+  // in, and can change the authority then. لجنة التغذية is the only member
+  // section left, so it is the default.
   db.prepare(
-    "INSERT INTO users (id, name, username, password_hash, role, access, status) VALUES (?, ?, ?, ?, 'member', 'committees', 'pending')"
+    "INSERT INTO users (id, name, username, password_hash, role, access, status) VALUES (?, ?, ?, ?, 'member', 'fridge', 'pending')"
   ).run(crypto.randomUUID(), name, phone, bcrypt.hashSync(password, 10));
 
   return NextResponse.json({ ok: true });
