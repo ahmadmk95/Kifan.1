@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { SITE_NAME } from '@/lib/brand';
 
 export default function RegisterPage() {
   const [f, setF] = useState({ name: '', phone: '', password: '' });
@@ -31,7 +32,7 @@ export default function RegisterPage() {
     <div className="page">
       <div className="login-screen">
         <div className="login-card">
-          <img src="/logo.png" alt="موكب أمير المؤمنين (ع)" />
+          <div className="brand-name">{SITE_NAME}</div>
           {done ? (
             <>
               <h1>تم إرسال طلبك</h1>

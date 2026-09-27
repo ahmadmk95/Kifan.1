@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { fmtQty } from '@/lib/qty';
 import { scaleRecipe, round3 } from '@/lib/scale';
 import { tap } from '@/lib/haptics';
+import { SITE_NAME } from '@/lib/brand';
 
 export default function RecipesView({ readOnly = false }) {
   const [recipes, setRecipes] = useState(null);
@@ -51,7 +52,7 @@ export default function RecipesView({ readOnly = false }) {
     });
     const msg = [
       `👨‍🍳 *${recipe.name}*`,
-      'موكب أمير المؤمنين (ع)',
+      SITE_NAME,
       `على أساس ${fmtQty(Number(target))}${base?.unit ? ' ' + base.unit : ''} من ${base?.name || 'الثابت'}`,
       '',
       ...lines,
@@ -77,7 +78,6 @@ export default function RecipesView({ readOnly = false }) {
           <p style={{ color: 'var(--mawkab-muted)' }}>جارٍ التحميل…</p>
         ) : recipes.length === 0 ? (
           <div className="empty-state">
-            <img src="/logo.png" alt="الشعار" />
             <p>لا توجد طبخات بعد</p>
             {!readOnly ? <button className="btn-add" onClick={() => setModal({})}>＋ طبخة جديدة</button> : null}
           </div>

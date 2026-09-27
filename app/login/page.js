@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
+import { SITE_NAME } from '@/lib/brand';
 
 const AUTO_KEY = 'mwk_autologin';
 
@@ -69,8 +70,7 @@ function LoginForm() {
     return (
       <div className="login-screen">
         <div className="login-card">
-          <img src="/logo.png" alt="شعار موكب أمير المؤمنين (ع)" />
-          <h1>دليل تعليمات الموكب</h1>
+          <h1 className="brand-name">{SITE_NAME}</h1>
           <p style={{ color: 'var(--mawkab-muted)', fontSize: 15 }}>جارٍ تسجيل الدخول تلقائياً…</p>
         </div>
       </div>
@@ -80,8 +80,7 @@ function LoginForm() {
   return (
     <div className="login-screen">
       <div className="login-card">
-        <img src="/logo.png" alt="شعار موكب أمير المؤمنين (ع)" />
-        <h1>دليل تعليمات الموكب</h1>
+        <h1 className="brand-name">{SITE_NAME}</h1>
         <div className="pill-private">نسخة خاصة — للمخوّلين فقط</div>
         <input
           type="tel"

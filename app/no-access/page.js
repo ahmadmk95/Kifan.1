@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser, canViewAdmin, canFridge, landingFor } from '@/lib/auth';
 import LogoutButton from '@/components/LogoutButton';
+import { SITE_NAME } from '@/lib/brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export default async function NoAccessPage() {
 
   return (
     <div className="splash">
-      <img className="no-access-logo" src="/logo.png" alt="موكب أمير المؤمنين (ع)" />
+      <div className="splash-title">{SITE_NAME}</div>
       <div className="no-access-card">
         <h1>لا توجد أقسام متاحة لحسابك</h1>
         <p>
