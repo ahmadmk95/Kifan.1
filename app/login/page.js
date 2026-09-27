@@ -13,13 +13,16 @@ const AUTO_KEY = 'mwk_autologin';
 function landingFor(user) {
   if (user?.role === 'admin' || user?.access === 'viewer') return '/admin';
   if (user?.access === 'fridge') return '/admin/fridge';
+  if (user?.plan_edit) return '/plan';
   return '/no-access';
 }
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get('next');
+  // Only same-site paths — never bounce to another website after sign-in.
+  const rawNext = params.get('next');
+  const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.includes('\\') ? rawNext : null;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);

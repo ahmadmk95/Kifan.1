@@ -1,5 +1,7 @@
 # موكب أمير المؤمنين (ع) — دليل تعليمات الموكب
 
+> **خطة الأربعين 2027** (feeding & purchasing plan, public at `/plan`): see [docs/PLAN.md](docs/PLAN.md) for pages, data model, backups, importing the Excel workbook and hosting.
+
 Committees work-manual website for **موكب أمير المؤمنين (ع)** (est. ١٣٨٤هـ / ١٩٦٤م, serving Arbaeen pilgrims). The site presents the group's work manual organized by **لجان (committees)**:
 
 - **Public site** (`/`): landing page listing public committees → each committee's detail page with rich content (text, lists, tables, images).
@@ -55,7 +57,7 @@ User      { id, name, username, password_hash, role: 'admin'|'member', created_a
 In the committee editor, paste directly from a Word document. CKEditor's PasteFromOffice keeps headings, bold, bullet/numbered lists, and tables. On save, the HTML is sanitized server-side: only semantic tags are kept (`h2–h4`, `p`, `strong/em`, lists, tables, `img`, `a`), all inline Word styling and scripts are stripped, and images are restricted to uploads served from this site. The clean HTML is then styled by the design tokens on render.
 
 ## Environment variables
-- `JWT_SECRET` — secret used to sign session JWTs. Set a long random value in production (a dev default is used if unset — do not rely on it in production).
+- `JWT_SECRET` — secret used to sign session JWTs. Set a long random value in production. If unset, a random key is generated once and stored in the database (never a guessable default).
 - `DATA_DIR` — optional; directory for `mawkab.sqlite` and `uploads/` (defaults to `./data`).
 
 ## Deploying
