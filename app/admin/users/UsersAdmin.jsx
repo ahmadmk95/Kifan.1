@@ -7,27 +7,24 @@ import SiteFooter from '@/components/SiteFooter';
 import { api } from '@/lib/api';
 
 const AUTHORITIES = [
-  { value: 'committees', label: 'عرض اللجان فقط' },
-  { value: 'accounting', label: 'المحاسبة فقط' },
   { value: 'fridge', label: 'لجنة التغذية (الثلاجة ودار الجيل)' },
   { value: 'viewer', label: 'مشرف — عرض فقط' },
   { value: 'admin', label: 'مدير كامل' },
 ];
-const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', committees: 'عرض اللجان', accounting: 'المحاسبة', fridge: 'لجنة التغذية' };
+const AUTH_LABEL = { admin: 'مدير كامل', viewer: 'مشرف — عرض فقط', fridge: 'لجنة التغذية', none: 'بدون صلاحية' };
 
 function authorityOf(u) {
   if (u.role === 'admin') return 'admin';
   if (u.access === 'viewer') return 'viewer';
-  if (u.access === 'accounting') return 'accounting';
   if (u.access === 'fridge') return 'fridge';
-  return 'committees';
+  return 'none';
 }
 
 export default function UsersAdmin({ currentUserId, canManage = true }) {
   const [users, setUsers] = useState(null);
   const [msg, setMsg] = useState(null);
   const [pendingAuth, setPendingAuth] = useState({}); // id -> chosen authority
-  const [f, setF] = useState({ name: '', username: '', password: '', authority: 'committees' });
+  const [f, setF] = useState({ name: '', username: '', password: '', authority: 'fridge' });
   const [busy, setBusy] = useState(false);
 
   const load = () => api.users().then(({ users }) => setUsers(users)).catch(() => setUsers([]));
@@ -44,7 +41,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
 
   const approve = async (u) => {
-    const authority = pendingAuth[u.id] || 'committees';
+    const authority = pendingAuth[u.id] || 'fridge';
     try {
       await api.updateUser(u.id, { status: 'active', authority });
       setMsg({ t: 'ok', x: `تم قبول ${u.name}` });
@@ -87,7 +84,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
     setBusy(true); setMsg(null);
     try {
       await api.addUser({ name: f.name.trim(), username: f.username.trim(), password: f.password, authority: f.authority });
-      setF({ name: '', username: '', password: '', authority: 'committees' });
+      setF({ name: '', username: '', password: '', authority: 'fridge' });
       setMsg({ t: 'ok', x: 'تمت إضافة المستخدم' });
       load();
     } catch (e) {
@@ -103,7 +100,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
       <main className="main-wrap">
         <div className="admin-bar">
           <h1>المستخدمون</h1>
-          <Link href="/admin" className="btn-ghost">← اللجان</Link>
+          <Link href="/admin" className="btn-ghost">← الإدارة</Link>
         </div>
 
         {msg ? <div className={'form-msg ' + msg.t}>{msg.x}</div> : null}
@@ -122,7 +119,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
                 </div>
                 <div className="req-controls">
                   <select
-                    value={pendingAuth[u.id] || 'committees'}
+                    value={pendingAuth[u.id] || 'fridge'}
                     onChange={(e) => setPendingAuth((s) => ({ ...s, [u.id]: e.target.value }))}
                   >
                     {AUTHORITIES.filter((a) => canManage || a.value !== 'admin').map((a) => (
@@ -160,6 +157,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
                         AUTH_LABEL[authorityOf(u)]
                       ) : (
                         <select value={authorityOf(u)} onChange={(e) => changeAuthority(u, e.target.value)}>
+                          {authorityOf(u) === 'none' ? <option value="none" disabled>بدون صلاحية</option> : null}
                           {AUTHORITIES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
                         </select>
                       )}

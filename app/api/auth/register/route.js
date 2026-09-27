@@ -25,7 +25,7 @@ export async function POST(req) {
   }
 
   db.prepare(
-    "INSERT INTO users (id, name, username, password_hash, role, access, status) VALUES (?, ?, ?, ?, 'member', 'committees', 'pending')"
+    "INSERT INTO users (id, name, username, password_hash, role, access, status) VALUES (?, ?, ?, ?, 'member', NULL, 'pending')"
   ).run(crypto.randomUUID(), name, phone, bcrypt.hashSync(password, 10));
 
   return NextResponse.json({ ok: true });

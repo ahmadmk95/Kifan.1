@@ -6,7 +6,7 @@ const plex = IBM_Plex_Sans_Arabic({ subsets: ['arabic'], weight: ['300', '400', 
 
 export const metadata = {
   title: 'موكب أمير المؤمنين (ع) — دليل تعليمات الموكب',
-  description: 'دليل تعليمات العمل حسب اللجان — موكب أمير المؤمنين (ع) · زيارة الأربعين',
+  description: 'موكب أمير المؤمنين (ع) · زيارة الأربعين',
   icons: { icon: '/logo.png' },
 };
 

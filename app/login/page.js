@@ -9,9 +9,8 @@ const AUTO_KEY = 'mwk_autologin';
 
 function landingFor(user) {
   if (user?.role === 'admin' || user?.access === 'viewer') return '/admin';
-  if (user?.access === 'accounting') return '/admin/accounting';
   if (user?.access === 'fridge') return '/admin/fridge';
-  return '/private';
+  return '/';
 }
 
 function LoginForm() {

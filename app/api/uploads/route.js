@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { getCurrentUser, canAccounting, canFridge } from '@/lib/auth';
+import { getCurrentUser, canFridge } from '@/lib/auth';
 import { uploadsDir } from '@/lib/db';
 
 const EXT_BY_TYPE = {
@@ -15,7 +15,7 @@ const EXT_BY_TYPE = {
 
 export async function POST(req) {
   const user = await getCurrentUser();
-  if (!canAccounting(user) && !canFridge(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
+  if (!canFridge(user)) return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
 
   const form = await req.formData().catch(() => null);
   const file = form?.get('file') || form?.get('upload');
@@ -29,6 +29,5 @@ export async function POST(req) {
   const name = `${crypto.randomUUID()}.${ext}`;
   fs.writeFileSync(path.join(uploadsDir, name), buf);
   const url = `/api/uploads/${name}`;
-  // CKEditor SimpleUploadAdapter expects { url }
   return NextResponse.json({ url });
 }
