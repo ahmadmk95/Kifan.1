@@ -10,6 +10,8 @@ const SECTIONS = [
   { href: '/admin/dargeel', icon: '📦', title: 'دار الجيل', desc: 'مخزون دار الجيل' },
   { href: '/admin/orders', icon: '📋', title: 'الطلبات', desc: 'طلبات الأصناف وتجهيزها' },
   { href: '/admin/recipes', icon: '🍲', title: 'معادلات ووصفات الطبخ', desc: 'حساب المقادير حسب الثابت' },
+  { href: '/plan', icon: '🗓️', title: 'خطة الأربعين 2027', desc: 'جدول التغذية والمشتريات والنسخ الاحتياطية' },
+  { href: '/account/password', icon: '🔑', title: 'تغيير كلمة المرور', desc: 'كلمة مرور حسابك' },
   { href: '/admin/users', icon: '👥', title: 'المستخدمون', desc: 'الحسابات والصلاحيات والموافقات' },
 ];
 

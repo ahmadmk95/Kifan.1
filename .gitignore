@@ -7,3 +7,4 @@ data/*.sqlite-shm
 data/uploads
 .env
 .env*.local
+data/backups

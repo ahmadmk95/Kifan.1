@@ -70,6 +70,16 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
     catch (e) { setMsg({ t: 'err', x: e.message }); }
   };
 
+  const togglePlan = async (u, can) => {
+    try { await api.updateUser(u.id, { plan_edit: can }); load(); }
+    catch (e) { setMsg({ t: 'err', x: e.message }); }
+  };
+
+  const unlock = async (u) => {
+    try { await api.updateUser(u.id, { unlock: true }); setMsg({ t: 'ok', x: `تم فتح حساب «${u.name}»` }); load(); }
+    catch (e) { setMsg({ t: 'err', x: e.message }); }
+  };
+
   const remove = async (u) => {
     if (!window.confirm(`حذف المستخدم «${u.name}»؟`)) return;
     try { await api.removeUser(u.id); load(); }
@@ -79,8 +89,11 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
   const resetPw = async (u) => {
     const pw = window.prompt(`كلمة مرور جديدة لـ «${u.name}»:`);
     if (!pw) return;
-    await api.resetPassword(u.id, pw);
-    setMsg({ t: 'ok', x: 'تم تحديث كلمة المرور' });
+    try {
+      await api.resetPassword(u.id, pw);
+      setMsg({ t: 'ok', x: 'تم تحديث كلمة المرور' });
+      load();
+    } catch (e) { setMsg({ t: 'err', x: e.message }); }
   };
 
   const add = async () => {
@@ -105,7 +118,7 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
       <main className="main-wrap">
         <div className="admin-bar">
           <h1>المستخدمون</h1>
-          <Link href="/admin" className="btn-ghost">← اللجان</Link>
+          <Link href="/admin" className="btn-ghost">← الإدارة</Link>
         </div>
 
         {msg ? <div className={'form-msg ' + msg.t}>{msg.x}</div> : null}
@@ -186,6 +199,23 @@ export default function UsersAdmin({ currentUserId, canManage = true }) {
                         ) : (
                           <div className="prep-note">{u.can_prepare ? 'يجهّز الطلبات ✔' : 'لا يجهّز الطلبات'}</div>
                         )
+                      ) : null}
+                      {/* Editing the Arbaeen plan (/plan). Admins always can. */}
+                      {authorityOf(u) !== 'admin' ? (
+                        canManage && u.id !== currentUserId ? (
+                          <label className="prep-toggle">
+                            <input type="checkbox" checked={!!u.plan_edit} onChange={(e) => togglePlan(u, e.target.checked)} />
+                            <span>يعدّل خطة الأربعين</span>
+                          </label>
+                        ) : (
+                          <div className="prep-note">{u.plan_edit ? 'يعدّل خطة الأربعين ✔' : 'لا يعدّل خطة الأربعين'}</div>
+                        )
+                      ) : null}
+                      {u.locked_until && new Date(u.locked_until) > new Date() ? (
+                        <div className="legacy-note">
+                          🔒 الحساب مقفل مؤقتاً بسبب محاولات دخول خاطئة
+                          {canManage ? <button className="btn-small" style={{ marginInlineStart: 8 }} onClick={() => unlock(u)}>فتح الحساب</button> : null}
+                        </div>
                       ) : null}
                     </td>
                     <td data-label="">

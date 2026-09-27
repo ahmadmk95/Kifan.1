@@ -16,13 +16,23 @@ export async function PATCH(req, { params }) {
     target.status === 'pending' &&
     !body.password &&
     body.name === undefined &&
+    body.plan_edit === undefined &&
+    !body.unlock &&
     body.authority !== 'admin'; // a supervisor cannot grant full admin
   if (!isAdmin(admin) && !viewerApproving) {
     return NextResponse.json({ error: 'غير مخوّل' }, { status: 403 });
   }
 
   if (body.password) {
-    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(bcrypt.hashSync(String(body.password), 10), params.id);
+    if (String(body.password).length < 6) return NextResponse.json({ error: 'كلمة المرور قصيرة جداً (6 أحرف على الأقل)' }, { status: 400 });
+    // A new password also lifts any sign-in lockout.
+    db.prepare('UPDATE users SET password_hash = ?, failed_logins = 0, locked_until = NULL WHERE id = ?').run(bcrypt.hashSync(String(body.password), 10), params.id);
+  }
+  if (body.unlock && isAdmin(admin)) {
+    db.prepare('UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = ?').run(params.id);
+  }
+  if (body.plan_edit !== undefined && isAdmin(admin)) {
+    db.prepare('UPDATE users SET plan_edit = ? WHERE id = ?').run(body.plan_edit ? 1 : 0, params.id);
   }
   // Set authority (used for approving a pending user and for changing access).
   if (body.authority !== undefined) {
