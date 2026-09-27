@@ -86,6 +86,9 @@ function LoginForm() {
           type="tel"
           dir="ltr"
           inputMode="tel"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           placeholder="رقم الهاتف"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -94,6 +97,8 @@ function LoginForm() {
         <input
           type="password"
           dir="ltr"
+          autoCapitalize="none"
+          autoCorrect="off"
           placeholder="كلمة المرور"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

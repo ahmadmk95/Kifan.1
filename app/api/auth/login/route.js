@@ -8,8 +8,16 @@ export async function POST(req) {
   if (!username || !password) {
     return NextResponse.json({ error: 'يرجى إدخال اسم المستخدم وكلمة المرور' }, { status: 400 });
   }
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(String(username).trim());
-  if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+  // Phone keyboards often capitalise the first letter ("Admin"), so match the
+  // username case-insensitively. Phone-number usernames are unaffected.
+  const user = db.prepare('SELECT * FROM users WHERE username = ? COLLATE NOCASE').get(String(username).trim());
+  // Accept the password exactly as typed, or with stray whitespace from
+  // autocomplete removed — the exact match is tried first, so a password that
+  // genuinely contains spaces still works.
+  const pw = String(password);
+  const ok = !!user && (bcrypt.compareSync(pw, user.password_hash) ||
+    (pw.trim() !== pw && bcrypt.compareSync(pw.trim(), user.password_hash)));
+  if (!ok) {
     return NextResponse.json({ error: 'رقم الهاتف أو كلمة المرور غير صحيحة' }, { status: 401 });
   }
   if (user.status === 'pending') {
