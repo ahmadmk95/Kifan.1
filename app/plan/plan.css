@@ -26,27 +26,7 @@
 .pl-root a:hover { color: var(--pl-navy); }
 .pl-main { max-width: 1400px; margin: 0 auto; padding: 20px 20px 80px; }
 
-/* ---------- header / tabs ---------- */
-.pl-header { background: var(--pl-navy); color: #fff; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(16, 38, 64, .18); }
-.pl-topbar { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px 6px; }
-.pl-brand { display: flex; flex-direction: column; color: #fff !important; line-height: 1.25; }
-.pl-brand-t1 { font-weight: 800; font-size: 19px; }
-.pl-brand-t2 { font-size: 12.5px; opacity: .8; }
-.pl-user { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; font-size: 13.5px; }
-.pl-user-name { font-weight: 700; }
-.pl-user button { color: #fff !important; font-size: 13.5px !important; }
-.pl-toplink { color: #cfe3f7 !important; }
-.pl-mode { border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 700; }
-.pl-mode.edit { background: #FFD76A; color: #3D2B00; }
-.pl-mode.view { background: rgba(255,255,255,.18); }
-.pl-login { background: #fff; color: var(--pl-navy) !important; font-weight: 700; border-radius: 8px; padding: 6px 14px; }
-.pl-tabs { max-width: 1400px; margin: 0 auto; display: flex; gap: 4px; overflow-x: auto; padding: 4px 16px 0; scrollbar-width: none; }
-.pl-tabs::-webkit-scrollbar { display: none; }
-.pl-tab { flex: none; color: #d7e6f5 !important; padding: 8px 13px 9px; border-radius: 9px 9px 0 0; font-weight: 500; font-size: 14px; white-space: nowrap; }
-.pl-tab:hover { background: rgba(255,255,255,.1); color: #fff !important; }
-.pl-tab.active { background: var(--pl-bg); color: var(--pl-navy) !important; font-weight: 800; }
-.pl-tab.tool { color: #ffe39a !important; }
-.pl-tab.tool.active { color: var(--pl-navy) !important; }
+/* header / tabs: shared with the whole site — see app/globals.css (.pl-header) */
 
 /* ---------- headings / blocks ---------- */
 .pl-pagehead { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin: 6px 0 16px; }
@@ -227,11 +207,6 @@
 /* ---------- phones ---------- */
 @media (max-width: 720px) {
   .pl-main { padding: 14px 12px 70px; }
-  .pl-topbar { padding: 8px 12px 4px; }
-  .pl-brand-t1 { font-size: 17px; }
-  .pl-brand-t2, .pl-user-name, .pl-toplink { display: none; }
-  .pl-tabs { padding: 2px 8px 0; }
-  .pl-tab { padding: 7px 10px 8px; font-size: 13.5px; }
   .pl-pagehead h1 { font-size: 21px; }
   .pl-hero { padding: 18px 16px; }
   .pl-hero h1 { font-size: 20px; }

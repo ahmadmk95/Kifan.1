@@ -36,14 +36,13 @@ On an empty database the app creates one admin:
 **Change this password immediately** after first login (Admin → المستخدمون → كلمة المرور), and create individual accounts for other authorized users (role `member` for private-area access, `admin` for CMS access). The database starts with **no committees** — the owner creates each لجنة and authors its content through the admin editor.
 
 ## Design tokens
-Defined in `app/globals.css`:
+One look for the whole site (same as خطة الأربعين), defined in `app/globals.css`:
 ```
---mawkab-yellow #FEF33E   --mawkab-red #D70C00   --mawkab-green #157201
---mawkab-paper  #FAF7EC   --mawkab-ink #201C10
---mawkab-red-dark #A80900 --mawkab-green-dark #0E4F01 --mawkab-yellow-soft #FFFBD6
---mawkab-border #E4DEC8   --mawkab-muted #8A8163
+--pl-navy #1F4E79 (titles, header)   --pl-blue #2E75B6 (actions, table headers)
+--pl-light #DDEBF7 (section rows)    --pl-border #D9DDE3 (borders)   --pl-bg #F6F8FB
+--danger #B42318 (delete, out of stock, errors)   --ok #1E6B32 (success)
 ```
-Never recolor the logo (`public/logo.png`); keep clear space ≥ ¼ of its diameter; minimum 48px digital.
+Font: Tajawal (via `next/font/google`). The older `--mawkab-*` names still exist and map onto this palette.
 
 ## Content model
 ```
