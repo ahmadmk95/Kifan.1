@@ -1,11 +1,8 @@
-import { Tajawal } from 'next/font/google';
-import { getCurrentUser, canEditPlan, isAdmin } from '@/lib/auth';
+import { getCurrentUser, canEditPlan, isAdmin, landingFor } from '@/lib/auth';
 import { ensureDailyBackup } from '@/lib/plan/store';
 import PlanShell from '@/components/plan/PlanShell';
 import PlanNav from '@/components/plan/PlanNav';
 import './plan.css';
-
-const tajawal = Tajawal({ subsets: ['arabic'], weight: ['400', '500', '700', '800'], display: 'swap' });
 
 export const dynamic = 'force-dynamic';
 
@@ -19,10 +16,10 @@ export default async function PlanLayout({ children }) {
   const user = await getCurrentUser();
   ensureDailyBackup();
   const viewer = user && user.status !== 'pending'
-    ? { name: user.name, canEdit: canEditPlan(user), isAdmin: isAdmin(user) }
+    ? { name: user.name, canEdit: canEditPlan(user), isAdmin: isAdmin(user), home: landingFor(user) }
     : null;
   return (
-    <div className={'pl-root ' + tajawal.className}>
+    <div className="pl-root">
       <PlanShell user={viewer}>
         <PlanNav user={viewer} />
         <main className="pl-main">{children}</main>

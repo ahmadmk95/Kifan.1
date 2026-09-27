@@ -36,6 +36,7 @@ export default function PlanNav({ user }) {
             <>
               <span className="pl-user-name">{user.name}</span>
               <span className={'pl-mode ' + (user.canEdit ? 'edit' : 'view')}>{user.canEdit ? 'وضع التعديل' : 'عرض فقط'}</span>
+              {user.home && !['/plan', '/no-access'].includes(user.home) ? <Link href={user.home} className="pl-toplink keep">← أقسام الموقع</Link> : null}
               <Link href="/account/password" className="pl-toplink">كلمة المرور</Link>
               <LogoutButton />
             </>

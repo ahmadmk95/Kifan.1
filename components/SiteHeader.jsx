@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import LogoutButton from './LogoutButton';
 import { api } from '@/lib/api';
 import { SITE_NAME, SITE_TAGLINE } from '@/lib/brand';
 
-// Header for logged-in areas. Links shown depend on the user's authority.
+// Header for logged-in areas — the same navy bar with tabs as خطة الأربعين.
+// Tabs shown depend on the user's authority.
 export default function SiteHeader() {
+  const path = usePathname() || '';
   const [user, setUser] = useState(null);
   useEffect(() => { api.me().then(({ user }) => setUser(user)).catch(() => {}); }, []);
 
@@ -20,23 +23,37 @@ export default function SiteHeader() {
   // Before /api/me answers, link home to the root rather than to /no-access.
   const home = !user ? '/' : canAdminArea ? '/admin' : canFridge ? '/admin/fridge' : user.plan_edit ? '/plan' : '/no-access';
 
+  const tabs = [
+    canAdminArea && { href: '/admin', label: 'الرئيسية', exact: true },
+    canFridge && { href: '/admin/fridge', label: 'الثلاجة' },
+    canFridge && { href: '/admin/dargeel', label: 'دار الجيل' },
+    canFridge && { href: '/admin/orders', label: 'الطلبات' },
+    canFridge && { href: '/admin/recipes', label: 'الطبخ' },
+    user && { href: '/plan', label: 'خطة الأربعين' },
+    canAdminArea && { href: '/admin/users', label: 'المستخدمون' },
+  ].filter(Boolean);
+  const isActive = (t) => (t.exact ? path === t.href : path === t.href || path.startsWith(t.href + '/'));
+
   return (
-    <header className="site-header">
-      <Link href={home} className="brand">
-        <span>
-          <span className="t1">{SITE_NAME}</span>
-          <span className="t2 private">{SITE_TAGLINE}</span>
-        </span>
-      </Link>
-      <nav>
-        {canFridge ? <Link href="/admin/fridge">الثلاجة</Link> : null}
-        {canFridge ? <Link href="/admin/dargeel">دار الجيل</Link> : null}
-        {canFridge ? <Link href="/admin/orders">الطلبات</Link> : null}
-        {canFridge ? <Link href="/admin/recipes">الطبخ</Link> : null}
-        {user ? <Link href="/plan">خطة الأربعين</Link> : null}
-        {canAdminArea ? <Link href="/admin">الإدارة</Link> : null}
-        <LogoutButton />
-      </nav>
+    <header className="pl-header">
+      <div className="pl-topbar">
+        <Link href={home} className="pl-brand">
+          <span className="pl-brand-t1">{SITE_NAME}</span>
+          <span className="pl-brand-t2">{SITE_TAGLINE}</span>
+        </Link>
+        <div className="pl-user">
+          {user ? <span className="pl-user-name">{user.name}</span> : null}
+          {user ? <Link href="/account/password" className="pl-toplink">كلمة المرور</Link> : null}
+          <LogoutButton />
+        </div>
+      </div>
+      {tabs.length ? (
+        <nav className="pl-tabs" aria-label="أقسام الموقع">
+          {tabs.map((t) => (
+            <Link key={t.href} href={t.href} className={'pl-tab' + (isActive(t) ? ' active' : '')}>{t.label}</Link>
+          ))}
+        </nav>
+      ) : null}
     </header>
   );
 }
