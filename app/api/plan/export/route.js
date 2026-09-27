@@ -1,12 +1,13 @@
 import { getPlan } from '@/lib/plan/store';
 import { exportWorkbook, exportCsv } from '@/lib/plan/xlsx';
 import { ENTITIES } from '@/lib/plan/model';
-import { handle, json } from '@/lib/plan/http';
+import { handle, json, requireViewer } from '@/lib/plan/http';
 
 export const dynamic = 'force-dynamic';
 
-// Public, like viewing: ?format=xlsx (all tables) or ?format=csv&table=<entity>.
+// Signed-in users: ?format=xlsx (all tables) or ?format=csv&table=<entity>.
 export const GET = handle(async (req) => {
+  await requireViewer();
   const url = new URL(req.url);
   const format = url.searchParams.get('format') || 'xlsx';
   const plan = getPlan();

@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation';
 import { getDay, dayNeighbours } from '@/lib/plan/store';
 import { DayPrint } from '@/components/plan/Views';
+import { requirePlanViewer } from '@/lib/plan/guard';
 
 export const dynamic = 'force-dynamic';
 
 // Printable / phone view of one day for the cooks.
-export default function Page({ params }) {
+export default async function Page({ params }) {
+  await requirePlanViewer(`/plan/day/${params.id}`);
   const day = getDay(params.id);
   if (!day) notFound();
   const { prev, next, all } = dayNeighbours(day);
