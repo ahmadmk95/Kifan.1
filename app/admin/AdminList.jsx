@@ -12,10 +12,11 @@ const SECTIONS = [
   { href: '/admin/recipes', icon: '🍲', title: 'معادلات ووصفات الطبخ', desc: 'حساب المقادير حسب الثابت' },
   { href: '/plan', icon: '🗓️', title: 'خطة الأربعين 2027', desc: 'جدول التغذية والمشتريات والنسخ الاحتياطية' },
   { href: '/account/password', icon: '🔑', title: 'تغيير كلمة المرور', desc: 'كلمة مرور حسابك' },
+  { href: '/admin/export', icon: '💾', title: 'تنزيل كل البيانات', desc: 'قاعدة البيانات والصور في ملف واحد', admin: true },
   { href: '/admin/users', icon: '👥', title: 'المستخدمون', desc: 'الحسابات والصلاحيات والموافقات' },
 ];
 
-export default function AdminList() {
+export default function AdminList({ isAdmin = false }) {
   return (
     <div className="page">
       <SiteHeader />
@@ -24,7 +25,7 @@ export default function AdminList() {
           <h1>الإدارة</h1>
         </div>
         <div className="hub-grid">
-          {SECTIONS.map((s) => (
+          {SECTIONS.filter((s) => !s.admin || isAdmin).map((s) => (
             <Link key={s.href} href={s.href} className="hub-card">
               <span className="hub-ico">{s.icon}</span>
               <span className="hub-title">{s.title}</span>
